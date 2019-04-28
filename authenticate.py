@@ -16,7 +16,8 @@ app.config.update({
         "email",
         "launch/patient",
         "veteran_status.read",
-        "patient/Patient.read"
+        "patient/Patient.read",
+        "patient/Condition.read"
     ],
     'OIDC_CLIENT_SECRETS': 'client_secrets.json',
     'OIDC_ID_TOKEN_COOKIE_SECURE': False,
@@ -51,7 +52,7 @@ def patient():
     return cred['token_response']['patient']
 
 def access_json_dump(fp):
-    acc = {"patient": patient(), "access_code": token()}
+    acc = {"patient": patient(), "access_token": token()}
     return json.dump(acc, fp)
 
 @app.route('/')
