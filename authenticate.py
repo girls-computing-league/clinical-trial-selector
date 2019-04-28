@@ -27,7 +27,6 @@ app.config.update({
 })
 oidc = OpenIDConnect(app)
 
-
 def nl(line):
     return(line + "</br>")
 
@@ -41,7 +40,19 @@ def subject():
     return str(oidc.user_getfield('sub'))
 
 def credentials():
-    return pf(oidc.credentials_store)
+    return str(oidc.credentials_store)
+
+def token():
+    return oidc.get_access_token()
+
+def patient():
+    cred_json = oidc.credentials_store[subject()]
+    cred = json.loads(cred_json)
+    return cred['token_response']['patient']
+
+def access_json_dump(fp):
+    acc = {"patient": patient(), "access_code": token()}
+    return json.dump(acc, fp)
 
 @app.route('/')
 def va_home():
@@ -58,8 +69,13 @@ def va_home():
 def auth():
     filename = 'accesscodes/' + subject() + ".json"
     tokenfile = open(filename, "w")
-    tokenfile.write(oidc.get_access_token())
+    access_json_dump(tokenfile)
     tokenfile.close()
+
+    credfile = open('credentials.json', 'w')
+    credfile.write(oidc.credentials_store[subject()])
+    credfile.close()
+
     return nl('Hello, ' + fullname()) \
         + nl('Subject: ' + subject()) \
         + nl('Token saved in ' + filename) \
@@ -67,29 +83,19 @@ def auth():
         + nl("") \
         + nl("Credentials:") \
         + nl("") \
-        + nl(credentials())
-
-@app.route('/savetoken')
-def hello_save():
-    tokenfile = open("accesstoken.txt", "w")
-    tokenfile.write(g.__bool__oidc.get_access_token())
-    tokenfile.close()
-    return('Token saved in accesstoken.txt</br><a href="/">Return</a>')
+        + nl(credentials()) \
+        + nl("") \
+        + nl("Patient: " + patient()) 
 
 @app.route('/api')
 @oidc.accept_token(True, ['openid'])
 def hello_api():
     return json.dumps({'hello': 'Welcome %s' % g.oidc_token_info['sub']})
 
-
 @app.route('/logout')
 def logout():
     oidc.logout()
     return 'Hi, you have been logged out! <a href="/">Home</a>'
-
-@app.route('/token')
-def retrieve_token():
-    return "Credentials: </br></br>" + str(oidc.credentials_store)
 
 if __name__ == '__main__':
     app.run()
