@@ -41,16 +41,6 @@ def load_patient(file):
     token = code["access_token"]
     return({"mrn": mrn, "token": token})
 
-def extract_conditions(patients):
-    result = {}
-    for sub in patients:
-        pid = patients[sub]["Patient"]["id"]
-        conditions = []
-        for condition in patients[sub]["Conditions"]["entry"]:
-            conditions.append(condition["resource"]["code"]["text"])
-        result[pid] = conditions
-    return(result)
-
 def conditions_list(patients, index):
     pat = list(patients.values())[index]
     token = pat["token"]
@@ -102,4 +92,3 @@ def find_all_codes(disease_list):
         codes += codelist
         names += nameslist
     return codes, names
-    
