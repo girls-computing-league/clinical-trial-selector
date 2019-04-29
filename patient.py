@@ -1,11 +1,18 @@
 from pathlib import Path
 import json
 import requests as req
+from urllib import parse
 
 BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 DEMOGRAPHICS_URL = BASE_URL + "Patient/"
-CONDITIONS_URL = BASE_URL + "Condition?patient="
+CONDITIONS_URL = BASE_URL + "Condition?_count=50&patient="
+DISEASES_URL = "https://clinicaltrialsapi.cancer.gov/v1/diseases"
+TRIALS_URL = "https://clinicaltrialsapi.cancer.gov/v1/clinical-trials"
 
+def rchop(thestring, ending):
+  if thestring.endswith(ending):
+    return thestring[:-len(ending)]
+  return thestring
 
 def filepaths_gen():
     acc_dir = Path("./accesscodes")
@@ -18,18 +25,81 @@ def load_patients():
         patients[file.stem] = patient
     return(patients)
 
-def get_api(code, url):
-    token = code["access_token"]
-    mrn = code["patient"]
+def get_patient():
+    return
+
+def get_api(token, url):
     headers = {"Authorization": "Bearer {}".format(token)}
-    res = req.get(url+mrn, headers=headers)
+    res = req.get(url, headers=headers)
     return res.json()
 
 def load_patient(file):
     f = file.open()
     code = json.load(f)
     f.close()
-    patient = get_api(code, DEMOGRAPHICS_URL)
-    conditions = get_api(code, CONDITIONS_URL)
-    return({"Patient": patient, "Conditions": conditions})
+    mrn = code["patient"]
+    token = code["access_token"]
+    return({"mrn": mrn, "token": token})
 
+def extract_conditions(patients):
+    result = {}
+    for sub in patients:
+        pid = patients[sub]["Patient"]["id"]
+        conditions = []
+        for condition in patients[sub]["Conditions"]["entry"]:
+            conditions.append(condition["resource"]["code"]["text"])
+        result[pid] = conditions
+    return(result)
+
+def conditions_list(patients, index):
+    pat = list(patients.values())[index]
+    token = pat["token"]
+    mrn = pat["mrn"]
+    more_pages = True
+    url = CONDITIONS_URL+mrn
+    conditions = []
+    while more_pages:
+        api_res = get_api(token, url)
+        next_url = url
+        for condition in api_res["entry"]:
+            cond_str = rchop(condition["resource"]["code"]["text"], " (disorder)")
+            if not (cond_str in conditions):
+                conditions.append(cond_str)
+        for link in api_res["link"]:
+            if link["relation"] == "self":
+                self_url = link["url"]
+            if link["relation"] == "next":
+                next_url = link["url"]
+            if link["relation"] == "last":
+                last_url = link["url"]
+        url = next_url
+        more_pages = not (self_url == last_url)
+    return conditions
+
+def find_codes(disease):
+    res = req.get(DISEASES_URL, params={"name": disease})
+    codes_api = res.json()
+    codes = []
+    names = []
+    for term in codes_api["terms"]:
+        for code in term["codes"]:
+            codes.append(code)
+        names.append(term["name"])
+    return codes, names
+
+def find_trials(ncit_codes):
+    trials = []
+    for ncit in ncit_codes:
+        res = req.get(TRIALS_URL, params={"diseases.nci_thesaurus_concept_id": ncit})
+        trials.append(res.json())
+    return trials
+
+def find_all_codes(disease_list):
+    codes = []
+    names = []
+    for disease in disease_list:
+        codelist, nameslist = find_codes(disease)
+        codes += codelist
+        names += nameslist
+    return codes, names
+    
