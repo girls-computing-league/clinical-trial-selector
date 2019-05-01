@@ -28,6 +28,21 @@ class Patient:
                 self.trials.append(trial)
         return
 
+    def load_all(self):
+        self.load_conditions()
+        self.load_codes()
+        self.find_trials()
+        return
+
+    def print_trials(self):
+        space = "      "
+        for trial in self.trials: 
+            print(trial.id)
+            print(space + trial.title)
+            print(space + trial.summary)
+            print()
+        return
+
 class PatientLoader:
     def __init__(self):
         self.patients = []
