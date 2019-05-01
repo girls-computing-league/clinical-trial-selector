@@ -28,9 +28,9 @@ def load_patients():
 def get_patient():
     return
 
-def get_api(token, url):
+def get_api(token, url, params={}):
     headers = {"Authorization": "Bearer {}".format(token)}
-    res = req.get(url, headers=headers)
+    res = req.get(url, headers=headers, params=params)
     return res.json()
 
 def load_patient(file):
@@ -45,6 +45,9 @@ def conditions_list(patients, index):
     pat = list(patients.values())[index]
     token = pat["token"]
     mrn = pat["mrn"]
+    return load_conditions(mrn, token)
+
+def load_conditions(mrn, token):
     more_pages = True
     url = CONDITIONS_URL+mrn
     conditions = []
@@ -64,7 +67,7 @@ def conditions_list(patients, index):
                 last_url = link["url"]
         url = next_url
         more_pages = not (self_url == last_url)
-    return conditions
+        return conditions
 
 def find_codes(disease):
     res = req.get(DISEASES_URL, params={"name": disease})

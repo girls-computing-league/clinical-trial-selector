@@ -46,13 +46,18 @@ def credentials():
 def token():
     return oidc.get_access_token()
 
-def patient():
+def token_response():
+    cred_json = oidc.credentials_store[subject()]
+    cred = json.loads(cred_json)
+    return cred['token_response']
+
+def mrn():
     cred_json = oidc.credentials_store[subject()]
     cred = json.loads(cred_json)
     return cred['token_response']['patient']
 
 def access_json_dump(fp):
-    acc = {"patient": patient(), "access_token": token()}
+    acc = {"patient": mrn(), "access_token": token()}
     return json.dump(acc, fp)
 
 @app.route('/')
@@ -82,16 +87,12 @@ def auth():
         + nl('Token saved in ' + filename) \
         + nl('<a href="/">Return</a>') \
         + nl("") \
-        + nl("Credentials:") \
+        + nl("Token Response:") \
         + nl("") \
-        + nl(credentials()) \
+        + nl(json.dumps(token_response())) \
         + nl("") \
-        + nl("Patient: " + patient()) 
-
-@app.route('/api')
-@oidc.accept_token(True, ['openid'])
-def hello_api():
-    return json.dumps({'hello': 'Welcome %s' % g.oidc_token_info['sub']})
+        + nl("Patient: ") \
+        + nl(str(mrn()))
 
 @app.route('/logout')
 def logout():
