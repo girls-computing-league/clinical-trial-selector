@@ -1,7 +1,6 @@
 from pathlib import Path
 import json
 import requests as req
-from urllib import parse
 
 BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 DEMOGRAPHICS_URL = BASE_URL + "Patient/"
