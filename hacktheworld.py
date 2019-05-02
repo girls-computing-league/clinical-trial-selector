@@ -50,6 +50,11 @@ class PatientLoader:
         for pat_token in self.pat_tokens:
             self.patients.append(Patient(pat_token, self.pat_tokens[pat_token]))
 
+    def load_all_patients(self):
+        for patient in self.patients:
+            patient.load_all()
+        return
+
 class Trial:
     def __init__(self, trial_json):
         self.trial_json = trial_json
