@@ -59,7 +59,8 @@ def load_conditions(mrn, token):
             if not (cond_str in conditions):
                 conditions.append(cond_str)
             cond_snomed = condition["resource"]["code"]["coding"][0]["code"]
-            codes_snomed.append(cond_snomed)
+            if not (cond_snomed in codes_snomed):
+                codes_snomed.append(cond_snomed)
         for link in api_res["link"]:
             if link["relation"] == "self":
                 self_url = link["url"]
