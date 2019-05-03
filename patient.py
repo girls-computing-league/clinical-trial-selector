@@ -50,6 +50,7 @@ def load_conditions(mrn, token):
     more_pages = True
     url = CONDITIONS_URL+mrn
     conditions = []
+    codes_snomed = []
     while more_pages:
         api_res = get_api(token, url)
         next_url = url
@@ -57,6 +58,8 @@ def load_conditions(mrn, token):
             cond_str = rchop(condition["resource"]["code"]["text"], " (disorder)")
             if not (cond_str in conditions):
                 conditions.append(cond_str)
+            cond_snomed = condition["resource"]["code"]["coding"][0]["code"]
+            codes_snomed.append(cond_snomed)
         for link in api_res["link"]:
             if link["relation"] == "self":
                 self_url = link["url"]
@@ -66,7 +69,7 @@ def load_conditions(mrn, token):
                 last_url = link["url"]
         url = next_url
         more_pages = not (self_url == last_url)
-        return conditions
+        return conditions, codes_snomed
 
 def find_codes(disease):
     res = req.get(DISEASES_URL, params={"name": disease})

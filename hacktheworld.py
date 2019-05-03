@@ -1,6 +1,8 @@
 import patient as pt
 import importlib
 importlib.reload(pt)
+import umls
+import requests as req
 
 import json
 
@@ -9,10 +11,12 @@ class Patient:
         self.sub = sub
         self.mrn = pat_token["mrn"]
         self.token = pat_token["token"]
+        self.auth = umls.Authentication("***REMOVED***")
+        self.tgt = self.auth.gettgt()
         return
 
     def load_conditions(self):
-        self.conditions = pt.load_conditions(self.mrn, self.token)
+        self.conditions,self.codes_snomed = pt.load_conditions(self.mrn, self.token)
         return
 
     def load_codes(self):
@@ -43,6 +47,17 @@ class Patient:
             print()
         return
 
+    def snomed2ncit(self,code_snomed):
+        tik = self.auth.getst(self.tgt)
+        params = {"targetSource":"NCI","ticket":tik}
+        res = req.get("https://uts-ws.nlm.nih.gov/rest/crosswalk/current/source/SNOMEDCT_US/"+code_snomed,params = params)
+        if (res.status_code != 200):
+            return "no code match"
+        for result in res.json()["result"]:
+            if not (result["ui"] in ["TCGA", "OMFAQ"]): 
+                return result["ui"]
+        return "no code match"
+
 class PatientLoader:
     def __init__(self):
         self.patients = []
@@ -62,4 +77,3 @@ class Trial:
         self.title = trial_json['brief_title']
         self.summary = trial_json['brief_summary']
         return
-
