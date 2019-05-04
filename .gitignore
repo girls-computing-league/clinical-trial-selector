@@ -1,4 +1,4 @@
-/client_secrets.json
+/client_secrets*.json
 credentials.json
 
 .vscode
