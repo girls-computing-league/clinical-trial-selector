@@ -96,6 +96,7 @@ def vaauthenticated():
     token = session.get('va_access_token')
     mrn = session.get('va_patient')
     filename = 'accesscodes/va/' + mrn + '.json'
+    save_access_code(filename, mrn, token)
     return success_msg(filename, mrn, token)
 
 @cms.tokengetter

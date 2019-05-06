@@ -4,6 +4,8 @@ credentials.json
 .vscode
 *.ipynb
 accesscodes/*.json
+accesscodes/va/*.json
+accesscodes/cms/*.json
 
 .DS_Store
 
