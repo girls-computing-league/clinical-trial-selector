@@ -32,12 +32,15 @@ class Patient:
         return
 
     def find_trials(self):
+        logging.info("Searching for trials...")
         self.trials = []
         #trials_json = pt.find_trials(self.codes)
         trials_json = pt.find_trials(self.codes_ncit)
         for trialset in trials_json:
-            for trial_json in trialset["trials"]:
+            logging.info("Trials for NCIT code {}:".format(trialset["code_ncit"]))
+            for trial_json in trialset["trialset"]["trials"]:
                 trial = Trial(trial_json)
+                logging.info("{} - {}".format(trial.id, trial.title))
                 self.trials.append(trial)
         return
 
@@ -65,7 +68,7 @@ class Patient:
             logging.info("{} CODE {} ({}) --> NO MATCH ({})".format(codeset, code_orig, condition, res.status_code))
             return "no code match"
         for result in res.json()["result"]:
-            if not (result["ui"] in ["TCGA", "OMFAQ"]): 
+            if not (result["ui"] in ["TCGA", "OMFAQ", "MPN-SAF"]): 
                 name_ncit = result["name"]
                 code_ncit = result["ui"]
                 logging.info("{} CODE {} ({})---> NCIT CODE {} ({})".format(codeset, code_orig, condition, code_ncit, name_ncit))
@@ -85,7 +88,7 @@ class Patient:
             logging.info("SNOMED CODE {} ({}) --> NO MATCH".format(code_snomed, condition))
             return "no code match"
         for result in res.json()["result"]:
-            if not (result["ui"] in ["TCGA", "OMFAQ"]): 
+            if not (result["ui"] in ["TCGA", "OMFAQ", "MPN-SAF"]): 
                 name_ncit = result["name"]
                 code_ncit = result["ui"]
                 logging.info("SNOMED CODE {} ({})---> NCIT CODE {} ({})".format(code_snomed, condition, code_ncit, name_ncit))
@@ -109,7 +112,8 @@ class CMSPatient(Patient):
             for diag in diags:
                 coding = diag["diagnosisCodeableConcept"]["coding"][0]
                 code = coding["code"]
-                code = code[0:3] + "." + code[3:]
+                if len(code) > 3:
+                    code = code[0:3] + "." + code[3:]
                 if code != "999.9999" and not (code in codes):
                     codes.append(code)
                     names.append(coding["display"])

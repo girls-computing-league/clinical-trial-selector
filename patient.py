@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import requests as req
 
+
 BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 DEMOGRAPHICS_URL = BASE_URL + "Patient/"
 CONDITIONS_URL = BASE_URL + "Condition?_count=50&patient="
@@ -87,7 +88,8 @@ def find_trials(ncit_codes):
     trials = []
     for ncit in ncit_codes:
         res = req.get(TRIALS_URL, params={"diseases.nci_thesaurus_concept_id": ncit})
-        trials.append(res.json())
+        trialset = {"code_ncit": ncit, "trialset": res.json()}
+        trials.append(trialset)
     return trials
 
 def find_all_codes(disease_list):
