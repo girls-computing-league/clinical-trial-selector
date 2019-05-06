@@ -14,7 +14,7 @@ def rchop(thestring, ending):
   return thestring
 
 def filepaths_gen(dir="va"):
-    acc_dir = Path("./{}/accesscodes".format(dir))
+    acc_dir = Path("./accesscodes/" + dir)
     return(acc_dir.glob("*.json"))
 
 def load_patients():
@@ -37,7 +37,7 @@ def load_patient(file):
     code = json.load(f)
     f.close()
     mrn = code["patient"]
-    token = code["access_token"]
+    token = code["access_code"]
     return({"mrn": mrn, "token": token})
 
 def conditions_list(patients, index):
