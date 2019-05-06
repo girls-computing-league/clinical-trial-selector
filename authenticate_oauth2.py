@@ -15,7 +15,7 @@ cms = oauth.remote_app(
     request_token_params = {'scope': 'profile'},
     request_token_url = None,
     access_token_url = "https://sandbox.bluebutton.cms.gov/v1/o/token/",
-    authorize_url = "https://sandbox.bluebutton.cms.gov/v1/o/authorize",
+    authorize_url = "https://sandbox.bluebutton.cms.gov/v1/o/authorize/",
     access_token_method = 'POST'
 )
 
@@ -26,7 +26,7 @@ va = oauth.remote_app(
     consumer_secret = "***REMOVED***",
     request_token_params = {'scope': 'openid offline_access profile email launch/patient veteran_status.read patient/Patient.read patient/Condition.read', "state": "12345"},
     request_token_url = None,
-    access_token_url = "https://dev-api.va.gov/oauth2/token",
+    access_token_url = "https://dev-api.va.gov/oauth2/token/",
     authorize_url = "https://dev-api.va.gov/oauth2/authorization/",
     access_token_method = 'POST'
 )
@@ -51,6 +51,7 @@ def success_msg(filename, mrn, token):
     html += nl('')
     html += nl("Patient ID:")
     html += nl(mrn)
+    html += nl('')
     html += '<a href="/">Home</a>'
     return html
 
