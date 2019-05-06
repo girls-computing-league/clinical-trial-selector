@@ -13,8 +13,8 @@ def rchop(thestring, ending):
     return thestring[:-len(ending)]
   return thestring
 
-def filepaths_gen():
-    acc_dir = Path("./accesscodes")
+def filepaths_gen(dir="va"):
+    acc_dir = Path("./{}/accesscodes".format(dir))
     return(acc_dir.glob("*.json"))
 
 def load_patients():
