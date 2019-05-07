@@ -219,10 +219,7 @@ def for_five():
 
 @app.route('/logout')
 def logout():
-    session.pop("va_patient", None)
-    session.pop("va_access_token", None)
-    session.pop("cms_patient", None)
-    session.pop("cms_access_token", None)
+    session.clear()
     return redirect("/")
 
 @cms.tokengetter
