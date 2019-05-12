@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 import requests as req
-
+import logging
 
 BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 DEMOGRAPHICS_URL = BASE_URL + "Patient/"
@@ -17,6 +17,12 @@ def rchop(thestring, ending):
 def filepaths_gen(direct="va"):
     acc_dir = Path("./accesscodes/" + direct)
     return(acc_dir.glob("*.json"))
+
+def load_demographics(mrn, token):
+    url = DEMOGRAPHICS_URL + mrn
+    api_res = get_api(token, url)
+    logging.debug("Patient JSON: " + json.dumps(api_res))
+    return api_res["gender"], api_res["birthDate"]
 
 def load_patients(direct="va"):
     patients = {}

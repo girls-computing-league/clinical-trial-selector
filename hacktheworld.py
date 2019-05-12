@@ -16,11 +16,13 @@ class Patient:
         self.token = pat_token["token"]
         self.auth = umls.Authentication("***REMOVED***")
         self.tgt = self.auth.gettgt()
-        return
+
+    def load_demographics(self):
+        self.gender, self.birthdate = pt.load_demographics(self.mrn, self.token)
+        logging.info("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def load_conditions(self):
         self.conditions,self.codes_snomed = pt.load_conditions(self.mrn, self.token)
-        return
 
     def load_codes(self):
         self.codes, self.names = pt.find_all_codes(self.conditions)
@@ -29,7 +31,6 @@ class Patient:
             code_ncit = self.snomed2ncit(code_snomed)
             if not (code_ncit == "no code match"):
                 self.codes_ncit.append(code_ncit)
-        return
 
     def find_trials(self):
         logging.info("Searching for trials...")
@@ -119,6 +120,15 @@ class CMSPatient(Patient):
                     names.append(coding["display"])
         self.codes_icd9 = codes
         self.conditions = names
+    
+    def load_demographics(self):
+        url = "https://sandbox.bluebutton.cms.gov/v1/fhir/Patient/" + self.mrn
+        headers = {"Authorization": "Bearer {}".format(self.token)}
+        res = req.get(url, headers=headers)
+        fhir =res.json()
+        self.gender = fhir["gender"]
+        self.birthdate = fhir["birthDate"]
+        logging.info("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def load_codes(self):
         self.codes_ncit = []
