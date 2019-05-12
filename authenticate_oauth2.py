@@ -1,12 +1,13 @@
+# imports libraries from packages
 from flask import Flask, session, jsonify, redirect
 from flask_oauthlib.client import OAuth
 import json
-
+# creates the flask webserver and the secret key of the web server
 app = Flask(__name__)
 app.secret_key = "development"
-
+# runs the app with the OAuthentication protocol
 oauth = OAuth(app)
-
+# specifies possible parameters for the protocol dealing with the CMS
 cms = oauth.remote_app(
     'cms',
     base_url = "https://sandbox.bluebutton.cms.gov/v1/o",
@@ -17,6 +18,7 @@ cms = oauth.remote_app(
     access_token_url = "https://sandbox.bluebutton.cms.gov/v1/o/token/",
     authorize_url = "https://sandbox.bluebutton.cms.gov/v1/o/authorize/",
     access_token_method = 'POST'
+# specifies possible parameters for the protocol dealing with the VA
 )
 
 va = oauth.remote_app(
@@ -30,17 +32,18 @@ va = oauth.remote_app(
     authorize_url = "https://dev-api.va.gov/oauth2/authorization/",
     access_token_method = 'POST'
 )
-
 def nl(line):
     return(line + "</br>")
-
+# creates function that makes a new line in the website to input text
 def save_access_code(filename, mrn, token):
     fp = open(filename, 'w')
     acc = {"patient": mrn, "access_code": token}
     json.dump(acc, fp)
     fp.close()
-    return
-
+# creates a new file and gives permissions to write in it
+# creates a dictionary with the medical record number and the token to enter into the file
+# enters information in dictionary into file in json format
+# saves and closes file
 def success_msg(filename, mrn, token):
     html = nl("Success!")
     html += nl('')
@@ -54,18 +57,19 @@ def success_msg(filename, mrn, token):
     html += nl('')
     html += '<a href="/">Home</a>'
     return html
-
+# displays success message that shows file where credentials are stored, token, and mrn
+# makes new line to show each credential
 @app.route('/')
 def home():
     html = nl('Hello')
     html += nl('<a href="/cms/authenticate">Authenticate at CMS Blue Button</a>')
     html += nl('<a href="/va/authenticate">Authenticate at VA Argonaut</a>')
     return html
-
+# creates home page with links to authenticate with the VA and CMS
 @app.route('/cms/authenticate')
 def cmsauthenticate():
     return cms.authorize(callback='http://localhost:5000/cmsredirect')
-
+# redirects to 
 @app.route('/va/authenticate')
 def vaauthenticate():
     return va.authorize(callback='http://localhost:5000/varedirect')
