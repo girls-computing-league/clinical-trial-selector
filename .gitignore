@@ -8,6 +8,7 @@ accesscodes/va/*.json
 accesscodes/cms/*.json
 allrun.py
 
+flask_session
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
