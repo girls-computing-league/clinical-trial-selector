@@ -1,17 +1,19 @@
-# imports libraries from packages
 from flask import Flask, session, jsonify, redirect
 from flask_session import Session
 from flask_oauthlib.client import OAuth
 import hacktheworld as hack
 import json
+
 # creates the flask webserver and the secret key of the web server
 app = Flask(__name__)
-app.secret_key = "development"
+app.secret_key = "development" 
+
 # runs the app with the OAuthentication protocol
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
 Session(app)
 oauth = OAuth(app)
+
 # specifies possible parameters for the protocol dealing with the CMS
 cms = oauth.remote_app(
     'cms',
