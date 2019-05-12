@@ -6,6 +6,7 @@ credentials.json
 accesscodes/*.json
 accesscodes/va/*.json
 accesscodes/cms/*.json
+allrun.py
 
 .DS_Store
 
