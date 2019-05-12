@@ -5,6 +5,7 @@ import logging
 import sys
 import umls
 import requests as req
+from datetime import date
 
 import json
 
@@ -21,6 +22,11 @@ class Patient:
         self.gender, self.birthdate = pt.load_demographics(self.mrn, self.token)
         logging.info("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
+    def calculate_age(self):
+        today = date.today()
+        born = date.fromisoformat(self.birthdate)
+        self.age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
     def load_conditions(self):
         self.conditions,self.codes_snomed = pt.load_conditions(self.mrn, self.token)
 
@@ -36,7 +42,7 @@ class Patient:
         logging.info("Searching for trials...")
         self.trials = []
         #trials_json = pt.find_trials(self.codes)
-        trials_json = pt.find_trials(self.codes_ncit)
+        trials_json = pt.find_trials(self.codes_ncit, gender=self.gender, age=self.age)
         for trialset in trials_json:
             logging.info("Trials for NCIT code {}:".format(trialset["code_ncit"]))
             for trial_json in trialset["trialset"]["trials"]:
@@ -46,6 +52,8 @@ class Patient:
         return
 
     def load_all(self):
+        self.load_demographics()
+        self.calculate_age()
         self.load_conditions()
         self.load_codes()
         self.find_trials()

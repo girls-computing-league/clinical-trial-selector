@@ -90,11 +90,18 @@ def find_codes(disease):
         names.append(term["name"])
     return codes, names
 
-def find_trials(ncit_codes):
+def find_trials(ncit_codes, gender="unknown", age=0):
     trials = []
     for ncit in ncit_codes:
-        res = req.get(TRIALS_URL, params={"diseases.nci_thesaurus_concept_id": ncit})
+        params = {"diseases.nci_thesaurus_concept_id": ncit}
+        if (gender != "unknown"):
+            params["eligibility.structured.gender"] = gender
+        if (age != 0):
+            params["eligibility.structured.max_age_in_years_gte"] = age
+            params["eligibility.structured.min_age_in_years_lte"] = age
+        res = req.get(TRIALS_URL, params=params)
         trialset = {"code_ncit": ncit, "trialset": res.json()}
+
         trials.append(trialset)
     return trials
 
