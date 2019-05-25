@@ -1,6 +1,7 @@
 from flask import Flask, session, jsonify, redirect
 from flask_session import Session
 from flask_oauthlib.client import OAuth
+from flask_bootstrap import Bootstrap
 import hacktheworld as hack
 import json
 
@@ -12,6 +13,7 @@ app.secret_key = "development"
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
 Session(app)
+Bootstrap(app)
 oauth = OAuth(app)
 
 # specifies possible parameters for the protocol dealing with the CMS
