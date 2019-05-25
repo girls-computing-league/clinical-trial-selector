@@ -106,7 +106,7 @@ def home():
 
 @app.route('/test')
 def test():
-    return render_template('bootstrap/base.html')
+    return render_template('welcome.html')
 
 @app.route('/cms/authenticate')
 def cmsauthenticate():

@@ -1,0 +1,11 @@
+.custom-table{border-collapse:collapse;width:100%;border:solid 1px #c0c0c0;font-family:Arial;font-size:14px}
+.custom-table th,.custom-table td{text-align:left;padding:8px;border:solid 1px #c0c0c0}
+.custom-table th{color:#000080}
+.custom-table tr:nth-child(odd){background-color:#f7f7ff}
+.custom-table>thead>tr{background-color:#dde8f7!important}
+.tbtn{border:0;outline:0;background-color:transparent;font-size:13px;cursor:pointer}
+.toggler{display:none}
+.toggler1{display:table-row;}
+.custom-table a{color: #0033cc;}
+.custom-table a:hover{color: #f00;}
+.page-header{background-color: #eee;}
