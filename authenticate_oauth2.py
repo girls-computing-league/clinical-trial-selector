@@ -1,4 +1,4 @@
-from flask import Flask, session, jsonify, redirect
+from flask import Flask, session, jsonify, redirect, render_template
 from flask_session import Session
 from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
@@ -103,6 +103,10 @@ def home():
         html += nl('<button type="button" onclick="location.href = &quot;/logout&quot;;" id="logoutButton">Logout</button>')
 
     return html
+
+@app.route('/test')
+def test():
+    return render_template('bootstrap/base.html')
 
 @app.route('/cms/authenticate')
 def cmsauthenticate():
