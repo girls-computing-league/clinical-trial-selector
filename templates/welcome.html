@@ -57,7 +57,7 @@ Clinical Trials Selector
                     </li>
                     <li class="list-group-item text-right"><span class="float-left"><strong>Name</strong></span>{{ session["cms_name"]}}</li>
                     <li class="list-group-item text-right"><span class="float-left"><strong>ID</strong></span> {{ session["cms_patient"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Age</strong></span> {{ session["cms_birthdate"]}}</li>
+                    <li class="list-group-item text-right"><span class="float-left"><strong>DOB</strong></span> {{ session["cms_birthdate"]}}</li>
                     <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span> {{ session["cms_gender"]}}</li>                
                 </ul>     
             
@@ -86,16 +86,23 @@ Clinical Trials Selector
                                 {% for code in session["codes"] %}
                                     <tbody>
                                         <tr>
-                                            <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i>   Trials for condition: {{code}}</button> </td>
+                                            <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i>   Trials for condition: {{ code["ncit_desc"] }} ({{code["ncit"]}})</button> </td>
                                         </tr>
+                                        {% set ns = namespace(found=false) %}
                                         {% for trial in session["trials"] %}
-                                            {% if trial.code_ncit==code %}
+                                            {% if trial.code_ncit==code["ncit"] %}
+                                                {% set ns.found = true %}
                                                 <tr class="toggler">
                                                     <td><a href="#">{{ trial.id }}</a></td>
                                                     <td>{{ trial.title }}</td>
                                                 </tr>
                                             {% endif %}
                                         {% endfor %}
+                                        {% if ns.found==false %}
+                                                <tr class="toggler">
+                                                    <td colspan=2>No eligible trials found for this condition</td>
+                                                </tr>
+                                        {% endif %}
                                     </tbody>
                                 {% endfor %}
                             </table>

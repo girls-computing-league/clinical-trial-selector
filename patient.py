@@ -92,7 +92,8 @@ def find_codes(disease):
 
 def find_trials(ncit_codes, gender="unknown", age=0):
     trials = []
-    for ncit in ncit_codes:
+    for ncit_dict in ncit_codes:
+        ncit = ncit_dict["ncit"]
         params = {"diseases.nci_thesaurus_concept_id": ncit}
         if (gender != "unknown"):
             params["eligibility.structured.gender"] = gender

@@ -80,7 +80,7 @@ def success_msg(filename, mrn, token):
     return html
 
 
-@app.route('/')
+@app.route('/old')
 # creates home page with links to authenticate with the VA and CMS
 def home():
     auts = authentications()
@@ -104,7 +104,7 @@ def home():
 
     return html
 
-@app.route('/test')
+@app.route('/')
 def test():
     return render_template('welcome.html')
 
@@ -192,7 +192,7 @@ def getInfo():
     session['trials'] = trials
     session['numTrials'] = len(trials)
     session['index'] = 0
-    return redirect("/displayInfo")
+    return redirect("/")
 
 @app.route('/displayInfo')
 def displayInfo():
