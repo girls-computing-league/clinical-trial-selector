@@ -44,9 +44,10 @@ class Patient:
         #trials_json = pt.find_trials(self.codes)
         trials_json = pt.find_trials(self.codes_ncit, gender=self.gender, age=self.age)
         for trialset in trials_json:
-            logging.info("Trials for NCIT code {}:".format(trialset["code_ncit"]))
+            code_ncit = trialset["code_ncit"]
+            logging.info("Trials for NCIT code {}:".format(code_ncit))
             for trial_json in trialset["trialset"]["trials"]:
-                trial = Trial(trial_json)
+                trial = Trial(trial_json, code_ncit)
                 logging.info("{} - {}".format(trial.id, trial.title))
                 self.trials.append(trial)
         return
@@ -172,8 +173,9 @@ class PatientLoader:
             patient.load_all()
 
 class Trial:
-    def __init__(self, trial_json):
+    def __init__(self, trial_json, code_ncit):
         self.trial_json = trial_json
+        self.code_ncit = code_ncit
         self.id = trial_json['nci_id']
         self.title = trial_json['brief_title']
         self.summary = trial_json['brief_summary']

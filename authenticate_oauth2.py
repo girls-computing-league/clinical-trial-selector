@@ -171,6 +171,7 @@ def getInfo():
         return redirect("/")
     patients = []
     trials = []
+    codes = []
     for source in auts:
         if source == 'va':
             mrn = session['va_patient']
@@ -185,7 +186,9 @@ def getInfo():
         pat.load_all()
         patients.append(pat)
         trials += pat.trials
+        codes += pat.codes_ncit
     print(type(trials))
+    session['codes'] = codes
     session['trials'] = trials
     session['numTrials'] = len(trials)
     session['index'] = 0
