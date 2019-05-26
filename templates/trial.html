@@ -1,11 +1,36 @@
 {% extends "patient.html" %}
 
+{%- set id = request.args.get('id', '0') %}
+{%- set ns = namespace(trial=none) %}
+{%- for tr in session["trials"] %}
+    {%- if tr.id == id %}
+        {%- set ns.trial = tr %}
+    {% endif %}
+{% endfor %}
+
+{% macro section(section_name, section_header, section_content, parent="info") %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#trial_{{section_name}}" aria-expanded="true" aria-controls="collapseOne">
+                    {{section_header}}
+                </button>
+            </h5>
+        </div>
+        <div id="trial_{{section_name}}" class="collapse" aria-labelledby="headingOne" data-parent="#{{parent}}">
+            <div class="card-body">
+                {{section_content}}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
 {% block title %}
     Clinical Trials Browser
 {% endblock %}
 
 {% block header %}
-    Browse Trial # {{request.args.get('id', 'not found')}}
+    Browse Trial # {{id}}
 {% endblock %}
 
 {% block extra_button %}
@@ -15,65 +40,39 @@
 {% block pt_main %}
     <ul class="nav nav-tabs" id="myTab">
         <li class="nav-item active"><a class="nav-link active" href="#info" data-toggle="tab">Info</a></li>
-        <li class="nav-item"><a class="nav-link" href="#diseases" data-toggle="tab">Diseases</a></li>
+        <li class="nav-item"><a class="nav-link" href="#measures" data-toggle="tab">Outcome Measures</a></li>
         <li class="nav-item"><a class="nav-link" href="#locations" data-toggle="tab">Locations</a></li>
     </ul> 
         
     <div class="tab-content">
         <div class="tab-pane active" id="info">
             <br>
-            {%- if session["trials"] %}
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th>Trial Id</th>
-                            <th>Title</th>
-                        </tr>
-                    </thead>
-
-                    {%- for code in session["codes"] %}
-                        <tbody>
-                            <tr>
-                                <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i>   Trials for condition: {{ code["ncit_desc"] }} ({{code["ncit"]}})</button> </td>
-                            </tr>
-                            {%- set ns = namespace(found=false) %}
-                            {%- for trial in session["trials"] %}
-                                {%- if trial.code_ncit==code["ncit"] %}
-                                    {%- set ns.found = true %}
-                                    <tr class="toggler">
-                                        <td><a href="#">{{ trial.id }}</a></td>
-                                        <td>{{ trial.title }}</td>
-                                    </tr>
-                                {%- endif %}
-                            {%- endfor %}
-                            {%- if ns.found==false %}
-                                    <tr class="toggler">
-                                        <td colspan=2>No eligible trials found for this condition</td>
-                                    </tr>
-                            {%- endif %}
-                        </tbody>
-                    {%- endfor %}
-                </table>
-            {% else %}
-                <a class="btn btn-primary" href="/getInfo">Find Clinical Trials</a>
-            {% endif %}
+            {{ section("title", "Brief Title", ns.trial.title) }}
+            {{ section("official", "Official Title", ns.trial.official) }}
+            {{ section("summary", "Summary", ns.trial.summary) }}
+            {{ section("description", "Detailed Description", ns.trial.description) }}
         </div><!--/tab-pane-->
-        <div class="tab-pane" id="diseases">
-            
-            <h2></h2>
-            
-            <ul class="list-group">
-                <li class="list-group-item text-muted">Inbox</li>
-                <li class="list-group-item text-right"><a href="#" class="float-left">Here is your a link to the latest summary report from the..</a> 2.13.2014</li>
-                <li class="list-group-item text-right"><a href="#" class="float-left">Hi Joe, There has been a request on your account since that was..</a> 2.11.2014</li>
-                <li class="list-group-item text-right"><a href="#" class="float-left">Nullam sapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                <li class="list-group-item text-right"><a href="#" class="float-left">Thllam sapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                <li class="list-group-item text-right"><a href="#" class="float-left">Wesm sapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                <li class="list-group-item text-right"><a href="#" class="float-left">For therepien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                <li class="list-group-item text-right"><a href="#" class="float-left">Also we, havesapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                <li class="list-group-item text-right"><a href="#" class="float-left">Swedish chef is assaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                
-            </ul> 
+        <div class="tab-pane" id="measures">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Timeframe</th>
+                    </tr>
+                </thead>
+
+                {%- for measure in ns.trial.measures %}
+                    <tbody>
+                        <tr>
+                            <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i> {{measure["name"]}}</button> </td>
+                        </tr>
+                                <tr class="toggler">
+                                    <td>{{ measure["description"] }}</td>
+                                    <td>{{ measure["timeframe"] }}</td>
+                                </tr>
+                    </tbody>
+                {%- endfor %}
+            </table>
         
         </div><!--/tab-pane-->
         <div class="tab-pane" id="locations">

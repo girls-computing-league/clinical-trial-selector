@@ -162,4 +162,7 @@ class Trial:
         self.code_ncit = code_ncit
         self.id = trial_json['nci_id']
         self.title = trial_json['brief_title']
+        self.official = trial_json['official_title']
         self.summary = trial_json['brief_summary']
+        self.description = trial_json['detail_description']
+        self.measures = trial_json['outcome_measures']
