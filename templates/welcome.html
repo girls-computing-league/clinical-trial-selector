@@ -1,205 +1,156 @@
-{% extends "base.html" %}
+{% extends "patient.html" %}
 
 {% block title %}
     Clinical Trials Selector
 {% endblock %}
 
 {% block styles %}
-    {{super()}}
+    {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='accordion.css')}}">  
 {%- endblock %}
 
 {% block scripts %}
-{{super()}}
-<script src="{{ url_for('static', filename='accordion.js') }}"></script>
+    {{ super() }}
+    <script src="{{ url_for('static', filename='accordion.js') }}"></script>
 {% endblock %}
 
-{% block content %}
-    <hr>
-    <div class="container bootstrap snippet">
-        <div class="row">
-            <div class="col-sm-10">
-                <h1>Clinical Trials Selector</h1>
-            </div>
-            <div class="col">
-                <a class="btn btn-primary" href="/logout">Logout</a>
-            </div>
-        </div>
-    </div>
-    <hr>
-
-    <div class="container bootstrap snippet">
-        <div class="row">
-            <div class="col-sm-3"><!--left col-->
-                    
-                <ul class="list-group">
-                    <li class="list-group-item text-muted">
-                        VA Patient Info
-                        {%- if not session["va_patient"] %}
-                            <a class="btn-sm btn-primary float-right" href="/va/authenticate">Login</a>
-                        {% endif %}
-                    </li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Name</strong></span>{{ session["va_name"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>ID</strong></span>{{ session["va_patient"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>DOB</strong></span>{{ session["va_birthdate"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span>{{ session["va_gender"]}}</li>                
-                </ul> 
-
-                <br>
-
-                <ul class="list-group">
-                    <li class="list-group-item text-muted">
-                        CMS Patient Info
-                        {%- if not session["cms_patient"] %}
-                            <a class="btn-sm btn-primary float-right" href="/cms/authenticate">Login</a>
-                        {% endif %}
-                    </li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Name</strong></span>{{ session["cms_name"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>ID</strong></span> {{ session["cms_patient"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>DOB</strong></span> {{ session["cms_birthdate"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span> {{ session["cms_gender"]}}</li>                
-                </ul>     
+{% block pt_main %}
+    {{ super() }}
+                
+    <ul class="nav nav-tabs" id="myTab">
+            <li class="nav-item active"><a class="nav-link active" href="#trials" data-toggle="tab">Trials</a></li>
+            <li class="nav-item"><a class="nav-link" href="#messages" data-toggle="tab">Messages</a></li>
+            <li class="nav-item"><a class="nav-link" href="#settings" data-toggle="tab">Settings</a></li>
+        </ul> 
             
-            </div><!--/col-3-->
-            <div class="col-sm-9">
-                
-                <ul class="nav nav-tabs" id="myTab">
-                    <li class="nav-item active"><a class="nav-link active" href="#trials" data-toggle="tab">Trials</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#messages" data-toggle="tab">Messages</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#settings" data-toggle="tab">Settings</a></li>
-                </ul> 
-                    
-                <div class="tab-content">
-                    <div class="tab-pane active" id="trials">
-                        <br>
-                        {%- if session["trials"] %}
-                            <table class="custom-table">
-                                <thead>
-                                    <tr>
-                                        <th>Trial Id</th>
-                                        <th>Title</th>
-                                    </tr>
-                                </thead>
+        <div class="tab-content">
+            <div class="tab-pane active" id="trials">
+                <br>
+                {%- if session["trials"] %}
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Trial Id</th>
+                                <th>Title</th>
+                            </tr>
+                        </thead>
 
-                                {%- for code in session["codes"] %}
-                                    <tbody>
-                                        <tr>
-                                            <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i>   Trials for condition: {{ code["ncit_desc"] }} ({{code["ncit"]}})</button> </td>
+                        {%- for code in session["codes"] %}
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i>   Trials for condition: {{ code["ncit_desc"] }} ({{code["ncit"]}})</button> </td>
+                                </tr>
+                                {%- set ns = namespace(found=false) %}
+                                {%- for trial in session["trials"] %}
+                                    {%- if trial.code_ncit==code["ncit"] %}
+                                        {%- set ns.found = true %}
+                                        <tr class="toggler">
+                                            <td><a href="#">{{ trial.id }}</a></td>
+                                            <td>{{ trial.title }}</td>
                                         </tr>
-                                        {%- set ns = namespace(found=false) %}
-                                        {%- for trial in session["trials"] %}
-                                            {%- if trial.code_ncit==code["ncit"] %}
-                                                {%- set ns.found = true %}
-                                                <tr class="toggler">
-                                                    <td><a href="#">{{ trial.id }}</a></td>
-                                                    <td>{{ trial.title }}</td>
-                                                </tr>
-                                            {%- endif %}
-                                        {%- endfor %}
-                                        {%- if ns.found==false %}
-                                                <tr class="toggler">
-                                                    <td colspan=2>No eligible trials found for this condition</td>
-                                                </tr>
-                                        {%- endif %}
-                                    </tbody>
+                                    {%- endif %}
                                 {%- endfor %}
-                            </table>
-                        {% else %}
-                            <a class="btn btn-primary" href="/getInfo">Find Clinical Trials</a>
-                        {% endif %}
-                    </div><!--/tab-pane-->
-                    <div class="tab-pane" id="messages">
-                        
-                        <h2></h2>
-                        
-                        <ul class="list-group">
-                            <li class="list-group-item text-muted">Inbox</li>
-                            <li class="list-group-item text-right"><a href="#" class="float-left">Here is your a link to the latest summary report from the..</a> 2.13.2014</li>
-                            <li class="list-group-item text-right"><a href="#" class="float-left">Hi Joe, There has been a request on your account since that was..</a> 2.11.2014</li>
-                            <li class="list-group-item text-right"><a href="#" class="float-left">Nullam sapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                            <li class="list-group-item text-right"><a href="#" class="float-left">Thllam sapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                            <li class="list-group-item text-right"><a href="#" class="float-left">Wesm sapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                            <li class="list-group-item text-right"><a href="#" class="float-left">For therepien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                            <li class="list-group-item text-right"><a href="#" class="float-left">Also we, havesapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                            <li class="list-group-item text-right"><a href="#" class="float-left">Swedish chef is assaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
-                            
-                        </ul> 
-                    
-                    </div><!--/tab-pane-->
-                    <div class="tab-pane" id="settings">
-                            
-                        
-                        <hr>
-                        <form class="form" action="##" method="post" id="registrationForm">
-                            <div class="form-group">
-                                
-                                <div class="col-xs-6">
-                                    <label for="first_name"><h4>First name</h4></label>
-                                    <input type="text" class="form-control" name="first_name" id="first_name" placeholder="first name" title="enter your first name if any.">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                
-                                <div class="col-xs-6">
-                                    <label for="last_name"><h4>Last name</h4></label>
-                                    <input type="text" class="form-control" name="last_name" id="last_name" placeholder="last name" title="enter your last name if any.">
-                                </div>
-                            </div>
+                                {%- if ns.found==false %}
+                                        <tr class="toggler">
+                                            <td colspan=2>No eligible trials found for this condition</td>
+                                        </tr>
+                                {%- endif %}
+                            </tbody>
+                        {%- endfor %}
+                    </table>
+                {% else %}
+                    <a class="btn btn-primary" href="/getInfo">Find Clinical Trials</a>
+                {% endif %}
+            </div><!--/tab-pane-->
+            <div class="tab-pane" id="messages">
                 
-                            <div class="form-group">
-                                
-                                <div class="col-xs-6">
-                                    <label for="phone"><h4>Phone</h4></label>
-                                    <input type="text" class="form-control" name="phone" id="phone" placeholder="enter phone" title="enter your phone number if any.">
-                                </div>
-                            </div>
+                <h2></h2>
                 
-                            <div class="form-group">
-                                <div class="col-xs-6">
-                                    <label for="mobile"><h4>Mobile</h4></label>
-                                    <input type="text" class="form-control" name="mobile" id="mobile" placeholder="enter mobile number" title="enter your mobile number if any.">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                
-                                <div class="col-xs-6">
-                                    <label for="email"><h4>Email</h4></label>
-                                    <input type="email" class="form-control" name="email" id="email" placeholder="you@email.com" title="enter your email.">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                
-                                <div class="col-xs-6">
-                                    <label for="email"><h4>Location</h4></label>
-                                    <input type="email" class="form-control" id="location" placeholder="somewhere" title="enter a location">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                
-                                <div class="col-xs-6">
-                                    <label for="password"><h4>Password</h4></label>
-                                    <input type="password" class="form-control" name="password" id="password" placeholder="password" title="enter your password.">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                
-                                <div class="col-xs-6">
-                                    <label for="password2"><h4>Verify</h4></label>
-                                    <input type="password" class="form-control" name="password2" id="password2" placeholder="password2" title="enter your password2.">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-xs-12">
-                                        <br>
-                                        <button class="btn btn-lg btn-success" type="submit"><i class="glyphicon glyphicon-ok-sign"></i> Save</button>
-                                        <button class="btn btn-lg" type="reset"><i class="glyphicon glyphicon-repeat"></i> Reset</button>
-                                    </div>
-                            </div>
-                        </form>
-                    </div><!--/tab-pane-->
-                </div><!--/tab-content-->
+                <ul class="list-group">
+                    <li class="list-group-item text-muted">Inbox</li>
+                    <li class="list-group-item text-right"><a href="#" class="float-left">Here is your a link to the latest summary report from the..</a> 2.13.2014</li>
+                    <li class="list-group-item text-right"><a href="#" class="float-left">Hi Joe, There has been a request on your account since that was..</a> 2.11.2014</li>
+                    <li class="list-group-item text-right"><a href="#" class="float-left">Nullam sapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
+                    <li class="list-group-item text-right"><a href="#" class="float-left">Thllam sapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
+                    <li class="list-group-item text-right"><a href="#" class="float-left">Wesm sapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
+                    <li class="list-group-item text-right"><a href="#" class="float-left">For therepien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
+                    <li class="list-group-item text-right"><a href="#" class="float-left">Also we, havesapien massaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
+                    <li class="list-group-item text-right"><a href="#" class="float-left">Swedish chef is assaortor. A lobortis vitae, condimentum justo...</a> 2.11.2014</li>
                     
-            </div><!--/col-9-->
-        </div><!--/row-->
-    </div>                                                        
+                </ul> 
+            
+            </div><!--/tab-pane-->
+            <div class="tab-pane" id="settings">
+                    
+                
+                <hr>
+                <form class="form" action="##" method="post" id="registrationForm">
+                    <div class="form-group">
+                        
+                        <div class="col-xs-6">
+                            <label for="first_name"><h4>First name</h4></label>
+                            <input type="text" class="form-control" name="first_name" id="first_name" placeholder="first name" title="enter your first name if any.">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        
+                        <div class="col-xs-6">
+                            <label for="last_name"><h4>Last name</h4></label>
+                            <input type="text" class="form-control" name="last_name" id="last_name" placeholder="last name" title="enter your last name if any.">
+                        </div>
+                    </div>
+        
+                    <div class="form-group">
+                        
+                        <div class="col-xs-6">
+                            <label for="phone"><h4>Phone</h4></label>
+                            <input type="text" class="form-control" name="phone" id="phone" placeholder="enter phone" title="enter your phone number if any.">
+                        </div>
+                    </div>
+        
+                    <div class="form-group">
+                        <div class="col-xs-6">
+                            <label for="mobile"><h4>Mobile</h4></label>
+                            <input type="text" class="form-control" name="mobile" id="mobile" placeholder="enter mobile number" title="enter your mobile number if any.">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        
+                        <div class="col-xs-6">
+                            <label for="email"><h4>Email</h4></label>
+                            <input type="email" class="form-control" name="email" id="email" placeholder="you@email.com" title="enter your email.">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        
+                        <div class="col-xs-6">
+                            <label for="email"><h4>Location</h4></label>
+                            <input type="email" class="form-control" id="location" placeholder="somewhere" title="enter a location">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        
+                        <div class="col-xs-6">
+                            <label for="password"><h4>Password</h4></label>
+                            <input type="password" class="form-control" name="password" id="password" placeholder="password" title="enter your password.">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        
+                        <div class="col-xs-6">
+                            <label for="password2"><h4>Verify</h4></label>
+                            <input type="password" class="form-control" name="password2" id="password2" placeholder="password2" title="enter your password2.">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-12">
+                                <br>
+                                <button class="btn btn-lg btn-success" type="submit"><i class="glyphicon glyphicon-ok-sign"></i> Save</button>
+                                <button class="btn btn-lg" type="reset"><i class="glyphicon glyphicon-repeat"></i> Reset</button>
+                            </div>
+                    </div>
+                </form>
+            </div><!--/tab-pane-->
+        </div><!--/tab-content-->
+
 {% endblock %}
