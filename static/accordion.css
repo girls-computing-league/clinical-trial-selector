@@ -3,7 +3,7 @@
 .custom-table th{color:#000080}
 .custom-table tr:nth-child(odd){background-color:#f7f7ff}
 .custom-table>thead>tr{background-color:#dde8f7!important}
-.tbtn{border:0;outline:0;background-color:transparent;font-size:13px;cursor:pointer}
+.tbtn{border:0;outline:0;background-color:transparent;font-size:13px;cursor:pointer;text-align:left;}
 .toggler{display:none}
 .toggler1{display:table-row;}
 .custom-table a{color: #0033cc;}

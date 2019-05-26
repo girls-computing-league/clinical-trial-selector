@@ -166,3 +166,7 @@ class Trial:
         self.summary = trial_json['brief_summary']
         self.description = trial_json['detail_description']
         self.measures = trial_json['outcome_measures']
+        self.pi = trial_json['principal_investigator']
+        self.sites = trial_json['sites']
+        self.population = trial_json['study_population_description']
+        self.diseases = trial_json['diseases']
