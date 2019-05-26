@@ -1,4 +1,4 @@
-from flask import Flask, session, jsonify, redirect, render_template
+from flask import Flask, session, jsonify, redirect, render_template, request
 from flask_session import Session
 from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
@@ -105,18 +105,16 @@ def home():
     return html
 
 @app.route('/')
-def test():
+def showtrials():
     return render_template('welcome.html')
 
 @app.route('/cms/authenticate')
 def cmsauthenticate():
     return cms.authorize(callback='http://localhost:5000/cmsredirect')
 
-
 @app.route('/va/authenticate')
 def vaauthenticate():
     return va.authorize(callback='http://localhost:5000/varedirect')
-
 
 @app.route('/cmsredirect')
 def cmsredirect():
@@ -193,58 +191,9 @@ def getInfo():
     session['index'] = 0
     return redirect("/")
 
-@app.route('/displayInfo')
-def displayInfo():
-    trials = session.get('trials', None)
-    index = session['index']
-    curTrial = trials[session['index']]
-    b1, b2, b3, b4 = False, False, False, False
-    if(index != 0):
-        b2 = True
-    if(index >= 2):
-        b1 = True
-    if(index != len(trials)-1):
-        b3 = True
-    if(index <= len(trials)-3):
-        b4 = True
-    s = ""
-    if(b1):
-        inDif = min(5, index)
-        s += nl('<button type="button" onclick="location.href = &quot;/backFive&quot;;" id="logoutButton">Go back '+str(inDif)+'</button>')
-    if(b2):
-        s += nl('<button type="button" onclick="location.href = &quot;/backOne&quot;;" id="logoutButton">Go back 1</button>')
-    if(b3):
-        s += nl('<button type="button" onclick="location.href = &quot;/forOne&quot;;" id="logoutButton">Go forward 1</button>')
-    if(b4):
-        inDif = min(5, len(trials)-1-index)
-        s += nl('<button type="button" onclick="location.href = &quot;/forFive&quot;;" id="logoutButton">Go forward '+str(inDif)+'</button>')
-    s += nl('<button type="button" onclick="location.href = &quot;/&quot;;" id="logoutButton">Back to Home</button>')
-    return nl("Trial Code: " + curTrial.id) \
-            + nl("Trial Title: " + curTrial.title) \
-            + nl("Trial Summary: " + curTrial.summary) \
-            + s
-
-@app.route('/backOne')
-def back_one():
-	session['index'] = session['index'] - 1
-	return redirect("/displayInfo")
-	
-@app.route('/forOne')
-def for_one():
-	session['index'] = session['index'] + 1
-	return redirect("/displayInfo")
-
-@app.route('/backFive')
-def back_five():
-	session['index'] = session['index'] - 5
-	session['index'] = max(0, session['index'])
-	return redirect("/displayInfo")
-	
-@app.route('/forFive')
-def for_five():
-	session['index'] = session['index'] + 5
-	session['index'] = min(session['numTrials']-1, session['index'])
-	return redirect("/displayInfo")
+@app.route('/trial')
+def trial():
+    return render_template('trial.html')
 
 @app.route('/logout')
 def logout():

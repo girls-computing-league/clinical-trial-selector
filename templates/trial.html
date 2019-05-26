@@ -1,22 +1,26 @@
 {% extends "patient.html" %}
 
 {% block title %}
-    Clinical Trials Selector
+    Clinical Trials Browser
 {% endblock %}
 
 {% block header %}
-    Clinical Trials Selector
+    Browse Trial # {{request.args.get('id', 'not found')}}
+{% endblock %}
+
+{% block extra_button %}
+    <a class="btn btn-primary" href="/">All Trials</a>
 {% endblock %}
 
 {% block pt_main %}
     <ul class="nav nav-tabs" id="myTab">
-        <li class="nav-item active"><a class="nav-link active" href="#trials" data-toggle="tab">Trials</a></li>
-        <li class="nav-item"><a class="nav-link" href="#messages" data-toggle="tab">Messages</a></li>
-        <li class="nav-item"><a class="nav-link" href="#settings" data-toggle="tab">Settings</a></li>
+        <li class="nav-item active"><a class="nav-link active" href="#info" data-toggle="tab">Info</a></li>
+        <li class="nav-item"><a class="nav-link" href="#diseases" data-toggle="tab">Diseases</a></li>
+        <li class="nav-item"><a class="nav-link" href="#locations" data-toggle="tab">Locations</a></li>
     </ul> 
-            
+        
     <div class="tab-content">
-        <div class="tab-pane active" id="trials">
+        <div class="tab-pane active" id="info">
             <br>
             {%- if session["trials"] %}
                 <table class="custom-table">
@@ -37,7 +41,7 @@
                                 {%- if trial.code_ncit==code["ncit"] %}
                                     {%- set ns.found = true %}
                                     <tr class="toggler">
-                                        <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
+                                        <td><a href="#">{{ trial.id }}</a></td>
                                         <td>{{ trial.title }}</td>
                                     </tr>
                                 {%- endif %}
@@ -54,7 +58,7 @@
                 <a class="btn btn-primary" href="/getInfo">Find Clinical Trials</a>
             {% endif %}
         </div><!--/tab-pane-->
-        <div class="tab-pane" id="messages">
+        <div class="tab-pane" id="diseases">
             
             <h2></h2>
             
@@ -72,7 +76,7 @@
             </ul> 
         
         </div><!--/tab-pane-->
-        <div class="tab-pane" id="settings">
+        <div class="tab-pane" id="locations">
                 
             
             <hr>

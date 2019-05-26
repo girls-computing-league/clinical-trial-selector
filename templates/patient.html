@@ -4,11 +4,14 @@
     <hr>
     <div class="container bootstrap snippet">
         <div class="row">
-            <div class="col-sm-10">
-                <h1>Clinical Trials Selector</h1>
+            <div class="col-sm-9">
+                <h1>{% block header %}{% endblock %}</h1>
             </div>
             <div class="col">
-                <a class="btn btn-primary float-right" href="/logout">Logout</a>
+                    <span class="float-right">
+                        {% block extra_button %}{% endblock%}
+                        <a class="btn btn-primary" href="/logout">Logout</a>
+                    </span>
             </div>
         </div>
     </div>
