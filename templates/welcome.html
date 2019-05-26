@@ -1,5 +1,9 @@
 {% extends "bootstrap/base.html" %}
 
+{% block title %}
+Clinical Trials Selector
+{% endblock %}
+
 {% block styles %}
 {{super()}}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">  
@@ -15,81 +19,70 @@
     <hr>
     <div class="container bootstrap snippet">
         <div class="row">
-            <div class="col-sm-10"><h1>Clinical Trials Selector</h1></div>
+            <div class="col-sm-10">
+                <h1>Clinical Trials Selector</h1>
+            </div>
+            <div class="col">
+                <a class="btn btn-primary" href="/logout">Logout</a>
+            </div>
         </div>
+    </div>
+    <hr>
+    <div class="container bootstrap snippet">
         <div class="row">
             <div class="col-sm-3"><!--left col-->
-                
-            <ul class="list-group">
-                <li class="list-group-item text-muted">VA Patient Info</li>
-                <li class="list-group-item text-right"><span class="float-left"><strong>Name</strong></span> 2.13.2014</li>
-                <li class="list-group-item text-right"><span class="float-left"><strong>ID</strong></span> 2.13.2014</li>
-                <li class="list-group-item text-right"><span class="float-left"><strong>Age</strong></span> Yesterday</li>
-                <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span> Joseph Doe</li>                
-            </ul> 
+                    
+                <ul class="list-group">
+                    <li class="list-group-item text-muted">
+                        VA Patient Info
+                        {% if not session["va_patient"] %}
+                            <a class="btn-sm btn-primary float-right" href="/va/authenticate">Login</a>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item text-right"><span class="float-left"><strong>Name</strong></span>{{ session["va_name"]}}</li>
+                    <li class="list-group-item text-right"><span class="float-left"><strong>ID</strong></span>{{ session["va_patient"]}}</li>
+                    <li class="list-group-item text-right"><span class="float-left"><strong>DOB</strong></span>{{ session["va_birthdate"]}}</li>
+                    <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span>{{ session["va_gender"]}}</li>                
+                </ul> 
 
-            <ul class="list-group">
-                    <li class="list-group-item text-muted">CMS Patient Info</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Name</strong></span> 2.13.2014</li>
+                <br>
+
+                <ul class="list-group">
+                    <li class="list-group-item text-muted">
+                        CMS Patient Info
+                        {% if not session["cms_patient"] %}
+                            <a class="btn-sm btn-primary float-right" href="/cms/authenticate">Login</a>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item text-right"><span class="float-left"><strong>Name</strong></span>{{ session["cms_name"]}}</li>
                     <li class="list-group-item text-right"><span class="float-left"><strong>ID</strong></span> {{ session["cms_patient"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Age</strong></span> Yesterday</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span> Joseph Doe</li>                
-            </ul> 
-    
-            <div class="card">
-                <div class="card-header">Website <i class="fa fa-link fa-1x"></i></div>
-                <div class="card-body"><a href="http://bootnipets.com">bootnipets.com</a></div>
-            </div>
-            
-            
-            <ul class="list-group">
-                <li class="list-group-item text-muted">Activity <i class="fa fa-dashboard fa-1x"></i></li>
-                <li class="list-group-item text-right"><span class="float-left"><strong>Shares</strong></span> 125</li>
-                <li class="list-group-item text-right"><span class="float-left"><strong>Likes</strong></span> 13</li>
-                <li class="list-group-item text-right"><span class="float-left"><strong>Posts</strong></span> 37</li>
-                <li class="list-group-item text-right"><span class="float-left"><strong>Followers</strong></span> 78</li>
-            </ul> 
-                
-            <div class="card">
-                <div class="card-header">Social Media</div>
-                <div class="card-body">
-                    <i class="fa fa-facebook fa-2x"></i> <i class="fa fa-github fa-2x"></i> <i class="fa fa-twitter fa-2x"></i> <i class="fa fa-pinterest fa-2x"></i> <i class="fa fa-google-plus fa-2x"></i>
-                </div>
-            </div>
+                    <li class="list-group-item text-right"><span class="float-left"><strong>Age</strong></span> {{ session["cms_birthdate"]}}</li>
+                    <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span> {{ session["cms_gender"]}}</li>                
+                </ul>     
             
             </div><!--/col-3-->
             <div class="col-sm-9">
                 
                 <ul class="nav nav-tabs" id="myTab">
-                    <li class="nav-item active"><a class="nav-link" href="#home" data-toggle="tab">Home</a></li>
+                    <li class="nav-item active"><a class="nav-link active" href="#trials" data-toggle="tab">Trials</a></li>
                     <li class="nav-item"><a class="nav-link" href="#messages" data-toggle="tab">Messages</a></li>
                     <li class="nav-item"><a class="nav-link" href="#settings" data-toggle="tab">Settings</a></li>
                 </ul> 
 
                 <div class="container">
+
+                    
+                <div class="tab-content">
+                    <div class="tab-pane active" id="trials">
+                        <br>
                         <table class="custom-table">
                             <thead>
                                 <tr>
-                                    <th>Page Name</th>
-                                    <th>Light House Report Filename</th>
-                                    <th>Page Id</th>
-                                    <th>Sess Id</th>
-                                    <th>Child Id</th>
-                                    <th>Gen Id</th>
-                                    <th>Group Name</th>
-                                    <th>Host Id</th>
-                                    <th>Browser Type</th>
-                                    <th>Performance Score</th>
-                                    <th>Accessibility Score</th>
-                                    <th>PWA Score</th>
-                                    <th>Best Practice Score</th>
-                                    <th>SEO Score</th>
-                                    <th>Frst Contntful Paint</th>
-                                    <th>Frst Meaningful Paint</th>
-                                    <th>TTI</th>
-                                    <th>Speed Index</th>
-                                    <th>Frst CPU Idle</th>
-                                    <th>Estimated Input Latency</th>
+                                    <th> </th>
+                                    <th>Trial Id</th>
+                                    <th>Date</th>
+                                    <th>Attr 1</th>
+                                    <th>Attr 2</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -102,103 +95,10 @@
                                     <td>0</td>
                                     <td>0</td>
                                     <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
                                 </tr>
                                 <tr class="toggler toggler1">
                                     <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
                                     <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler toggler1">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler toggler1">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler toggler1">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
                                     <td>0</td>
                                     <td>0</td>
                                 </tr>
@@ -601,127 +501,8 @@
                                 </tr>
                             </tbody>
                         </table>
-                </div>
-                    
-                <div class="tab-content">
-                    <div class="tab-pane active" id="home">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                <th>#</th>
-                                <th>Label 1</th>
-                                <th>Label 2</th>
-                                <th>Label 3</th>
-                                <th>Label </th>
-                                <th>Label </th>
-                                <th>Label </th>
-                                </tr>
-                            </thead>
-                            <tbody id="items">
-                                <tr>
-                                <td>1</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                </tr>
-                                <tr>
-                                <td>2</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                </tr>
-                                <tr>
-                                <td>3</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                </tr>
-                                <tr>
-                                <td>4</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                </tr>
-                                <tr>
-                                <td>5</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                </tr>
-                                <tr>
-                                <td>6</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                </tr>
-                                <tr>
-                                <td>7</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                </tr>
-                                <tr>
-                                <td>8</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                </tr>
-                                <tr>
-                                <td>9</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                </tr>
-                                <tr>
-                                <td>10</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                <td>Table cell</td>
-                                </tr>
-                            </tbody>
-                            </table>
-                            <hr>
-                            <div class="row">
-                                <div class="col-md-4 col-md-offset-4 text-center">
-                                    <ul class="pagination" id="myPager"></ul>
-                                </div>
-                            </div>
-                        </div><!--/table-resp-->
                         
-                        <hr>
-                    
-                    </div><!--/tab-pane-->
+                    </div>
                     <div class="tab-pane" id="messages">
                         
                         <h2></h2>

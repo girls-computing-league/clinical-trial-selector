@@ -124,8 +124,13 @@ def cmsredirect():
     session['cms_access_token'] = resp['access_token']
     session['cms_patient'] = resp['patient']
     session.pop("trials", None)
+    pat_token = {"mrn": resp["patient"], "token": resp["access_token"]}
+    pat = hack.CMSPatient(resp['patient'], pat_token)
+    pat.load_demographics()
+    session['cms_gender'] = pat.gender
+    session['cms_birthdate'] = pat.birthdate
+    session['cms_name'] = pat.name
     return redirect('/cms/authenticated')
-
 
 @app.route('/varedirect')
 def varedirect():
@@ -133,6 +138,12 @@ def varedirect():
     session['va_access_token'] = resp['access_token']
     session['va_patient'] = resp['patient']
     session.pop("trials", None)
+    pat_token = {"mrn": resp["patient"], "token": resp["access_token"]}
+    pat = hack.Patient(resp['patient'], pat_token)
+    pat.load_demographics()
+    session['va_gender'] = pat.gender
+    session['va_birthdate'] = pat.birthdate
+    session['va_name'] = pat.name
     return redirect('/va/authenticated')
 
 
