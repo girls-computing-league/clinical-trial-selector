@@ -1,14 +1,13 @@
-{% extends "bootstrap/base.html" %}
+{% extends "base.html" %}
 
 {% block title %}
-Clinical Trials Selector
+    Clinical Trials Selector
 {% endblock %}
 
 {% block styles %}
-{{super()}}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">  
-<link rel="stylesheet" href="{{ url_for('static', filename='accordion.css')}}">  
-{% endblock %}
+    {{super()}}
+    <link rel="stylesheet" href="{{ url_for('static', filename='accordion.css')}}">  
+{%- endblock %}
 
 {% block scripts %}
 {{super()}}
@@ -36,7 +35,7 @@ Clinical Trials Selector
                 <ul class="list-group">
                     <li class="list-group-item text-muted">
                         VA Patient Info
-                        {% if not session["va_patient"] %}
+                        {%- if not session["va_patient"] %}
                             <a class="btn-sm btn-primary float-right" href="/va/authenticate">Login</a>
                         {% endif %}
                     </li>
@@ -51,7 +50,7 @@ Clinical Trials Selector
                 <ul class="list-group">
                     <li class="list-group-item text-muted">
                         CMS Patient Info
-                        {% if not session["cms_patient"] %}
+                        {%- if not session["cms_patient"] %}
                             <a class="btn-sm btn-primary float-right" href="/cms/authenticate">Login</a>
                         {% endif %}
                     </li>
@@ -71,10 +70,9 @@ Clinical Trials Selector
                 </ul> 
                     
                 <div class="tab-content">
-
                     <div class="tab-pane active" id="trials">
                         <br>
-                        {% if session["trials"] %}
+                        {%- if session["trials"] %}
                             <table class="custom-table">
                                 <thead>
                                     <tr>
@@ -83,33 +81,32 @@ Clinical Trials Selector
                                     </tr>
                                 </thead>
 
-                                {% for code in session["codes"] %}
+                                {%- for code in session["codes"] %}
                                     <tbody>
                                         <tr>
                                             <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i>   Trials for condition: {{ code["ncit_desc"] }} ({{code["ncit"]}})</button> </td>
                                         </tr>
-                                        {% set ns = namespace(found=false) %}
-                                        {% for trial in session["trials"] %}
-                                            {% if trial.code_ncit==code["ncit"] %}
-                                                {% set ns.found = true %}
+                                        {%- set ns = namespace(found=false) %}
+                                        {%- for trial in session["trials"] %}
+                                            {%- if trial.code_ncit==code["ncit"] %}
+                                                {%- set ns.found = true %}
                                                 <tr class="toggler">
                                                     <td><a href="#">{{ trial.id }}</a></td>
                                                     <td>{{ trial.title }}</td>
                                                 </tr>
-                                            {% endif %}
-                                        {% endfor %}
-                                        {% if ns.found==false %}
+                                            {%- endif %}
+                                        {%- endfor %}
+                                        {%- if ns.found==false %}
                                                 <tr class="toggler">
                                                     <td colspan=2>No eligible trials found for this condition</td>
                                                 </tr>
-                                        {% endif %}
+                                        {%- endif %}
                                     </tbody>
-                                {% endfor %}
+                                {%- endfor %}
                             </table>
                         {% else %}
                             <a class="btn btn-primary" href="/getInfo">Find Clinical Trials</a>
                         {% endif %}
-                        
                     </div><!--/tab-pane-->
                     <div class="tab-pane" id="messages">
                         
@@ -200,9 +197,8 @@ Clinical Trials Selector
                             </div>
                         </form>
                     </div><!--/tab-pane-->
-                    
                 </div><!--/tab-content-->
-    
+                    
             </div><!--/col-9-->
         </div><!--/row-->
     </div>                                                        
