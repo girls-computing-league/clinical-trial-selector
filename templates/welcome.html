@@ -28,6 +28,7 @@ Clinical Trials Selector
         </div>
     </div>
     <hr>
+
     <div class="container bootstrap snippet">
         <div class="row">
             <div class="col-sm-3"><!--left col-->
@@ -68,442 +69,444 @@ Clinical Trials Selector
                     <li class="nav-item"><a class="nav-link" href="#messages" data-toggle="tab">Messages</a></li>
                     <li class="nav-item"><a class="nav-link" href="#settings" data-toggle="tab">Settings</a></li>
                 </ul> 
-
-                <div class="container">
-
                     
                 <div class="tab-content">
+
                     <div class="tab-pane active" id="trials">
                         <br>
-                        <table class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th> </th>
-                                    <th>Trial Id</th>
-                                    <th>Date</th>
-                                    <th>Attr 1</th>
-                                    <th>Attr 2</th>
-                                </tr>
-                            </thead>
-                            
-                            <tbody>
-                                <tr>
-                                    <td colspan="20" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i>   P_index</button> </td>
-                                </tr>
-                                <tr class="toggler toggler1">
-                                    <td rowspan="5"></td>
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler toggler1">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                
-                            </tbody>
-                            <tbody>
-                                <tr>
-                                    <td colspan="20" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>    P_index 2</button></td>
-                                </tr>
+                        {% if session["trials"] %}
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th> </th>
+                                        <th>Trial Id</th>
+                                        <th>Date</th>
+                                        <th>Attr 1</th>
+                                        <th>Attr 2</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr>
+                                        <td colspan="20" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i>   P_index</button> </td>
+                                    </tr>
+                                    <tr class="toggler toggler1">
+                                        <td rowspan="5"></td>
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler toggler1">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    
+                                </tbody>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="20" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>    P_index 2</button></td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td rowspan="11"></td>
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                </tbody>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="20" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   P_index 3</button></td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td rowspan="5"></td>
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
                                 <tr class="toggler">
-                                    <td rowspan="11"></td>
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr class="toggler">
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                </tbody>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="20" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   P_index 4</button></td>
+                                    </tr>
                                 <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
+                                    <td rowspan="2"></td>
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
                                 <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                            </tbody>
-                            <tbody>
-                                <tr>
-                                    <td colspan="20" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   P_index 3</button></td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td rowspan="5"></td>
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                            <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                            </tbody>
-                            <tbody>
-                                <tr>
-                                    <td colspan="20" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   P_index 4</button></td>
-                                </tr>
-                            <tr class="toggler">
-                                <td rowspan="2"></td>
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                            <tr class="toggler">
-                                    <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>23</td>
-                                    <td>67</td>
-                                    <td>100</td>
-                                    <td>4420</td>
-                                    <td>4420</td>
-                                    <td>15360</td>
-                                    <td>16150</td>
-                                    <td>21750</td>
-                                    <td>291</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                        <td><a href="#">lighthouse+0_0_0_0_0_0_0_0_0.html</a></td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>12</td>
+                                        <td>23</td>
+                                        <td>67</td>
+                                        <td>100</td>
+                                        <td>4420</td>
+                                        <td>4420</td>
+                                        <td>15360</td>
+                                        <td>16150</td>
+                                        <td>21750</td>
+                                        <td>291</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <a class="btn btn-primary" href="/getInfo">Find Clinical Trials</a>
+                        {% endif %}
                         
-                    </div>
+                    </div><!--/tab-pane-->
                     <div class="tab-pane" id="messages">
                         
                         <h2></h2>
