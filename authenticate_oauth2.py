@@ -187,7 +187,6 @@ def getInfo():
         patients.append(pat)
         trials += pat.trials
         codes += pat.codes_ncit
-    print(type(trials))
     session['codes'] = codes
     session['trials'] = trials
     session['numTrials'] = len(trials)
