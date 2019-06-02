@@ -28,7 +28,7 @@
                     {%- for code in session["codes"] %}
                         <tbody>
                             <tr>
-                                <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i>   Trials for condition: {{ code["ncit_desc"] }} ({{code["ncit"]}})</button> </td>
+                                <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   Trials for condition: {{ code["ncit_desc"] }} ({{code["ncit"]}})</button> </td>
                             </tr>
                             {%- set ns = namespace(found=false) %}
                             {%- for trial in session["trials"] %}
