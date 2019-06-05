@@ -11,6 +11,7 @@
 {% block pt_main %}
     <ul class="nav nav-tabs" id="myTab">
         <li class="nav-item active"><a class="nav-link active" href="#trials" data-toggle="tab">Trials</a></li>
+        <li class="nav-item"><a class="nav-link" href="#conditions" data-toggle="tab">Conditions w/o Trials</a></li>
     </ul> 
             
     <div class="tab-content">
@@ -27,12 +28,14 @@
 
                     {%- for code in session["codes"] %}
                         <tbody>
-                            <tr>
-                                <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   Trials for condition: {{ code["ncit_desc"] }} ({{code["ncit"]}})</button> </td>
-                            </tr>
                             {%- set ns = namespace(found=false) %}
                             {%- for trial in session["trials"] %}
                                 {%- if trial.code_ncit==code["ncit"] %}
+                                    {%- if ns.found==false %}
+                                        <tr>
+                                            <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   Trials for condition: {{ code["ncit_desc"] }} ({{code["ncit"]}})</button> </td>
+                                        </tr>
+                                    {% endif %}
                                     {%- set ns.found = true %}
                                     <tr class="toggler">
                                         <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
@@ -40,11 +43,6 @@
                                     </tr>
                                 {%- endif %}
                             {%- endfor %}
-                            {%- if ns.found==false %}
-                                    <tr class="toggler">
-                                        <td colspan=2>No eligible trials found for this condition</td>
-                                    </tr>
-                            {%- endif %}
                         </tbody>
                     {%- endfor %}
                 </table>
@@ -52,6 +50,34 @@
                 <a class="btn btn-primary" href="/getInfo">Find Clinical Trials</a>
             {% endif %}
         </div><!--/tab-pane-->
+        <div class="tab-pane" id="conditions">
+            <br>
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Condition</th>
+                        <th>Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for code in session["codes"] %}
+                        {%- set ns = namespace(found = false) %}
+                        {%- for trial in session["trials"] %}
+                            {%- if trial.code_ncit==code["ncit"] %}
+                                {%- set ns.found = true %}
+                            {%- endif %}
+                        {%- endfor %}
+                        {%- if ns.found==false %}
+                            <tr>
+                                <td class="page-header">{{ code["ncit_desc"] }}</td>
+                                <td class="page-header">{{ code["ncit"] }}</td>
+                            </tr>
+                        {%- endif %}
+                    {%- endfor %}
+                </tbody>
+            </table>
+        </div><!--/tab-pane-->
     </div><!--/tab-content-->
+
 
 {% endblock %}

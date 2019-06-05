@@ -69,7 +69,7 @@
                 {%- for measure in ns.trial.measures %}
                     <tbody>
                         <tr>
-                            <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i> {{measure["name"]}}</button> </td>
+                            <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{measure["name"]}}</button> </td>
                         </tr>
                                 <tr class="toggler">
                                     <td>{{ measure["description"] }}</td>
@@ -92,7 +92,7 @@
                         {%- for disease in ns.trial.diseases %}
                             <tbody>
                                 <tr>
-                                    <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i> {{disease["preferred_name"]}}</button> </td>
+                                    <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{disease["preferred_name"]}}</button> </td>
                                 </tr>
                                         <tr class="toggler">
                                             <td>{{ disease["nci_thesaurus_concept_id"] }}</td>
@@ -116,7 +116,7 @@
                         {%- for site in ns.trial.sites %}
                             <tbody>
                                 <tr>
-                                    <td colspan="3" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle fa-minus-circle"></i> {{site["org_name"]}}</button> </td>
+                                    <td colspan="3" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{site["org_name"]}}</button> </td>
                                 </tr>
                                         <tr class="toggler">
                                             <td>
