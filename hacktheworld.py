@@ -185,7 +185,7 @@ class CombinedPatient:
         self.conditions = []
 
     def load_data(self):
-        self.clear_collections()
+        self.clear_collections() 
         if self.VAPatient is not None:
             self.add_patient_data(self.VAPatient)
         if self.CMSPatient is not None:
