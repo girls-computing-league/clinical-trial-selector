@@ -201,8 +201,10 @@ class CombinedPatient:
                 self.trials_by_ncit.add({"ncit": code, "trials": trials})
             else:
                 self.ncit_without_trials.add(code)
+        self.loaded = True
 
     def add_patient_data(self,patient):
+        patient.load_all()
         self.trials |= set(patient.trials)
         self.ncit_codes |= set(patient.codes_ncit)
         self.conditions |= set(patient.conditions)
