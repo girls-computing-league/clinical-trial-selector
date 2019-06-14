@@ -179,10 +179,12 @@ class CombinedPatient:
         self.clear_collections()
     
     def clear_collections(self):
-        self.trials = []
-        self.codes = []
-        self.ncit_codes = []
-        self.conditions = []
+        self.trials = set()
+        self.codes = set()
+        self.ncit_codes = set()
+        self.conditions = set()
+        self.trials_by_ncit = set()
+        self.ncit_without_trials = set()
 
     def load_data(self):
         self.clear_collections() 
@@ -190,8 +192,18 @@ class CombinedPatient:
             self.add_patient_data(self.VAPatient)
         if self.CMSPatient is not None:
             self.add_patient_data(self.CMSPatient)
+        for code in self.ncit_codes:
+            trials = set()
+            for trial in self.trials:
+                if trial.code_ncit == code["ncit"]:
+                    trials.add(trial)
+            if trials:
+                self.trials_by_ncit.add({"ncit": code, "trials": trials})
+            else:
+                self.ncit_without_trials.add(code)
 
     def add_patient_data(self,patient):
-        self.trials += patient.trials
-        self.ncit_codes += patient.codes_ncit
-        self.conditions += patient.conditions
+        self.trials |= set(patient.trials)
+        self.ncit_codes |= set(patient.codes_ncit)
+        self.conditions |= set(patient.conditions)
+
