@@ -170,3 +170,28 @@ class Trial:
         self.sites = trial_json['sites']
         self.population = trial_json['study_population_description']
         self.diseases = trial_json['diseases']
+
+class CombinedPatient:
+    def __init__ (self):
+        self.VAPatient == None
+        self.CMSPatient == None
+        self.loaded == False
+        self.clear_collections()
+    
+    def clear_collections(self):
+        self.trials = []
+        self.codes = []
+        self.ncit_codes = []
+        self.conditions = []
+
+    def load_data(self):
+        self.clear_collections()
+        if self.VAPatient is not None:
+            self.add_patient_data(self.VAPatient)
+        if self.CMSPatient is not None:
+            self.add_patient_data(self.CMSPatient)
+
+    def add_patient_data(self,patient):
+        self.trials += patient.trials
+        self.ncit_codes += patient.codes_ncit
+        self.conditions += patient.conditions
