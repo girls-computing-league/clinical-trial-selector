@@ -172,10 +172,10 @@ class Trial:
         self.diseases = trial_json['diseases']
 
 class CombinedPatient:
-    def __init__ (self):
-        self.VAPatient == None
-        self.CMSPatient == None
-        self.loaded == False
+    def __init__(self):
+        self.VAPatient = None
+        self.CMSPatient = None
+        self.loaded = False
         self.clear_collections()
     
     def clear_collections(self):
