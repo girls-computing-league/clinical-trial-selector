@@ -119,6 +119,7 @@ def vaauthenticate():
 @app.route('/cmsredirect')
 def cmsredirect():
     resp = cms.authorized_response()
+    combined = session.get("combined_patient", hack.CombinedPatient())
     session['cms_access_token'] = resp['access_token']
     session['cms_patient'] = resp['patient']
     session.pop("trials", None)
@@ -128,11 +129,14 @@ def cmsredirect():
     session['cms_gender'] = pat.gender
     session['cms_birthdate'] = pat.birthdate
     session['cms_name'] = pat.name
+    combined.CMSPatient = pat
+    session['combined_patient'] = combined
     return redirect('/cms/authenticated')
 
 @app.route('/varedirect')
 def varedirect():
     resp = va.authorized_response()
+    combined = session.get("combined_patient", hack.CombinedPatient())
     session['va_access_token'] = resp['access_token']
     session['va_patient'] = resp['patient']
     session.pop("trials", None)
@@ -142,6 +146,8 @@ def varedirect():
     session['va_gender'] = pat.gender
     session['va_birthdate'] = pat.birthdate
     session['va_name'] = pat.name
+    combined.VAPatient = pat
+    session['combined_patient'] = combined
     return redirect('/va/authenticated')
 
 

@@ -24,7 +24,7 @@
                 <ul class="list-group">
                     <li class="list-group-item text-muted">
                         VA Patient Info
-                        {%- if not session["va_patient"] %}
+                        {%- if not session["combined_patient"] or not session["combined_patient"].VAPatient %}
                             <a class="btn-sm btn-primary float-right" href="/va/authenticate">Login</a>
                         {% endif %}
                     </li>
