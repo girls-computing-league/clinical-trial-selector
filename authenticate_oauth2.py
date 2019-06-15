@@ -199,7 +199,7 @@ def getInfo():
     '''
     session['codes'] = combined.ncit_codes
     session['trials'] = combined.trials
-    session['numTrials'] = len(combined.trials)
+    session['numTrials'] = combined.numTrials
     session['index'] = 0
     session["combined_patient"] = combined
     return redirect("/")
