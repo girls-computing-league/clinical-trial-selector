@@ -177,35 +177,40 @@ class CombinedPatient:
         self.CMSPatient = None
         self.loaded = False
         self.clear_collections()
+        self.numTrials = 0
+        self.num_conditions_with_trials = 0
     
     def clear_collections(self):
-        self.trials = set()
-        self.codes = set()
-        self.ncit_codes = set()
-        self.conditions = set()
-        self.trials_by_ncit = set()
-        self.ncit_without_trials = set()
+        self.trials = []
+        self.ncit_codes = []
+        self.trials_by_ncit = []
+        self.ncit_without_trials = []
 
     def load_data(self):
         self.clear_collections() 
         if self.VAPatient is not None:
-            self.add_patient_data(self.VAPatient)
+            self.append_patient_data(self.VAPatient)
         if self.CMSPatient is not None:
-            self.add_patient_data(self.CMSPatient)
+            self.append_patient_data(self.CMSPatient)
         for code in self.ncit_codes:
-            trials = set()
+            trials = []
             for trial in self.trials:
                 if trial.code_ncit == code["ncit"]:
-                    trials.add(trial)
+                    trials.append(trial)
             if trials:
-                self.trials_by_ncit.add({"ncit": code, "trials": trials})
+                self.trials_by_ncit.append({"ncit": code, "trials": trials})
             else:
-                self.ncit_without_trials.add(code)
+                self.ncit_without_trials.append(code)
         self.loaded = True
+        self.numTrials = len(self.trials)
+        self.num_conditions_with_trials = len(self.trials_by_ncit)
 
-    def add_patient_data(self,patient):
+    def append_patient_data(self,patient):
         patient.load_all()
-        self.trials |= set(patient.trials)
-        self.ncit_codes |= set(patient.codes_ncit)
-        self.conditions |= set(patient.conditions)
+        for trial in patient.trials:
+            if not (trial in self.trials):
+                self.trials.append(trial)
+        for code in patient.codes_ncit:
+            if not (code in self.ncit_codes):
+                self.ncit_codes.append(code)
 

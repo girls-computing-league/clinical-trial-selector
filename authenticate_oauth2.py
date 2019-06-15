@@ -130,6 +130,7 @@ def cmsredirect():
     session['cms_birthdate'] = pat.birthdate
     session['cms_name'] = pat.name
     combined.CMSPatient = pat
+    combined.loaded = False
     session['combined_patient'] = combined
     return redirect('/cms/authenticated')
 
@@ -147,6 +148,7 @@ def varedirect():
     session['va_birthdate'] = pat.birthdate
     session['va_name'] = pat.name
     combined.VAPatient = pat
+    combined.loaded = False
     session['combined_patient'] = combined
     return redirect('/va/authenticated')
 
@@ -170,9 +172,12 @@ def vaauthenticated():
 
 @app.route('/getInfo')
 def getInfo():
+    combined = session.get("combined_patient", hack.CombinedPatient())
     auts = authentications()
     if (not auts):
         return redirect("/")
+    combined.load_data()
+    '''
     patients = []
     trials = []
     codes = []
@@ -191,10 +196,12 @@ def getInfo():
         patients.append(pat)
         trials += pat.trials
         codes += pat.codes_ncit
-    session['codes'] = codes
-    session['trials'] = trials
-    session['numTrials'] = len(trials)
+    '''
+    session['codes'] = combined.ncit_codes
+    session['trials'] = combined.trials
+    session['numTrials'] = len(combined.trials)
     session['index'] = 0
+    session["combined_patient"] = combined
     return redirect("/")
 
 @app.route('/trial')
