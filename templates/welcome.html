@@ -67,6 +67,33 @@
                 </tbody>
             </table>
         </div><!--/tab-pane-->
+        <div class="tab-pane" id="matches">
+            <br>
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Original Description</th>
+                        <th>Original Code</th>
+                        <th>Codeset</th>
+                        <th>New Description</th>
+                        <th>New Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if session["combined_patient"] %}
+                        {%- for match in session["combined_patient"].matches %}
+                            <tr>
+                                <td class="page-header">{{ match["orig_desc"] }}</td>
+                                <td class="page-header">{{ match["orig_code"] }}</td>
+                                <td class="page-header">{{ match["codeset"] }}</td>
+                                <td class="page-header">{{ match["new_desc"] }}</td>
+                                <td class="page-header">{{ match["new_code"] }}</td>
+                            </tr>
+                        {%- endfor %}
+                    {%- endif %}
+                </tbody>
+            </table>
+        </div><!--/tab-pane-->
     </div><!--/tab-content-->
 
 

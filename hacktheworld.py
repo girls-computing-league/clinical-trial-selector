@@ -33,10 +33,13 @@ class Patient:
     def load_codes(self):
         # self.codes, self.names = pt.find_all_codes(self.conditions)
         self.codes_ncit = []
+        self.matches = []
         for code_snomed in self.codes_snomed:
             code_ncit = self.snomed2ncit(code_snomed)
             if (code_ncit["ncit"] != "999999"):
                 self.codes_ncit.append(code_ncit)
+                orig_desc = self.conditions[self.codes_snomed.index(code_snomed)]
+                self.matches.append({"orig_desc":orig_desc, "orig_code":code_snomed, "codeset":"SNOMED", "new_code":code_ncit["ncit"], "new_desc":code_ncit["ncit_desc"]})
 
     def find_trials(self):
         logging.info("Searching for trials...")
@@ -127,10 +130,13 @@ class CMSPatient(Patient):
 
     def load_codes(self):
         self.codes_ncit = []
+        self.matches = []
         for code_icd9 in self.codes_icd9:
             code_ncit = self.icd2ncit(code_icd9)
             if (code_ncit["ncit"] != "999999"):
                 self.codes_ncit.append(code_ncit)
+                orig_desc = self.conditions[self.codes_icd9.index(code_icd9)]
+                self.matches.append({"orig_desc":orig_desc, "orig_code":code_icd9, "codeset":"ICD-9", "new_code":code_ncit["ncit"], "new_desc":code_ncit["ncit_desc"]})
 
     def icd2ncit(self, code_icd9):
         return self.code2ncit(code_icd9, self.codes_icd9, "ICD9CM")
@@ -185,6 +191,7 @@ class CombinedPatient:
         self.ncit_codes = []
         self.trials_by_ncit = []
         self.ncit_without_trials = []
+        self.matches = []
 
     def load_data(self):
         self.clear_collections() 
@@ -213,4 +220,5 @@ class CombinedPatient:
         for code in patient.codes_ncit:
             if not (code in self.ncit_codes):
                 self.ncit_codes.append(code)
+        self.matches += patient.matches
 
