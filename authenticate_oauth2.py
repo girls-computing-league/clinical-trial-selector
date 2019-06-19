@@ -177,26 +177,7 @@ def getInfo():
     if (not auts):
         return redirect("/")
     combined.load_data()
-    '''
-    patients = []
-    trials = []
-    codes = []
-    for source in auts:
-        if source == 'va':
-            mrn = session['va_patient']
-            token = session.get('va_access_token')
-            pat_token = {"mrn": mrn, "token": token}
-            pat = hack.Patient(session['va_patient'], pat_token)
-        if source == 'cms':
-            mrn = session['cms_patient']
-            token = session.get('cms_access_token')
-            pat_token = {"mrn": mrn, "token": token}
-            pat = hack.CMSPatient(session['cms_patient'], pat_token)
-        pat.load_all()
-        patients.append(pat)
-        trials += pat.trials
-        codes += pat.codes_ncit
-    '''
+
     session['codes'] = combined.ncit_codes
     session['trials'] = combined.trials
     session['numTrials'] = combined.numTrials
