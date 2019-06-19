@@ -60,6 +60,7 @@ def load_conditions(mrn, token):
     codes_snomed = []
     while more_pages:
         api_res = get_api(token, url)
+        logging.debug("Conditions JSON: {}".format(json.dumps(api_res)))
         next_url = url
         for condition in api_res["entry"]:
             cond_str = rchop(condition["resource"]["code"]["text"], " (disorder)")
