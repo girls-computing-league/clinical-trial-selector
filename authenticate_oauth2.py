@@ -16,12 +16,15 @@ Session(app)
 Bootstrap(app)
 oauth = OAuth(app)
 
+keys_fp = open("keys.json", "r")
+keys_dict = json.load(keys_fp)
+
 # specifies possible parameters for the protocol dealing with the CMS
 cms = oauth.remote_app(
     'cms',
     base_url = "https://sandbox.bluebutton.cms.gov/v1/o",
-    consumer_key = "***REMOVED***",
-    consumer_secret = "***REMOVED***",
+    consumer_key = keys_dict["cms_key"],
+    consumer_secret = keys_dict["cms_secret"],
     request_token_params = {'scope': 'profile'},
     request_token_url = None,
     access_token_url = "https://sandbox.bluebutton.cms.gov/v1/o/token/",
@@ -32,8 +35,8 @@ cms = oauth.remote_app(
 va = oauth.remote_app(
     'va',
     base_url="https://dev-api.vets.gov/",
-    consumer_key="***REMOVED***",
-    consumer_secret="***REMOVED***",
+    consumer_key = keys_dict["va_key"],
+    consumer_secret = keys_dict["va_secret"],
     request_token_params={
         'scope': 'openid offline_access profile email launch/patient veteran_status.read patient/Patient.read patient/Condition.read', "state": "12345"},
     request_token_url=None,
