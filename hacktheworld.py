@@ -19,7 +19,7 @@ class Patient:
         self.tgt = self.auth.gettgt()
 
     def load_demographics(self):
-        self.gender, self.birthdate, self.name = pt.load_demographics(self.mrn, self.token)
+        self.gender, self.birthdate, self.name, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
         logging.info("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def calculate_age(self):
@@ -124,11 +124,13 @@ class CMSPatient(Patient):
         url = "https://sandbox.bluebutton.cms.gov/v1/fhir/Patient/" + self.mrn
         headers = {"Authorization": "Bearer {}".format(self.token)}
         res = req.get(url, headers=headers)
-        fhir =res.json()
+        fhir = res.json()
         self.gender = fhir["gender"]
         self.birthdate = fhir["birthDate"]
         name = fhir["name"][0]
         self.name = "{} {}".format(name["given"][0], name["family"])
+        self.PatientJSON = res.text
+        logging.info("FHIR: {}".format(self.PatientJSON))
         logging.info("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def load_codes(self):

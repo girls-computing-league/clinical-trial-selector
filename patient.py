@@ -22,7 +22,7 @@ def load_demographics(mrn, token):
     url = DEMOGRAPHICS_URL + mrn
     api_res = get_api(token, url)
     logging.debug("Patient JSON: " + json.dumps(api_res))
-    return api_res["gender"], api_res["birthDate"], api_res["name"][0]["text"]
+    return api_res["gender"], api_res["birthDate"], api_res["name"][0]["text"], json.dumps(api_res)
 
 def load_patients(direct="va"):
     patients = {}
