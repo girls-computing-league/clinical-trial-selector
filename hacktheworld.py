@@ -105,6 +105,7 @@ class CMSPatient(Patient):
         headers = {"Authorization": "Bearer {}".format(self.token)}
         res = req.get(url, params=params, headers=headers)
         fhir = res.json()
+        logging.debug("CONDITIONS JSON: {}".format(json.dumps(fhir)))
         codes = []
         names = []
         for entry in fhir["entry"]:
