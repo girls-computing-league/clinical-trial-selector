@@ -1,0 +1,725 @@
+{
+    "resourceType": "Bundle",
+    "type": "searchset",
+    "total": 10,
+    "link": [
+        {
+            "relation": "first",
+            "url": "https://dev-api.va.gov/services/argonaut/v0/Condition?patient=36000036&page=1&_count=50"
+        },
+        {
+            "relation": "self",
+            "url": "https://dev-api.va.gov/services/argonaut/v0/Condition?patient=36000036&page=1&_count=50"
+        },
+        {
+            "relation": "last",
+            "url": "https://dev-api.va.gov/services/argonaut/v0/Condition?patient=36000036&page=1&_count=50"
+        }
+    ],
+    "entry": [
+        
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/c713161b-d848-5197-81ff-c2c5e91467a7",
+            "resource": {
+                "id": "c713161b-d848-5197-81ff-c2c5e91467a7",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2012-01-09",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "38341003",
+                            "display": "Malignant Oesophagal Neoplasm"
+                        }
+                    ],
+                    "text": "Malignant Oesophagal Neoplasm"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://argonaut.hl7.org",
+                            "code": "problem",
+                            "display": "Problem"
+                        }
+                    ]
+                },
+                "clinicalStatus": "active",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2012-01-09T21:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+        
+       
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/23c8ef65-ed2b-5678-b5f9-09d2da711fd1",
+            "resource": {
+                "id": "23c8ef65-ed2b-5678-b5f9-09d2da711fd1",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Hypotension (disorder)"
+                        }
+                    ],
+                    "text": "Hypotension (disorder)"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://argonaut.hl7.org",
+                            "code": "problem",
+                            "display": "Problem"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Chestpain"
+                        }
+                    ],
+                    "text": "Chestpain"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+        
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Dyspnea (disorder)"
+                        }
+                    ],
+                    "text": "Dyspnea (disorder)"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Esophagitis"
+                        }
+                    ],
+                    "text": "Esophagitis"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+        
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Urticaria"
+                        }
+                    ],
+                    "text": "Urticaria"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }},
+            
+          
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Heartburn"
+                        }
+                    ],
+                    "text": "Heartburn"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Actinic (Solar) Keratosis"
+                        }
+                    ],
+                    "text": "Actinic (Solar) Keratosis"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Palpitation"
+                        }
+                    ],
+                    "text": "Palpitation"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Essential Hypertension"
+                        }
+                    ],
+                    "text": "Essential Hypertension"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Senile Corneal Change"
+                        }
+                    ],
+                    "text": "Senile Corneal Change"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Generalized Atherosclerosis"
+                        }
+                    ],
+                    "text": "Generalized Atherosclerosis"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Acute Bronchitis"
+                        }
+                    ],
+                    "text": "Acute Bronchitis"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Benign Choroid Neoplasm"
+                        }
+                    ],
+                    "text": "Benign Choroid Neoplasm"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Hypothyroidism"
+                        }
+                    ],
+                    "text": "Hypothyroidism"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Abnormal Liver Function Test"
+                        }
+                    ],
+                    "text": "Abnormal Liver Function Test"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Dermatographism"
+                        }
+                    ],
+                    "text": "Dermatographism"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "444814009",
+                            "display": "Bronchitis"
+                        }
+                    ],
+                    "text": "Bronchitis"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        }
+         
+          
+        
+    ]
+}
