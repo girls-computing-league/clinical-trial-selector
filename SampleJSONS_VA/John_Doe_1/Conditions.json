@@ -25,14 +25,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2012-01-09",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "38341003",
+                            "code": "29857009",
                             "display": "Chest Pain (disorder)"
                         }
                     ],
@@ -64,14 +64,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "1201005",
                             "display": "Benign Essential Hypertension (disorder)"
                         }
                     ],
@@ -102,14 +102,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "1201005",
                             "display": "Benign Essential Hypertension (disorder)"
                         }
                     ],
@@ -141,14 +141,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "92439006",
                             "display": "Benign Thyroid Gland Neoplasm (disorder)"
                         }
                     ],
@@ -179,14 +179,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "92439006",
                             "display": "Benign Thyroid Gland Neoplasm (disorder)"
                         }
                     ],
@@ -218,14 +218,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "76948002",
                             "display": "Pain in Extremity"
                         }
                     ],
@@ -258,14 +258,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "235595009",
                             "display": "Gastroesophageal Reflux Disease (disorder)"
                         }
                     ],
@@ -297,14 +297,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "235595009",
                             "display": "Gastroesophageal Reflux Disease (disorder)"
                         }
                     ],
@@ -336,14 +336,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "40930008",
                             "display": "Hypothyroidism"
                         }
                     ],
@@ -375,14 +375,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "40930008",
                             "display": "Hypothyroidism"
                         }
                     ],
@@ -415,14 +415,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "84027009",
                             "display": "Pernicious Anemia"
                         }
                     ],
@@ -454,14 +454,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe1"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "84027009",
                             "display": "Pernicious Anemia (disorder)"
                         }
                     ],

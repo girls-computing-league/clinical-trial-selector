@@ -25,14 +25,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2012-01-09",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "38341003",
+                            "code": "187734007",
                             "display": "Malignant Oesophagal Neoplasm"
                         }
                     ],
@@ -64,14 +64,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "45007003",
                             "display": "Hypotension (disorder)"
                         }
                     ],
@@ -102,14 +102,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "29857009",
                             "display": "Chestpain"
                         }
                     ],
@@ -141,14 +141,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "267036007",
                             "display": "Dyspnea (disorder)"
                         }
                     ],
@@ -179,14 +179,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "16761005",
                             "display": "Esophagitis"
                         }
                     ],
@@ -218,14 +218,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "126485001",
                             "display": "Urticaria"
                         }
                     ],
@@ -258,14 +258,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "16331000",
                             "display": "Heartburn"
                         }
                     ],
@@ -297,14 +297,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "856006",
                             "display": "Actinic (Solar) Keratosis"
                         }
                     ],
@@ -336,14 +336,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "80313002",
                             "display": "Palpitation"
                         }
                     ],
@@ -375,14 +375,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "59621000",
                             "display": "Essential Hypertension"
                         }
                     ],
@@ -414,14 +414,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "58749007",
                             "display": "Senile Corneal Change"
                         }
                     ],
@@ -453,14 +453,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "39823006",
                             "display": "Generalized Atherosclerosis"
                         }
                     ],
@@ -492,14 +492,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "10509002",
                             "display": "Acute Bronchitis"
                         }
                     ],
@@ -531,14 +531,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "3898006",
                             "display": "Benign Choroid Neoplasm"
                         }
                     ],
@@ -570,14 +570,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "40930008",
                             "display": "Hypothyroidism"
                         }
                     ],
@@ -609,14 +609,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "166603001",
                             "display": "Abnormal Liver Function Test"
                         }
                     ],
@@ -648,14 +648,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "7632005",
                             "display": "Dermatographism"
                         }
                     ],
@@ -687,14 +687,14 @@
                 "resourceType": "Condition",
                 "patient": {
                     "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
-                    "display": "John Doe"
+                    "display": "John Doe3"
                 },
                 "dateRecorded": "2009-08-13",
                 "code": {
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "32398004",
                             "display": "Bronchitis"
                         }
                     ],

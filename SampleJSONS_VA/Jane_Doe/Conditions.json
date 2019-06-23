@@ -31,7 +31,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "10509002",
+                            "code": " 92065004",
                             "display": "Benign Colon Neoplasm (disorder)"
                         }
                     ],
@@ -69,7 +69,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "10509002",
+                            "code": " 92065004",
                             "display": "Benign Colon Neoplasm (disorder)"
                         }
                     ],
@@ -107,7 +107,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "195662009",
+                            "code": "14760008",
                             "display": "Constipation (disorder)"
                         }
                     ],
@@ -117,8 +117,8 @@
                     "coding": [
                         {
                             "system": "http://argonaut.hl7.org",
-                            "code": "problem",
-                            "display": "Problem"
+                            "code": "finding",
+                            "display": "Finding"
                         }
                     ]
                 },
@@ -145,7 +145,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "195662009",
+                            "code": "14760008",
                             "display": "Constipation (disorder)"
                         }
                     ],
@@ -155,8 +155,8 @@
                     "coding": [
                         {
                             "system": "http://hl7.org/fhir/condition-category",
-                            "code": "diagnosis",
-                            "display": "Diagnosis"
+                            "code": "finding",
+                            "display": "Finding"
                         }
                     ]
                 },
@@ -183,11 +183,11 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "38341003",
-                            "display": "Abdominal Pain (disorder)"
+                            "code": "21522001",
+                            "display": "Abdominal Pain (finding)"
                         }
                     ],
-                    "text": "Abdominal Pain (disorder)"
+                    "text": "Abdominal Pain (finding)"
                 },
                 "category": {
                     "coding": [
@@ -220,7 +220,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "38341003",
+                            "code": "193570009",
                             "display": "Cataract"
                         }
                     ],
@@ -230,8 +230,8 @@
                     "coding": [
                         {
                             "system": "http://hl7.org/fhir/condition-category",
-                            "code": "diagnosis",
-                            "display": "Diagnosis"
+                            "code": "disorder",
+                            "display": "disorder"
                         }
                     ]
                 },
@@ -257,7 +257,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "10509002",
+                            "code": "193570009",
                             "display": "Cataract  "
                         }
                     ],
@@ -267,8 +267,8 @@
                     "coding": [
                         {
                             "system": "http://argonaut.hl7.org",
-                            "code": "problem",
-                            "display": "Problem"
+                            "code": "disorder",
+                            "display": "Disorder"
                         }
                     ]
                 },
@@ -295,7 +295,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "10509002",
+                            "code": "193570009",
                             "display": "Cataract"
                         }
                     ],
@@ -305,8 +305,8 @@
                     "coding": [
                         {
                             "system": "http://hl7.org/fhir/condition-category",
-                            "code": "diagnosis",
-                            "display": "Diagnosis"
+                            "code": "disorder",
+                            "display": "Disorder"
                         }
                     ]
                 },
@@ -333,7 +333,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "1201005",
                             "display": "Benign Essential Hypertension (disorder)"
                         }
                     ],
@@ -371,7 +371,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "1201005",
                             "display": "Benign Essential Hypertension (disorder)"
                         }
                     ],
@@ -409,7 +409,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "59621000",
                             "display": " Essential Hypertension (disorder)"
                         }
                     ],
@@ -447,7 +447,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "59621000",
                             "display": " Essential Hypertension (disorder)"
                         }
                     ],
@@ -485,7 +485,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "11851006",
                             "display": "Mitral Valve Disorder (disorder)"
                         }
                     ],
@@ -523,7 +523,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "11851006",
                             "display": "Mitral Valve Disorder (disorder)"
                         }
                     ],
@@ -562,7 +562,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "8722008",
                             "display": "Aortic Valve Disorder (disorder)"
                         }
                     ],
@@ -600,7 +600,7 @@
                     "coding": [
                         {
                             "system": "https://snomed.info/sct",
-                            "code": "444814009",
+                            "code": "8722008",
                             "display": "Aortic Valve Disorder (disorder)"
                         }
                     ],

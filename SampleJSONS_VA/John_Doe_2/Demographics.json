@@ -71,10 +71,10 @@
       "use": "usual",
       "text": "John",
       "family": [
-        "Doe"
+        "Doe2"
       ],
       "given": [
-        "JohnDoe"
+        "JohnDoe2"
       ]
     }
   ],
@@ -90,7 +90,7 @@
     }
   ],
   "gender": "unknown",
-  "birthDate": "1996-06-01",
+  "birthDate": "1940-06-01",
   "deceasedBoolean": false,
   "address": [
     {
