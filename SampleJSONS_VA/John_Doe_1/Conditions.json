@@ -1,0 +1,492 @@
+{
+    "resourceType": "Bundle",
+    "type": "searchset",
+    "total": 10,
+    "link": [
+        {
+            "relation": "first",
+            "url": "https://dev-api.va.gov/services/argonaut/v0/Condition?patient=36000036&page=1&_count=50"
+        },
+        {
+            "relation": "self",
+            "url": "https://dev-api.va.gov/services/argonaut/v0/Condition?patient=36000036&page=1&_count=50"
+        },
+        {
+            "relation": "last",
+            "url": "https://dev-api.va.gov/services/argonaut/v0/Condition?patient=36000036&page=1&_count=50"
+        }
+    ],
+    "entry": [
+        
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/c713161b-d848-5197-81ff-c2c5e91467a7",
+            "resource": {
+                "id": "c713161b-d848-5197-81ff-c2c5e91467a7",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2012-01-09",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "29857009",
+                            "display": "Chest Pain (disorder)"
+                        }
+                    ],
+                    "text": "Chest Pain (disorder)"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://argonaut.hl7.org",
+                            "code": "problem",
+                            "display": "Problem"
+                        }
+                    ]
+                },
+                "clinicalStatus": "active",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2012-01-09T21:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+        
+       
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/23c8ef65-ed2b-5678-b5f9-09d2da711fd1",
+            "resource": {
+                "id": "23c8ef65-ed2b-5678-b5f9-09d2da711fd1",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "1201005",
+                            "display": "Benign Essential Hypertension (disorder)"
+                        }
+                    ],
+                    "text": "Benign Essential Hypertension (disorder)"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://argonaut.hl7.org",
+                            "code": "problem",
+                            "display": "Problem"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "1201005",
+                            "display": "Benign Essential Hypertension (disorder)"
+                        }
+                    ],
+                    "text": "Benign Essential Hypertension (disorder)"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+        
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "92439006",
+                            "display": "Benign Thyroid Gland Neoplasm (disorder)"
+                        }
+                    ],
+                    "text": "Benign Thyroid Gland Neoplasm (disorder)"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "92439006",
+                            "display": "Benign Thyroid Gland Neoplasm (disorder)"
+                        }
+                    ],
+                    "text": "Benign Thyroid Gland Neoplasm (disorder)"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+        
+        {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "76948002",
+                            "display": "Pain in Extremity"
+                        }
+                    ],
+                    "text": "Pain in Extremity"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }},
+            
+          
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "235595009",
+                            "display": "Gastroesophageal Reflux Disease (disorder)"
+                        }
+                    ],
+                    "text": "Gastroesophageal Reflux Disease (disorder)"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "235595009",
+                            "display": "Gastroesophageal Reflux Disease (disorder)"
+                        }
+                    ],
+                    "text": "Gastroesophageal Reflux Disease(disorder)"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "40930008",
+                            "display": "Hypothyroidism"
+                        }
+                    ],
+                    "text": "Hypothyroidism"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "40930008",
+                            "display": "Hypothyroidism"
+                        }
+                    ],
+                    "text": "Hypothyroidism"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        }
+        ,
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "84027009",
+                            "display": "Pernicious Anemia"
+                        }
+                    ],
+                    "text": "Pernicious Anemia"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        },
+            
+          {
+            "fullUrl": "https://dev-api.va.gov/services/argonaut/v0/Condition/3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+            "resource": {
+                "id": "3d86890b-c4c0-51ee-9961-f84279f7d9d0",
+                "resourceType": "Condition",
+                "patient": {
+                    "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/36000036",
+                    "display": "John Doe1"
+                },
+                "dateRecorded": "2009-08-13",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://snomed.info/sct",
+                            "code": "84027009",
+                            "display": "Pernicious Anemia (disorder)"
+                        }
+                    ],
+                    "text": "Pernicious Anemia(disorder)"
+                },
+                "category": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/condition-category",
+                            "code": "diagnosis",
+                            "display": "Diagnosis"
+                        }
+                    ]
+                },
+                "clinicalStatus": "resolved",
+                "verificationStatus": "unknown",
+                "onsetDateTime": "2009-08-13T20:04:03Z",
+                "abatementDateTime": "2009-08-20T20:04:03Z"
+            },
+            "search": {
+                "mode": "match"
+            }
+        }
+            
+          
+        
+    ]
+}
