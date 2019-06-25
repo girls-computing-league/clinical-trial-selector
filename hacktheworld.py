@@ -165,7 +165,7 @@ class PatientLoader:
         for pat_token in cms_tokens:
             self.patients.append(CMSPatient(pat_token, cms_tokens[pat_token]))
 
-        self.pat_tokens = {**va_tokens, **cms_tokens}
+        self.pat_tokens = {va_tokens, cms_tokens}
 
     def load_all_patients(self):
         for patient in self.patients:
