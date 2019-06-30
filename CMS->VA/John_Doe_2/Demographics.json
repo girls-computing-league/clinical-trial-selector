@@ -1,5 +1,5 @@
 {
-  "id": "19990000000002",
+  "id": "19990000000004",
   "resourceType": "Patient",
   "extension": [
     {
@@ -71,10 +71,10 @@
       "use": "usual",
       "text": "John",
       "family": [
-        "Doe"
+        "Doe2"
       ],
       "given": [
-        "JohnDoe"
+        "JohnDoe2"
       ]
     }
   ],
@@ -89,8 +89,8 @@
       "value": "John.Doe@email.example"
     }
   ],
-  "gender": "unknown",
-  "birthDate": "1950-06-01",
+  "gender": "male",
+  "birthDate": "1940-06-01",
   "deceasedBoolean": false,
   "address": [
     {

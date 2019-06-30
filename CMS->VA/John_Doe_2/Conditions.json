@@ -72,10 +72,10 @@
                         {
                             "system": "https://snomed.info/sct",
                             "code": "1201005",
-                            "display": "Benign Essential Hypertension (disorder)"
+                            "display": "Prostate cancer (disorder)"
                         }
                     ],
-                    "text": "Benign Essential Hypertension (disorder)"
+                    "text": "Prostate Cancer (disorder)"
                 },
                 "category": {
                     "coding": [

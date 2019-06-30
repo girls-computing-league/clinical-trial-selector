@@ -89,7 +89,7 @@
       "value": "John.Doe@email.example"
     }
   ],
-  "gender": "unknown",
+  "gender": "female",
   "birthDate": "1954-06-01",
   "deceasedBoolean": false,
   "address": [
