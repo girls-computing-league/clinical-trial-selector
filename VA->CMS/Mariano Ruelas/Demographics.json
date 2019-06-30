@@ -1,6 +1,6 @@
 {
     "resourceType": "Patient",
-    "id": "19990000000001",
+    "id": "5000335",
     "extension": [
         {
             "url": "https://bluebutton.cms.gov/resources/variables/race",
@@ -14,7 +14,7 @@
     "identifier": [
         {
             "system": "https://bluebutton.cms.gov/resources/variables/bene_id",
-            "value": "19990000000001"
+            "value": "5000335"
         },
         {
             "system": "https://bluebutton.cms.gov/resources/identifier/hicn-hash",
@@ -24,15 +24,15 @@
     "name": [
         {
             "use": "usual",
-            "family": "Doe",
+            "family": "Ruelas",
             "given": [
-                "Jane",
+                "Mariano",
                 "X"
             ]
         }
     ],
-    "gender": "female",
-    "birthDate": "1999-06-01",
+    "gender": "male",
+    "birthDate": "1907-11-20",
     "address": [
         {
             "district": "999",

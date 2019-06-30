@@ -1,0 +1,43 @@
+{
+    "resourceType": "Patient",
+    "id": "25000126",
+    "extension": [
+        {
+            "url": "https://bluebutton.cms.gov/resources/variables/race",
+            "valueCoding": {
+                "system": "https://bluebutton.cms.gov/resources/variables/race",
+                "code": "1",
+                "display": "White"
+            }
+        }
+    ],
+    "identifier": [
+        {
+            "system": "https://bluebutton.cms.gov/resources/variables/bene_id",
+            "value": "25000126"
+        },
+        {
+            "system": "https://bluebutton.cms.gov/resources/identifier/hicn-hash",
+            "value": "96228a57f37efea543f4f370f96f1dbf01c3e3129041dba3ea4367545507c6e7"
+        }
+    ],
+    "name": [
+        {
+            "use": "usual",
+            "family": "Valentin",
+            "given": [
+                "Lorenzo",
+                "X"
+            ]
+        }
+    ],
+    "gender": "male",
+    "birthDate": "1942-01-11",
+    "address": [
+        {
+            "district": "unknown",
+            "state": "unknown",
+            "postalCode": "00000"
+        }
+    ]
+}
