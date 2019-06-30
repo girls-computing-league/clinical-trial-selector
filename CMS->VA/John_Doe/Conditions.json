@@ -563,10 +563,10 @@
                         {
                             "system": "https://snomed.info/sct",
                             "code": "81680005",
-                            "display": "Neck Pain (finding)"
+                            "display": "Cancer in Digestive System"
                         }
                     ],
-                    "text": "Neck Pain (finding)"
+                    "text": "Cancer in Digestive System"
                 },
                 "category": {
                     "coding": [

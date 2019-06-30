@@ -43,12 +43,12 @@
         },
         "subject": {
           "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/2000163",
-          "display": "John Doe"
+          "display": "Jane Doe"
         },
         "effectiveDateTime": "2017-04-24T01:15:52Z",
         "issued": "2017-04-24T01:15:52Z",
         "valueQuantity": {
-          "value": 205000,
+          "value": 98000,
           "unit": "/uL",
           "system": "http://unitsofmeasure.org",
           "code": "/uL"
@@ -84,12 +84,12 @@
         },
         "subject": {
           "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/2000163",
-          "display": "John Doe"
+          "display": "Jane Doe"
         },
         "effectiveDateTime": "2017-04-24T01:15:52Z",
         "issued": "2017-04-24T01:15:52Z",
         "valueQuantity": {
-          "value": 3678,
+          "value": 3200,
           "unit": "/uL",
           "system": "http://unitsofmeasure.org",
           "code": "/uL"
@@ -125,12 +125,12 @@
         },
         "subject": {
           "reference": "https://dev-api.va.gov/services/argonaut/v0/Patient/2000163",
-          "display": "John Doe"
+          "display": "Jane Doe"
         },
         "effectiveDateTime": "2017-04-24T01:15:52Z",
         "issued": "2017-04-24T01:15:52Z",
         "valueQuantity": {
-          "value": 9,
+          "value": 8,
           "unit": "g/dL",
           "system": "http://unitsofmeasure.org",
           "code": "g/dL"
@@ -139,6 +139,6 @@
       "search": {
         "mode": "match"
       }
-    },
+    }
   ]
 }
