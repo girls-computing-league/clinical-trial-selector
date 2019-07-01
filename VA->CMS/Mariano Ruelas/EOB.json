@@ -134,7 +134,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "231.0",
+                  "code": "185.0",
                   "display": "Prostate Neoplasm"
                 }
               ]
@@ -580,7 +580,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "249",
+                  "code": "427.31",
                   "display": "Atrial Fibrillation"
                 }
               ]
@@ -1794,7 +1794,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "294.1",
+                  "code": "331",
                   "display": "Alzheimer's Disease"
                 }
               ]
@@ -2505,7 +2505,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "775",
+                  "code": "277.7",
                   "display": "Metabolic Syndrome"
                 }
               ]
@@ -3843,7 +3843,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "403",
+                  "code": "585.1",
                   "display": "Chronic Kidney Disease, Stage 1"
                 }
               ]
@@ -4300,7 +4300,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "249.4",
+                  "code": "250.4",
                   "display": "Diabetic Nephropathy"
                 }
               ]
@@ -4746,7 +4746,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "303",
+                  "code": "249",
                   "display": "Type 2 Diabetes Mellitus"
                 }
               ]
@@ -4769,7 +4769,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "401",
+                  "code": "473",
                   "display": "Chronic Sinusitis"
                 }
               ]

@@ -1049,7 +1049,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "746.85",
+                  "code": "414",
                   "display": "Coronary Artery Disease"
                 }
               ]
@@ -1794,7 +1794,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "294.1",
+                  "code": "331",
                   "display": "Alzheimer's Disease"
                 }
               ]
@@ -2505,7 +2505,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "775",
+                  "code": "277.7",
                   "display": "Metabolic Syndrome"
                 }
               ]
@@ -3397,7 +3397,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "404",
+                  "code": "585.2",
                   "display": "Chronic Kidney Disease, Stage 2"
                 }
               ]
@@ -3843,7 +3843,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "403",
+                  "code": "585.1",
                   "display": "Chronic Kidney Disease, Stage 1"
                 }
               ]
@@ -4300,7 +4300,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "249.4",
+                  "code": "250.4",
                   "display": "Diabetic Nephropathy"
                 }
               ]
@@ -4746,7 +4746,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "303",
+                  "code": "303.9",
                   "display": "Alcohol Dependence"
                 }
               ]
@@ -4769,8 +4769,8 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "401",
-                  "display": "HYPERTENSION"
+                  "code": "401.9",
+                  "display": "Hypertension"
                 }
               ]
             }

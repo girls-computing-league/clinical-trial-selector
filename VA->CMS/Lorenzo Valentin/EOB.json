@@ -138,7 +138,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "231.0",
+                  "code": "185.0",
                   "display": "Prostate Neoplasm"
                 }
               ]
@@ -584,7 +584,7 @@
               "coding": [
                 {
                   "system": "http://hl7.org/fhir/sid/icd-9-cm",
-                  "code": "401",
+                  "code": "401.9",
                   "display": "Hypertension"
                 }
               ]
