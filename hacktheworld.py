@@ -6,6 +6,7 @@ import sys
 import umls
 import requests as req
 from datetime import date
+import pyodbc
 
 import json
 
@@ -232,3 +233,56 @@ class CombinedPatient:
                 self.ncit_codes.append(code)
         self.matches += patient.matches
         self.codes_without_matches += patient.codes_without_matches
+
+
+server = '108.31.54.198'
+database = 'CTA'
+username = 'ctauser'
+password = 'sql'
+connection_details = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password
+
+
+def execute_sql(sql):
+    with pyodbc.connect(connection_details) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            return cursor.fetchall()
+
+
+class CancerDataSet:
+    def __init__(self):
+        self.Cancer_Site_1_text = None
+        self.Stage_Text = None
+        self.Biomarker = None
+        self.Treatment_History_Text = None
+        self.Gender = None
+        self.AGE = None
+        self.HB_Text = None
+        self.Platelet_Text = None
+        self.WBC_Text = None
+        self.Performance_Status_PS = None
+        self.Synthetic_Zip_Code = None
+        self.Specific_treatment_trial_text = None
+        self.Type_of_Trial_Text = None
+
+    def get_cancer_data(self):
+        table_name = 'Dataset2'
+        get_terms_sql = f"""
+        SELECT TOP 1 Cancer_Site_1_text, Stage_Text, Biomarker, Treatment_History_Text, Gender, AGE, HB_Text, 
+                     Platelet_Text, WBC_Text, Performance_Status_PS, Synthetic_Zip_Code, Specific_treatment_trial_text, 
+                     Type_of_Trial_Text from dbo.{table_name};
+        """
+        rows = execute_sql(get_terms_sql)[0]
+        self.Cancer_Site_1_text = rows.Cancer_Site_1_text
+        self.Stage_Text = rows.Stage_Text
+        self.Biomarker = rows.Biomarker
+        self.Treatment_History_Text = rows.Treatment_History_Text
+        self.Gender = rows.Gender
+        self.AGE = rows.AGE
+        self.HB_Text = rows.HB_Text
+        self.Platelet_Text = rows.Platelet_Text
+        self.WBC_Text = rows.WBC_Text
+        self.Performance_Status_PS = rows.Performance_Status_PS
+        self.Synthetic_Zip_Code = rows.Synthetic_Zip_Code
+        self.Specific_treatment_trial_text = rows.Specific_treatment_trial_text
+        self.Type_of_Trial_Text = rows.Type_of_Trial_Text
