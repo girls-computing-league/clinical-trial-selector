@@ -34,7 +34,7 @@ cms = oauth.remote_app(
 
 va = oauth.remote_app(
     'va',
-    base_url="https://dev-api.vets.gov/",
+    base_url="https://dev-api.va.gov/",
     consumer_key = keys_dict["va_key"],
     consumer_secret = keys_dict["va_secret"],
     request_token_params={

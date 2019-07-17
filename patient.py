@@ -3,7 +3,8 @@ import json
 import requests as req
 import logging
 
-BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
+#BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
+BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
 DEMOGRAPHICS_URL = BASE_URL + "Patient/"
 CONDITIONS_URL = BASE_URL + "Condition?_count=50&patient="
 DISEASES_URL = "https://clinicaltrialsapi.cancer.gov/v1/diseases"
