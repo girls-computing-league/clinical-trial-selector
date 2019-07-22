@@ -9,6 +9,9 @@ accesscodes/cms/*.json
 allrun.py
 keys.json
 
+# Pycharm
+.idea
+
 flask_session
 .DS_Store
 
