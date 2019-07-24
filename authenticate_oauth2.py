@@ -3,6 +3,7 @@ from flask_session import Session
 from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
 import hacktheworld as hack
+from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 import json
 
 # creates the flask webserver and the secret key of the web server
@@ -38,7 +39,7 @@ va = oauth.remote_app(
     consumer_key = keys_dict["va_key"],
     consumer_secret = keys_dict["va_secret"],
     request_token_params={
-        'scope': 'openid offline_access profile email launch/patient veteran_status.read patient/Patient.read patient/Condition.read', "state": "12345"},
+        'scope': 'openid offline_access profile email launch/patient veteran_status.read patient/Observation.read patient/Patient.read patient/Condition.read', "state": "12345"},
     request_token_url=None,
     access_token_url="https://dev-api.va.gov/oauth2/token/",
     authorize_url="https://dev-api.va.gov/oauth2/authorization/",
@@ -186,7 +187,31 @@ def getInfo():
     session['numTrials'] = combined.numTrials
     session['index'] = 0
     session["combined_patient"] = combined
+
+    patient_id = session.get('va_patient')
+    token = session.get('va_access_token')
+    session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
     return redirect("/")
+
+
+@app.route('/filter_by_lab_results')
+def filter_by_lab_results():
+    """
+    A view that filters trials based on:
+    Filter1 -> Filters the DB tables based on nci_id of trials. We only show the results with matching records in DB.
+    Filter2 -> Filters results based on inclusion condition and value from the Observation API.
+    """
+    combined_patient = session['combined_patient']
+    lab_results = session['Laboratory_Results']
+    trials_by_ncit = combined_patient.trials_by_ncit
+
+    filter_trails_by_inclusion_criteria, excluded_trails_by_inclusion_criteria = \
+        filter_by_inclusion_criteria(trials_by_ncit, lab_results)
+
+    session['combined_patient'].trials_by_ncit = filter_trails_by_inclusion_criteria
+    session['excluded'] = excluded_trails_by_inclusion_criteria
+    return redirect('/')
+
 
 @app.route('/trial')
 def trial():
@@ -205,3 +230,7 @@ def get_cms_token(token=None):
 @va.tokengetter
 def get_va_token(token=None):
     return session.get('va_access_token')
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

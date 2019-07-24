@@ -20,6 +20,7 @@ app.config.update({
 		"launch/patient",
 		"veteran_status.read",
 		"patient/Patient.read",
+		"patient/Observation.read",
 		"patient/Condition.read"
 	],
 	'OIDC_CLIENT_SECRETS': 'client_secrets.json',
