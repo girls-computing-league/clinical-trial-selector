@@ -115,7 +115,7 @@ class CMSPatient(Patient):
                 code = coding["code"]
                 if len(code) > 3:
                     code = code[0:3] + "." + code[3:]
-                if code != "999.9999" and not (code in codes):
+                if code != "999.9999" and not (code in codes) and "display" in coding:
                     codes.append(code)
                     names.append(coding["display"])
         self.codes_icd9 = codes

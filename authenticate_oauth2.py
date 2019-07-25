@@ -176,11 +176,15 @@ def vaauthenticated():
 
 @app.route('/getInfo')
 def getInfo():
+    print("GETTING INFO NOW")
     combined = session.get("combined_patient", hack.CombinedPatient())
     auts = authentications()
     if (not auts):
         return redirect("/")
     combined.load_data()
+    
+    patient_id = session.get('va_patient')
+    token = session.get('va_access_token')
 
     session['codes'] = combined.ncit_codes
     session['trials'] = combined.trials
@@ -188,9 +192,10 @@ def getInfo():
     session['index'] = 0
     session["combined_patient"] = combined
 
-    patient_id = session.get('va_patient')
-    token = session.get('va_access_token')
-    session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
+    if patient_id is not None and token is not None:
+        session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
+        print("FROM SESSION", session['Laboratory_Results'])
+
     return redirect("/")
 
 

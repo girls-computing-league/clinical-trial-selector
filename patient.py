@@ -126,12 +126,13 @@ def find_trials(ncit_codes, gender="unknown", age=0):
     trials = []
     for ncit_dict in ncit_codes:
         ncit = ncit_dict["ncit"]
-        params = {"diseases.nci_thesaurus_concept_id": ncit}
-        if (gender != "unknown"):
-            params["eligibility.structured.gender"] = gender
-        if (age != 0):
-            params["eligibility.structured.max_age_in_years_gte"] = age
-            params["eligibility.structured.min_age_in_years_lte"] = age
+        params = {}
+        #params = {"diseases.nci_thesaurus_concept_id": ncit}
+        #if (gender != "unknown"):
+        #    params["eligibility.structured.gender"] = gender
+        #if (age != 0):
+        #    params["eligibility.structured.max_age_in_years_gte"] = age
+        #    params["eligibility.structured.min_age_in_years_lte"] = age
         res = req.get(TRIALS_URL, params=params)
         trialset = {"code_ncit": ncit, "trialset": res.json()}
 
@@ -163,6 +164,7 @@ def get_lab_observations_by_patient(patient_id, token):
         #         values_by_cell_type[cell_type].append(entry['resource']['valueQuantity']['value'])
         #     except KeyError:
         #         pass
+    print("VALUES:", values_by_cell_type)
     return values_by_cell_type
 
 
