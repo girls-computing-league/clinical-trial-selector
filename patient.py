@@ -3,6 +3,10 @@ import json
 import requests as req
 import logging
 import pyodbc
+import re
+# import boto3
+from jsonpath_rw_ext import parse
+from typing import Dict, List, Any, Tuple, Union
 
 #BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
@@ -21,9 +25,9 @@ connection_details = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server +
                      username + ';PWD=' + password
 
 LOINC_CODES = {
-    # 'hemoglobin': '',
-    # 'wbc': '',
-    'Platelets': '32623-1'
+    'hemoglobin': '718-7',
+    'leukocytes': '6690-2',
+    'platelets': '32623-1'
 }
 
 TABLE_NAME_BY_CELL_TYPE = {
@@ -139,6 +143,7 @@ def find_trials(ncit_codes, gender="unknown", age=0):
         trials.append(trialset)
     return trials
 
+
 def find_all_codes(disease_list):
     codes = []
     names = []
@@ -158,7 +163,12 @@ def get_lab_observations_by_patient(patient_id, token):
 
         # extract values from observations.
         # getting only one value for now.
-        values_by_cell_type[cell_type] = str(observations.get('entry')[0]['resource']['valueQuantity']['value'])
+        entries = observations.get('entry')
+        if entries:
+            value = str(entries[0]['resource']['valueQuantity']['value'])
+            values_by_cell_type[cell_type] = value
+        else:
+            values_by_cell_type[cell_type] = 'Not Found'
         # for entry in observations.get('entry')[0]:
         #     try:
         #         values_by_cell_type[cell_type].append(entry['resource']['valueQuantity']['value'])
@@ -168,7 +178,9 @@ def get_lab_observations_by_patient(patient_id, token):
     return values_by_cell_type
 
 
-def filter_by_inclusion_criteria(trials_by_ncit, lab_results):
+def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
+                                 lab_results: Dict[str, Union[str, 'Trial']])\
+        -> Tuple[List[Dict[str, Union[str, 'Trial']]], List[Dict[str, Union[str, 'Trial']]]]:
     """
     :param trials_by_ncit: List[dict]
     :param lab_results: dict
@@ -177,19 +189,16 @@ def filter_by_inclusion_criteria(trials_by_ncit, lab_results):
     filtered_trials_by_ncit = []
     excluded_trials_by_ncit = []
     # for lab_result in lab_results:
-
-    # only checking for platelets for now.
-    value = lab_results['Platelets']
     for trial in trials_by_ncit:
-        filtered_trials, excluded_trails = filter_trials_from_db(trials=trial['trials'], comparision_val=value,
-                                                                 cell_type='Platelets')
+        filtered_trials, excluded_trails = filter_trials_from_description(trial['trials'],lab_results)
         filtered_trials_by_ncit.append({"ncit": trial['ncit'], "trials": filtered_trials})
         excluded_trials_by_ncit.append({"ncit": trial['ncit'], "trials": excluded_trails})
 
     return filtered_trials_by_ncit, excluded_trials_by_ncit
 
 
-def filter_trials_from_db(trials, comparision_val, cell_type):
+def filter_trials_from_db(trials: List['Trial'], comparision_val: str,
+                          cell_type: str) -> Tuple[List['Trial'], List['Trial']]:
     """
     :param trials: List[obj(Trail)]
     :param comparision_val: str
@@ -225,3 +234,55 @@ def filtered_trails_from_db(nci_ids_str, table_name):
     inclusion_condition_by_nci_id = {row.nci_id: row.Condition+row.Platelets.replace(',', '').replace('/', '')
                                      for row in rows}
     return inclusion_condition_by_nci_id
+
+
+def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> Tuple[List['Trial'], List['Trial']]:
+    """
+    :param trials: List[obj(Trail)]
+    :param comparision_val: str
+    :param cell_type: str
+    :return: (List[obj(Trial], List[obj(Trial)])
+    """
+    filtered_trials = []
+    excluded_trials = []
+    for trial in trials:
+        conditions = find_conditions(trial.trial_json)
+        if conditions:
+            trial.parse_description = '&&'.join(value for key, value in conditions.items())
+            for cell_type, condition in conditions.items():
+                pattern = re.compile('(\s?[\>\=\<]+\s?\d+[\,\.]?\d*)')
+                condition = pattern.findall(condition)[0].replace(',', '')
+                lab_value = lab_results.get(cell_type)
+                trial.filter_condition = round(float(lab_value), 3)
+                if eval(lab_value + condition):
+                    flag = True
+                else:
+                    flag = False
+                    break
+            if flag:
+                filtered_trials.append(trial)
+            else:
+                excluded_trials.append(trial)
+        else:
+            trial.parse_description = 'No Inclusion Criteria Found'
+            trial.filter_condition = 'None Found'
+            filtered_trials.append(trial)
+    return filtered_trials, excluded_trials
+
+
+def find_conditions(trial: Dict) -> Dict:
+    match_type = 'hemoglobin|platelets|leukocytes'
+    parser = parse(f'$.eligibility.unstructured[?inclusion_indicator=true].description')
+    description = ' '.join([match.value.replace('\r\n', ' ') for match in parser.find(trial)])
+
+    pattern = re.compile(f'(\[?({match_type})\]?\s?[\>\=\<]+\s?\d+[\.\,]?\d*\s?\w+\/?\w+(\^\d*)?)')
+    matches = pattern.findall(description.lower())
+    if matches:
+        return {match[1]: str(match[0]) for match in matches}
+    else:
+        entity_mapping = get_mapping_with_aws_comprehend(description)
+        return entity_mapping
+
+
+def get_mapping_with_aws_comprehend(description: str) -> Dict:
+    return {}

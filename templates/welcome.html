@@ -11,7 +11,9 @@
 {% block pt_main %}
     <ul class="nav nav-tabs" id="myTab">
         <li class="nav-item active"><a class="nav-link active" href="#trials" data-toggle="tab">Trials</a></li>
+        {%- if session["excluded"] %}
         <li class="nav-item"><a class="nav-link" href="#Excluded" data-toggle="tab">Excluded</a></li>
+        {% endif %}
         <li class="nav-item"><a class="nav-link" href="#conditions" data-toggle="tab">Conditions w/o Trials</a></li>
         <li class="nav-item"><a class="nav-link" href="#matches" data-toggle="tab">Code Matches</a></li>
         <li class="nav-item"><a class="nav-link" href="#nomatches" data-toggle="tab">Codes w/o Matches</a></li>
@@ -29,18 +31,26 @@
                         <tr>
                             <th>Trial Id</th>
                             <th>Title</th>
+                            {%- if session["combined_patient"].filtered %}
+                            <th>Condition</th>
+                            <th>Value</th>
+                            {% endif %}
                         </tr>
                     </thead>
 
                     {%- for code in session["combined_patient"].trials_by_ncit %}
                         <tbody>
                             <tr>
-                                <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button> </td>
+                                <td colspan="4" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button> </td>
                             </tr>
                             {%- for trial in code["trials"] %}
                                 <tr class="toggler">
                                     <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                     <td>{{ trial.title }}</td>
+                                    {%- if trial.filter_condition %}
+                                    <td>{{ trial.parse_description }}</td>
+                                    <td>{{ trial.filter_condition }}</td>
+                                    {% endif %}
                                 </tr>
                             {%- endfor %}
                         </tbody>
@@ -52,28 +62,41 @@
         </div><!--/tab-pane-->
         <div class="tab-pane" id="Excluded">
             <br>
+            {%- if session["excluded"] %}
+				There are {{ session['combined_patient'].numTrials }} trials for {{ session['combined_patient'].num_conditions_with_trials }} conditions
+				<br>
+
             <table class="custom-table">
                 <thead>
                     <tr>
                         <th>Trial Id</th>
                         <th>Title</th>
+                        {%- if session["combined_patient"].filtered %}
+                        <th>Condition</th>
+                        <th>Criteria</th>
+                        {% endif %}
                     </tr>
                 </thead>
 
                 {%- for code in session["excluded"] %}
                     <tbody>
                         <tr>
-                            <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button> </td>
+                            <td colspan="4" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button> </td>
                         </tr>
                         {%- for trial in code["trials"] %}
                             <tr class="toggler">
                                 <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                 <td>{{ trial.title }}</td>
+                                {%- if trial.filter_condition %}
+                                <td>{{ trial.parse_description }}</td>
+                                <td>{{ trial.filter_condition }}</td>
+                                {% endif %}
                             </tr>
                         {%- endfor %}
                     </tbody>
                 {%- endfor %}
             </table>
+            {% endif %}
         </div><!--/tab-pane-->
         <div class="tab-pane" id="conditions">
             <br>
@@ -159,15 +182,17 @@
                 <tbody>
 
                 {%  if session["Laboratory_Results"] %}
-                    <a class="btn btn-primary" href="/filter_by_lab_results">Filter trials by inclusion criteria</a>
                     <tr>
-                        <td class="page-header">Placeholder for Hemoglobin</td>
-                        <td class="page-header">Placeholder for Leukocytes</td>
-                        <td class="page-header">{{ session["Laboratory_Results"]['Platelets'] }}</td>
+                        <td class="page-header">{{ session["Laboratory_Results"]['hemoglobin'] }}</td>
+                        <td class="page-header">{{ session["Laboratory_Results"]['leukocytes'] }}</td>
+                        <td class="page-header">{{ session["Laboratory_Results"]['platelets'] }}</td>
                     </tr>
                 {%- endif %}
                 </tbody>
             </table>
+            {%  if session["combined_patient"] and session["Laboratory_Results"] and not session["combined_patient"].filtered  %}
+            <a class="btn btn-primary" href="/filter_by_lab_results">Filter trials by inclusion criteria</a>
+            {%- endif %}
         </div>
     </div>
 {% endblock %}
