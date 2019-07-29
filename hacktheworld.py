@@ -185,6 +185,8 @@ class Trial:
         self.sites = trial_json['sites']
         self.population = trial_json['study_population_description']
         self.diseases = trial_json['diseases']
+        self.filter_condition = None
+
 
 class CombinedPatient:
     def __init__(self):
@@ -194,6 +196,7 @@ class CombinedPatient:
         self.clear_collections()
         self.numTrials = 0
         self.num_conditions_with_trials = 0
+        self.filtered = False
     
     def clear_collections(self):
         self.trials = []
