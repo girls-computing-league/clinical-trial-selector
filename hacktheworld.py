@@ -186,7 +186,6 @@ class Trial:
         self.population = trial_json['study_population_description']
         self.diseases = trial_json['diseases']
         self.filter_condition = None
-        self.lab_result = ''
 
 
 class CombinedPatient:

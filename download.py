@@ -7,7 +7,7 @@ MATCH_TYPE = 'hemoglobin|platelets|leukocytes'
 
 
 def find_conditions(description):
-    pattern = re.compile(f'(\[?({MATCH_TYPE})\]?\s?[\>\=\<]+\s?(\d+[\.\,]?\d*\s?\w+\/?\w+(\^\d*)?))')
+    pattern = re.compile(f'(\[?({MATCH_TYPE})\]?\s?[\>\=\<]+\s?\d+[\.\,]?\d*\s?\w+\/?\s?\w+(\^\d*)?)')
     matches = pattern.findall(description.lower())
     if matches:
         return({match[1]: str(match[2]) for match in matches})

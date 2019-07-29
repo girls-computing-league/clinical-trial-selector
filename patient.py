@@ -7,6 +7,7 @@ import re
 import boto3
 from jsonpath_rw_ext import parse
 from typing import Dict, List, Any, Tuple, Union
+import concurrent.futures as futures
 
 # BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
@@ -169,7 +170,7 @@ def get_lab_observations_by_patient(patient_id, token):
             try:
                 code = resource['code']['coding'][0]['code']
                 value_quantity = resource['valueQuantity']
-                value = str(value_quantity['value']) + ' ' + value_quantity['unit']
+                value = (str(value_quantity['value']), value_quantity['unit'])
                 effective_date_time = resource['effectiveDateTime']
             except KeyError:
                 continue
@@ -197,11 +198,20 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
     """
     filtered_trials_by_ncit = []
     excluded_trials_by_ncit = []
-    # for lab_result in lab_results:
-    for trial in trials_by_ncit:
-        filtered_trials, excluded_trails = filter_trials_from_description(trial['trials'],lab_results)
-        filtered_trials_by_ncit.append({"ncit": trial['ncit'], "trials": filtered_trials})
-        excluded_trials_by_ncit.append({"ncit": trial['ncit'], "trials": excluded_trails})
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+        tasks = {
+            executor.submit(filter_trials_from_description, trial['trials'], lab_results): trial['ncit']
+            for trial in trials_by_ncit
+        }
+        for future in futures.as_completed(tasks):
+            ncit_code = tasks[future]
+            try:
+                filtered_trials, excluded_trails = future.result()
+                filtered_trials_by_ncit.append({"ncit": ncit_code, "trials": filtered_trials})
+                excluded_trials_by_ncit.append({"ncit": ncit_code, "trials": excluded_trails})
+            except Exception as exc:
+                print('Failed task: ', exc)
+                continue
 
     return filtered_trials_by_ncit, excluded_trials_by_ncit
 
@@ -219,9 +229,11 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
         conditions = find_conditions(trial.trial_json)
         if conditions:
             trial.filter_condition = ',\t'.join(value for key, value in conditions.items())
-            trial.lab_result = ', '.join([key + '=' + value for key, value in lab_results.items()])
             for cell_type, condition in conditions.items():
                 lab_value = lab_results.get(cell_type)
+                if not lab_value:
+                    flag = True
+                    continue
                 lab_value, condition = convert_expressions(lab_value, condition)
                 if eval(lab_value + condition):
                     flag = True
@@ -234,7 +246,6 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
                 excluded_trials.append(trial)
         else:
             trial.filter_condition = 'No Inclusion Criteria Found'
-            trial.lab_result = 'N/A'
             filtered_trials.append(trial)
     return filtered_trials, excluded_trials
 
@@ -306,44 +317,5 @@ def convert_expressions(lab_value: str, condition: str):
 
     pattern = re.compile('(\s?[\>\=\<]+\s?\d+[\,\.]?\d*)')
     condition = pattern.findall(condition)[0].replace(',', '')
-    lab_value = lab_value.split(' ')[0]
+    lab_value = lab_value[0]
     return lab_value, condition
-
-
-# def filter_trials_from_db(trials: List['Trial'], comparision_val: str,
-#                           cell_type: str) -> Tuple[List['Trial'], List['Trial']]:
-#     """
-#     :param trials: List[obj(Trail)]
-#     :param comparision_val: str
-#     :param cell_type: str
-#     :return: (List[obj(Trial], List[obj(Trial)])
-#     """
-#     trials_dict = {trial.id: trial for trial in trials}
-#     nci_ids_str = '(' + ', '.join(["'" + nci_trial.id + "'" for nci_trial in trials]) + ')'
-#
-#     filtered_trials = []
-#     excluded_trials = []
-#     if trials:
-#         condition_by_trails = filtered_trails_from_db(nci_ids_str=nci_ids_str,
-#                                                       table_name=TABLE_NAME_BY_CELL_TYPE[cell_type])
-#
-#         for condition_by_trail, condition in condition_by_trails.items():
-#             if eval(comparision_val+condition):
-#                 filtered_trials.append(trials_dict[condition_by_trail])
-#             else:
-#                 excluded_trials.append(trials_dict[condition_by_trail])
-#     return filtered_trials, excluded_trials
-#
-#
-# def filtered_trails_from_db(nci_ids_str, table_name):
-#     """
-#     Returns results matched from DB based on nci_id
-#     :param nci_ids_str: A formatted string with a list of nci_id's used in the where clause of SQL
-#     :param table_name: Table that the filter
-#     :return: dict: { 'nci_id1': 'condition1', 'nci_id2': 'condition2' }
-#     """
-#     filter_trails_sql = f"""SELECT * FROM dbo.{table_name} WHERE nci_id in {nci_ids_str};"""
-#     rows = execute_sql(filter_trails_sql)
-#     inclusion_condition_by_nci_id = {row.nci_id: row.Condition+row.Platelets.replace(',', '').replace('/', '')
-#                                      for row in rows}
-#     return inclusion_condition_by_nci_id
