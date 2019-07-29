@@ -4,7 +4,7 @@ import requests as req
 import logging
 import pyodbc
 import re
-# import boto3
+import boto3
 from jsonpath_rw_ext import parse
 from typing import Dict, List, Any, Tuple, Union
 
@@ -197,45 +197,6 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
     return filtered_trials_by_ncit, excluded_trials_by_ncit
 
 
-def filter_trials_from_db(trials: List['Trial'], comparision_val: str,
-                          cell_type: str) -> Tuple[List['Trial'], List['Trial']]:
-    """
-    :param trials: List[obj(Trail)]
-    :param comparision_val: str
-    :param cell_type: str
-    :return: (List[obj(Trial], List[obj(Trial)])
-    """
-    trials_dict = {trial.id: trial for trial in trials}
-    nci_ids_str = '(' + ', '.join(["'" + nci_trial.id + "'" for nci_trial in trials]) + ')'
-
-    filtered_trials = []
-    excluded_trials = []
-    if trials:
-        condition_by_trails = filtered_trails_from_db(nci_ids_str=nci_ids_str,
-                                                      table_name=TABLE_NAME_BY_CELL_TYPE[cell_type])
-
-        for condition_by_trail, condition in condition_by_trails.items():
-            if eval(comparision_val+condition):
-                filtered_trials.append(trials_dict[condition_by_trail])
-            else:
-                excluded_trials.append(trials_dict[condition_by_trail])
-    return filtered_trials, excluded_trials
-
-
-def filtered_trails_from_db(nci_ids_str, table_name):
-    """
-    Returns results matched from DB based on nci_id
-    :param nci_ids_str: A formatted string with a list of nci_id's used in the where clause of SQL
-    :param table_name: Table that the filter
-    :return: dict: { 'nci_id1': 'condition1', 'nci_id2': 'condition2' }
-    """
-    filter_trails_sql = f"""SELECT * FROM dbo.{table_name} WHERE nci_id in {nci_ids_str};"""
-    rows = execute_sql(filter_trails_sql)
-    inclusion_condition_by_nci_id = {row.nci_id: row.Condition+row.Platelets.replace(',', '').replace('/', '')
-                                     for row in rows}
-    return inclusion_condition_by_nci_id
-
-
 def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> Tuple[List['Trial'], List['Trial']]:
     """
     :param trials: List[obj(Trail)]
@@ -248,12 +209,11 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
     for trial in trials:
         conditions = find_conditions(trial.trial_json)
         if conditions:
-            trial.parse_description = '&&'.join(value for key, value in conditions.items())
+            trial.filter_condition = ',\t'.join(value for key, value in conditions.items())
+            trial.lab_result = ', '.join([key + '=' + value for key, value in lab_results.items()])
             for cell_type, condition in conditions.items():
-                pattern = re.compile('(\s?[\>\=\<]+\s?\d+[\,\.]?\d*)')
-                condition = pattern.findall(condition)[0].replace(',', '')
                 lab_value = lab_results.get(cell_type)
-                trial.filter_condition = round(float(lab_value), 3)
+                lab_value, condition = convert_expressions(lab_value, condition)
                 if eval(lab_value + condition):
                     flag = True
                 else:
@@ -264,25 +224,117 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
             else:
                 excluded_trials.append(trial)
         else:
-            trial.parse_description = 'No Inclusion Criteria Found'
-            trial.filter_condition = 'None Found'
+            trial.filter_condition = 'No Inclusion Criteria Found'
+            trial.lab_result = 'N/A'
             filtered_trials.append(trial)
     return filtered_trials, excluded_trials
 
 
 def find_conditions(trial: Dict) -> Dict:
     match_type = 'hemoglobin|platelets|leukocytes'
+    cell_types = ['hemoglobin', 'platelets', 'leukocytes']
     parser = parse(f'$.eligibility.unstructured[?inclusion_indicator=true].description')
-    description = ' '.join([match.value.replace('\r\n', ' ') for match in parser.find(trial)])
-
-    pattern = re.compile(f'(\[?({match_type})\]?\s?[\>\=\<]+\s?\d+[\.\,]?\d*\s?\w+\/?\w+(\^\d*)?)')
-    matches = pattern.findall(description.lower())
-    if matches:
-        return {match[1]: str(match[0]) for match in matches}
+    unstructured_descriptions = parser.find(trial)
+    description = ' '.join([match.value.replace('\r\n', ' ').lower() for match in unstructured_descriptions
+                            if any(cell_type in match.value.lower() for cell_type in cell_types)])
+    if description:
+        pattern = re.compile(f'(\[?({match_type})\]?\s?[\>\=\<]+\s?\d+[\.\,]?\d*\s?\w+\/?\s?\w+(\^\d*)?)')
+        matches = pattern.findall(description)
+        if matches:
+            return {match[1]: str(match[0]) for match in matches}
+        else:
+            entity_mapping = get_mapping_with_aws_comprehend(unstructured_descriptions)
+            return entity_mapping
     else:
-        entity_mapping = get_mapping_with_aws_comprehend(description)
-        return entity_mapping
+        return {}
 
 
-def get_mapping_with_aws_comprehend(description: str) -> Dict:
-    return {}
+def get_mapping_with_aws_comprehend(descriptions: List) -> Dict:
+    client = boto3.client(service_name="comprehendmedical")
+    description = ' '.join([match.value.replace('\r\n', ' ').lower() for match in descriptions]).replace(',', '')
+    entities = []
+    limit = 19999
+    if len(description) < limit:
+        entities.extend(client.detect_entities(Text=description)['Entities'])
+    else:
+        splits = ['']
+        count = 0
+        for desc in descriptions:
+            if len(desc.value) >= limit:
+                splits[count] = desc.value[:limit]
+                splits[count] = desc.value[limit:]
+                count += 2
+                continue
+            if len(desc.value)+len(splits[count]) >= limit:
+                count += 1
+            else:
+                splits[count] += desc.value
+        for split in splits:
+            try:
+                entities.extend(client.detect_entities(Text=split)['Entities'])
+            except Exception as exc:
+                print(exc)
+                continue
+    cell_types = ['hemoglobin', 'platelets', 'leukocytes']
+    conditions = {}
+    for entity in entities:
+        entity_type = entity['Text']
+        if any(cell_type in entity_type for cell_type in cell_types) and entity.get('Attributes'):
+            conditions[entity_type] = entity_type + entity['Attributes'][0]['Text']
+    return conditions
+
+
+# TODO conversion
+def convert_expressions(lab_value: str, condition: str):
+    """
+
+    :param lab_value: 4000 ul
+    :param condition:
+    :return: value: 4000, condition >= 3000
+    """
+    # platelets< 100 x 10^9/l, >= 100000/ul
+    # leukocytes: 3000/ mm^3, >= 3000/mcl
+
+    pattern = re.compile('(\s?[\>\=\<]+\s?\d+[\,\.]?\d*)')
+    condition = pattern.findall(condition)[0].replace(',', '')
+    lab_value = lab_value.split(' ')[0]
+    return lab_value, condition
+
+
+# def filter_trials_from_db(trials: List['Trial'], comparision_val: str,
+#                           cell_type: str) -> Tuple[List['Trial'], List['Trial']]:
+#     """
+#     :param trials: List[obj(Trail)]
+#     :param comparision_val: str
+#     :param cell_type: str
+#     :return: (List[obj(Trial], List[obj(Trial)])
+#     """
+#     trials_dict = {trial.id: trial for trial in trials}
+#     nci_ids_str = '(' + ', '.join(["'" + nci_trial.id + "'" for nci_trial in trials]) + ')'
+#
+#     filtered_trials = []
+#     excluded_trials = []
+#     if trials:
+#         condition_by_trails = filtered_trails_from_db(nci_ids_str=nci_ids_str,
+#                                                       table_name=TABLE_NAME_BY_CELL_TYPE[cell_type])
+#
+#         for condition_by_trail, condition in condition_by_trails.items():
+#             if eval(comparision_val+condition):
+#                 filtered_trials.append(trials_dict[condition_by_trail])
+#             else:
+#                 excluded_trials.append(trials_dict[condition_by_trail])
+#     return filtered_trials, excluded_trials
+#
+#
+# def filtered_trails_from_db(nci_ids_str, table_name):
+#     """
+#     Returns results matched from DB based on nci_id
+#     :param nci_ids_str: A formatted string with a list of nci_id's used in the where clause of SQL
+#     :param table_name: Table that the filter
+#     :return: dict: { 'nci_id1': 'condition1', 'nci_id2': 'condition2' }
+#     """
+#     filter_trails_sql = f"""SELECT * FROM dbo.{table_name} WHERE nci_id in {nci_ids_str};"""
+#     rows = execute_sql(filter_trails_sql)
+#     inclusion_condition_by_nci_id = {row.nci_id: row.Condition+row.Platelets.replace(',', '').replace('/', '')
+#                                      for row in rows}
+#     return inclusion_condition_by_nci_id

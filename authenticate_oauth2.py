@@ -215,6 +215,7 @@ def filter_by_lab_results():
 
     session['combined_patient'].trials_by_ncit = filter_trails_by_inclusion_criteria
     session['excluded'] = excluded_trails_by_inclusion_criteria
+    session['combined_patient'].filtered = True
     return redirect('/')
 
 

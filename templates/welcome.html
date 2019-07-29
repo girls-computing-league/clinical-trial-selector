@@ -32,8 +32,8 @@
                             <th>Trial Id</th>
                             <th>Title</th>
                             {%- if session["combined_patient"].filtered %}
-                            <th>Condition</th>
-                            <th>Value</th>
+                                <th>Condition</th>
+                                <th>Lab results</th>
                             {% endif %}
                         </tr>
                     </thead>
@@ -48,8 +48,8 @@
                                     <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                     <td>{{ trial.title }}</td>
                                     {%- if trial.filter_condition %}
-                                    <td>{{ trial.parse_description }}</td>
                                     <td>{{ trial.filter_condition }}</td>
+                                    <td>{{ trial.lab_result }}</td>
                                     {% endif %}
                                 </tr>
                             {%- endfor %}
@@ -72,8 +72,8 @@
                         <th>Trial Id</th>
                         <th>Title</th>
                         {%- if session["combined_patient"].filtered %}
-                        <th>Condition</th>
-                        <th>Criteria</th>
+                            <th>Condition</th>
+                            <th>Lab Results</th>
                         {% endif %}
                     </tr>
                 </thead>
@@ -88,8 +88,8 @@
                                 <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                 <td>{{ trial.title }}</td>
                                 {%- if trial.filter_condition %}
-                                <td>{{ trial.parse_description }}</td>
                                 <td>{{ trial.filter_condition }}</td>
+                                <td>{{ trial.lab_result }}</td>
                                 {% endif %}
                             </tr>
                         {%- endfor %}

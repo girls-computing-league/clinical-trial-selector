@@ -10,16 +10,16 @@ def find_conditions(description):
     pattern = re.compile(f'(\[?({MATCH_TYPE})\]?\s?[\>\=\<]+\s?(\d+[\.\,]?\d*\s?\w+\/?\w+(\^\d*)?))')
     matches = pattern.findall(description.lower())
     if matches:
-        return( {match[1]: str(match[2]) for match in matches})
+        return({match[1]: str(match[2]) for match in matches})
 
 
 def download_descriptions():
-    with open('test.csv', 'w+') as f:
+    with open('descriptions.csv', 'w+') as f:
         writer = csv.writer(f, delimiter=',')
         writer.writerow(['nct_id', 'nci_id', 'max_age', 'max_age_number', 'min_age_unit',
                          'max_age_unit', 'max_age_in_years', 'gender', 'min_age', 'min_age_number',
                          'min_age_in_years', 'descriptions', 'hemoglobin', 'platelets', 'leukocytes'])
-        for i in range(0, 50, 50):
+        for i in range(0, 12200, 50):
             url = 'https://clinicaltrialsapi.cancer.gov/v1/clinical-trials?' \
                   'include=eligibility.unstructured&include=nci_id&'\
                   'include=nct_id&include=eligibility.structured'
