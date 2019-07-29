@@ -214,8 +214,13 @@ def filter_by_lab_results():
         filter_by_inclusion_criteria(trials_by_ncit, lab_results)
 
     session['combined_patient'].trials_by_ncit = filter_trails_by_inclusion_criteria
+    session['combined_patient'].numTrials = sum([len(x) for x in filter_trails_by_inclusion_criteria.values()])
+    session['combined_patient'].num_conditions_with_trials = len(filter_trails_by_inclusion_criteria)
+
     session['excluded'] = excluded_trails_by_inclusion_criteria
     session['combined_patient'].filtered = True
+    session['excluded_num_trials'] = sum([len(x) for x in excluded_trails_by_inclusion_criteria.values()])
+    session['excluded_num_conditions_with_trials'] = len(excluded_trails_by_inclusion_criteria)
     return redirect('/')
 
 
