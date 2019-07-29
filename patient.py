@@ -4,7 +4,7 @@ import requests as req
 import logging
 import pyodbc
 
-#BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
+# BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
 DEMOGRAPHICS_URL = BASE_URL + "Patient/"
 CONDITIONS_URL = BASE_URL + "Condition?_count=50&patient="
@@ -21,15 +21,15 @@ connection_details = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server +
                      username + ';PWD=' + password
 
 LOINC_CODES = {
-    # 'hemoglobin': '',
-    # 'wbc': '',
-    'Platelets': '32623-1'
+    '718-7': 'hemoglobin',
+    '6690-2': 'leukocytes',
+    '32623-1': 'platelets'
 }
 
 TABLE_NAME_BY_CELL_TYPE = {
     'hemoglobin': 'Dataset1_Hemoglobin_Trials_First',
-    'wbc' : 'Dataset1_WBC_Trials_First',
-    'Platelets': 'Dataset1_Platelets_Trials_First',
+    'wbc': 'Dataset1_WBC_Trials_First',
+    'platelets': 'Dataset1_Platelets_Trials_First',
 }
 
 
@@ -65,7 +65,7 @@ def load_patients(direct="va"):
 def get_patient():
     return
 
-def get_api(token, url, params={}):
+def get_api(token, url, params=None):
     headers = {"Authorization": "Bearer {}".format(token)}
     res = req.get(url, headers=headers, params=params)
     return res.json()
@@ -150,21 +150,35 @@ def find_all_codes(disease_list):
 
 
 def get_lab_observations_by_patient(patient_id, token):
-    values_by_cell_type = {}
+    loinc_codes = ','.join(list(LOINC_CODES.keys()))
+    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=40&code={loinc_codes}'
 
-    for cell_type in LOINC_CODES:
-        params = {'patient': patient_id, 'code': LOINC_CODES[cell_type]}
-        observations = get_api(token, url=OBSERVATION_URL, params=params)
+    lab_results = {}
+    while current_url is not None:
+        observations = get_api(token, url=current_url)
 
         # extract values from observations.
-        # getting only one value for now.
-        values_by_cell_type[cell_type] = str(observations.get('entry')[0]['resource']['valueQuantity']['value'])
-        # for entry in observations.get('entry')[0]:
-        #     try:
-        #         values_by_cell_type[cell_type].append(entry['resource']['valueQuantity']['value'])
-        #     except KeyError:
-        #         pass
-    print("VALUES:", values_by_cell_type)
+        for entry in observations.get('entry'):
+            resource = entry['resource']
+
+            try:
+                code = resource['code']['coding'][0]['code']
+                value_quantity = resource['valueQuantity']
+                value = str(value_quantity['value']) + ' ' + value_quantity['unit']
+                effective_date_time = resource['effectiveDateTime']
+            except KeyError:
+                continue
+
+            # Store the latest observation result
+            if code not in lab_results or effective_date_time > lab_results[code]['effectiveDateTime']:
+                lab_results[code] = {'effectiveDateTime': effective_date_time, 'value': value}
+
+        current_url = None
+        for link in observations['link']:
+            if link['relation'] == 'next':
+                current_url = link['url']
+
+    values_by_cell_type = {LOINC_CODES[key]: val['value'] for key, val in lab_results.items()}
     return values_by_cell_type
 
 
@@ -179,10 +193,10 @@ def filter_by_inclusion_criteria(trials_by_ncit, lab_results):
     # for lab_result in lab_results:
 
     # only checking for platelets for now.
-    value = lab_results['Platelets']
+    value = lab_results['platelets']
     for trial in trials_by_ncit:
         filtered_trials, excluded_trails = filter_trials_from_db(trials=trial['trials'], comparision_val=value,
-                                                                 cell_type='Platelets')
+                                                                 cell_type='platelets')
         filtered_trials_by_ncit.append({"ncit": trial['ncit'], "trials": filtered_trials})
         excluded_trials_by_ncit.append({"ncit": trial['ncit'], "trials": excluded_trails})
 
