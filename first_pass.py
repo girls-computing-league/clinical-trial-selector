@@ -24,6 +24,6 @@ def get_diseases_icd_codes():
         res = requests.get(url + nci_thesaurus_concept_id, params=params)
         for result in res.json()["result"]:
             if result["ui"] not in ("TCGA", "OMFAQ", "MPN-SAF"):
-                code_ncit = result["ui"]
+                code_ncit = result["ui"].replace('.','')
                 icd_codes.append(code_ncit)
     return icd_codes
