@@ -6,6 +6,7 @@ import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 from infected_patients import get_infected_patients
 import json
+from wtforms import Form, StringField, validators
 
 # creates the flask webserver and the secret key of the web server
 app = Flask(__name__)
@@ -225,12 +226,19 @@ def filter_by_lab_results():
     return redirect('/')
 
 
-@app.route('/infected_patients')
+class InfectedPatientsForm(Form):
+    trial_nci_id = StringField('Trial ID ', [validators.Length(max=25)])
+
+
+@app.route('/infected_patients', methods=['GET', 'POST'])
 def infected_patients():
-    # nci_trial_id = session['nci_trial_id']
-    patients = get_infected_patients([])
-    session['infected_patients'] = patients
-    return render_template("infected_patients.html")
+    form = InfectedPatientsForm(request.form)
+    if request.method == 'POST' and form.validate():
+        nci_trial_id = form.trial_nci_id.data
+        patients = get_infected_patients(nci_trial_id)
+        session['infected_patients'] = patients
+        return render_template("infected_patients.html", form=form)
+    return render_template("infected_patients.html", form=form)
 
 
 @app.route('/infected_patients_info')

@@ -82,21 +82,6 @@ def get_patients(body: Dict) -> List:
     return patients
 
 
-def get_infected_patients(patients: List[Dict], code: str = 'NCT02194738'):
-    codes = get_diseases_icd_codes(code)
-    codes.append('5672')    # TODO
-    with open('outp.json') as f:
-        patients = ndjson.load(f)
-    parser = parse(f'$.resource.diagnosis[*].diagnosisCodeableConcept.coding[*].code')
-    infected_patients = {}
-    for patient in patients:
-        patient_id = patient['resource']['patient']['reference']
-        for match in parser.find(patient):
-            if match.value in codes:
-                infected_patients[patient_id] = patient['resource']
-    return infected_patients
-
-
 def get_nci_thesaurus_concept_ids(code: str):
     diseases = requests.get(CLINICAL_TRIALS_URL+code).json()['diseases']
     nci_thesaurus_concept_ids = [disease['nci_thesaurus_concept_id'] for disease in diseases]
@@ -121,6 +106,21 @@ def get_diseases_icd_codes(code: str):
             continue
         for result in res.json()["result"]:
             if result["ui"] not in ("TCGA", "OMFAQ", "MPN-SAF"):
-                code_ncit = result["ui"].replace('.','')
+                code_ncit = result["ui"].replace('.', '')
                 icd_codes.append(code_ncit)
     return icd_codes
+
+
+def get_infected_patients(patients: List[Dict], code: str = 'NCT02194738'):
+    codes = get_diseases_icd_codes(code)
+    codes.append('5672')    # TODO
+    with open('outp.json') as f:
+        patients = ndjson.load(f)
+    parser = parse(f'$.resource.diagnosis[*].diagnosisCodeableConcept.coding[*].code')
+    infected_patients = {}
+    for patient in patients:
+        patient_id = patient['resource']['patient']['reference']
+        for match in parser.find(patient):
+            if match.value in codes:
+                infected_patients[patient_id] = patient['resource']
+    return infected_patients

@@ -1,33 +1,46 @@
 {% extends "base.html" %}
 {% block content %}
-<ul class="nav nav-tabs" id="myTab">
-    <li class="nav-item"><a class="nav-link" href="#patients" data-toggle="tab">Patients</a></li>
-</ul>
-<div class="tab-content">
-        <div class="tab-pane active" id="patients">
-            <br>
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>reference</th>
-                        <th>Id</th>
-                        <th>resourceType</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if session["infected_patients"] %}
-                        {%- for patient in session["infected_patients"].values() %}
-                            <tr>
-                                <td><a href="/infected_patients_info?id={{ patient['patient']['reference'] }}">{{ patient['patient']['reference'] }}</a></td>
-                                <td class="page-header">{{ patient['id'] }}</td>
-                                <td class="page-header">{{ patient['resourceType'] }}</td>
-                                <td class="page-header">{{ patient['status'] }}</td>
-                            </tr>
-                        {%- endfor %}
-                    {%- endif %}
-                </tbody>
-            </table>
-        </div>
-</div>
+
+    {% from "_form_helpers.html" import render_field %}
+    <form method=post>
+        <dl>
+            {{ render_field(form.trial_nci_id) }}
+            </dl>
+        <p><input type=submit value=Search>
+    </form>
+
+
+    <ul class="nav nav-tabs" id="myTab">
+        <li class="nav-item"><a class="nav-link" href="#patients" data-toggle="tab">Patients</a></li>
+    </ul>
+    <div class="tab-content">
+            <div class="tab-pane active" id="patients">
+                <br>
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>reference</th>
+                            <th>Id</th>
+                            <th>resourceType</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if session["infected_patients"] %}
+                            {%- for patient in session["infected_patients"].values() %}
+                                <tr>
+                                    <td>
+                                        <a href="/infected_patients_info?id={{ patient['patient']['reference'] }}">
+                                        {{ patient['patient']['reference'] }}</a>
+                                    </td>
+                                    <td class="page-header">{{ patient['id'] }}</td>
+                                    <td class="page-header">{{ patient['resourceType'] }}</td>
+                                    <td class="page-header">{{ patient['status'] }}</td>
+                                </tr>
+                            {%- endfor %}
+                        {%- endif %}
+                    </tbody>
+                </table>
+            </div>
+    </div>
 {% endblock %}
