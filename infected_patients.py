@@ -3,12 +3,14 @@ from time import sleep
 import binascii
 import os
 import ndjson
+import requests
 from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from requests import request
 from jsonpath_rw_ext import parse
 from typing import Dict, List
+from umls import Authentication
 
 GCM_NONCE_SIZE = 12
 GCM_TAG_SIZE = 16
@@ -16,6 +18,7 @@ EXPORT_URL = 'https://sandbox.bcda.cms.gov/api/v1/ExplanationOfBenefit/$export'
 HEADERS = {
     'Authorization': "Bearer eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY28iOiJkM2U1MGEwNC0zMzA0LTRkMDEtYWUwMC1jNGNlOTIzODBkMTEiLCJleHAiOjE2MTYwODk3NTYsImlhdCI6MTU1MzAxNzc1NiwiaWQiOiJlNzFmMDQyYi1hMWZiLTQ0MDItYTgzZS1lZDlhYThlMTg4NmEiLCJzdWIiOiI1MDlkMjYwMy0wNzhiLTQ2YzgtODVmYi1lYzU3ZWEyY2QzYmQifQ.W2YKCNQNHkUukW1gP76cXr3J0JVeuYXSbgZQ9pAf2Rb_dnJ_GRn8g7rGwoGZUkCCv9fEOGUrbDpjpPJbNJUiwUqcfXCWkdQxTEfimAx5orC6UiNorjqPuKmloALWmN-B7b_62-BJ62u0xR5glbHl7CV5buI9yzWVzbMgvwuUH3VY3B7FQ-MXL3aqLtNoqlmfXjnARb4PsFBBReyJseIPpIbCQB3fUfV3DFL6wRWk4AW_Sa1w4UamzCyZER398cXE9CvpTylyVVdZSoP_p3V7tVyi5xVC8Jjf_zY3wJi2nc0ONqLqyMET8vfItVdYmJ6R4ShdIVRzDHFln7mXYVwOVw"
 }
+CLINICAL_TRIALS_URL = 'https://clinicaltrialsapi.cancer.gov/v1/clinical-trial/'
 
 
 def decrypt_cipher(ct: 'File', key: str):
@@ -79,20 +82,45 @@ def get_patients(body: Dict) -> List:
     return patients
 
 
-def get_infected_patients(patients: List[Dict], codes: List = ['5672']):
-    # with open('out.json') as f:
-    #     patients = ndjson.load(f)
+def get_infected_patients(patients: List[Dict], code: str = 'NCT02194738'):
+    codes = get_diseases_icd_codes(code)
+    codes.append('5672')    # TODO
+    with open('outp.json') as f:
+        patients = ndjson.load(f)
     parser = parse(f'$.resource.diagnosis[*].diagnosisCodeableConcept.coding[*].code')
-    # d = {}
-    infected_patients = []
+    infected_patients = {}
     for patient in patients:
         patient_id = patient['resource']['patient']['reference']
         for match in parser.find(patient):
             if match.value in codes:
-                infected_patients.append({patient_id: patient})
-        # d[patient_id] = {
-        #     'codes': [match.value for match in parser.find(patient)],
-        #     'id': patient['resource']['id']
-        # }
-    # print(infected_patients)
+                infected_patients[patient_id] = patient['resource']
     return infected_patients
+
+
+def get_nci_thesaurus_concept_ids(code: str):
+    diseases = requests.get(CLINICAL_TRIALS_URL+code).json()['diseases']
+    nci_thesaurus_concept_ids = [disease['nci_thesaurus_concept_id'] for disease in diseases]
+    return nci_thesaurus_concept_ids
+
+
+def get_diseases_icd_codes(code: str):
+    auth = Authentication("***REMOVED***")
+    target = auth.gettgt()
+    ticket = auth.getst(target)
+    params = {'targetSource': 'ICD9CM', 'ticket': ticket}
+    codeset = 'NCI'
+
+    url = f'https://uts-ws.nlm.nih.gov/rest/crosswalk/current/source/{codeset}/'
+    icd_codes = []
+    for nci_thesaurus_concept_id in get_nci_thesaurus_concept_ids(code):
+        res = requests.get(url + nci_thesaurus_concept_id, params=params)
+        try:
+            print(res.status_code)
+            res.raise_for_status()
+        except:
+            continue
+        for result in res.json()["result"]:
+            if result["ui"] not in ("TCGA", "OMFAQ", "MPN-SAF"):
+                code_ncit = result["ui"].replace('.','')
+                icd_codes.append(code_ncit)
+    return icd_codes

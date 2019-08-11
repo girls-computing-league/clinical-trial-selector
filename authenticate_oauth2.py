@@ -4,6 +4,7 @@ from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
 import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
+from infected_patients import get_infected_patients
 import json
 
 # creates the flask webserver and the secret key of the web server
@@ -222,6 +223,19 @@ def filter_by_lab_results():
     session['excluded_num_trials'] = sum([len(x['trials']) for x in excluded_trails_by_inclusion_criteria])
     session['excluded_num_conditions_with_trials'] = len(excluded_trails_by_inclusion_criteria)
     return redirect('/')
+
+
+@app.route('/infected_patients')
+def infected_patients():
+    # nci_trial_id = session['nci_trial_id']
+    patients = get_infected_patients([])
+    session['infected_patients'] = patients
+    return render_template("infected_patients.html")
+
+
+@app.route('/infected_patients_info')
+def display_infected_patients():
+    return render_template('patients_info.html')
 
 
 @app.route('/trial')
