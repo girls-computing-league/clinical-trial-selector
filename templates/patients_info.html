@@ -29,67 +29,27 @@
 {% endblock %}
 
 {% block content %}
-{% block extra_button %}
-    <a class="btn btn-primary" href="/infected_patients">All Patients</a>
-{% endblock %}
-<div class="tab-pane" >
-            <br>
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>reference</th>
-                        <th>Id</th>
-                        <th>resourceType</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if patient %}
-                        <tr>
-                            <td class="page-header">{{ patient['patient']['reference'] }}</td>
-                            <td class="page-header">{{ patient['id'] }}</td>
-                            <td class="page-header">{{ patient['resourceType'] }}</td>
-                            <td class="page-header">{{ patient['status'] }}</td>
-                        </tr>
-                    {%- endif %}
-                </tbody>
-            </table>
-        </div><!--/tab-pane-->
     <br>
-    <ul class="nav nav-tabs" id="myTab">
-        <li class="nav-item active"><a class="nav-link active" href="#info" data-toggle="tab">Info</a></li>
-        <li class="nav-item"><a class="nav-link" href="#diseases" data-toggle="tab">Diseases</a></li>
-    </ul>
+    {% block extra_button %}
+        <a class="btn btn-primary" href="/infected_patients">All Patients</a>
+    {% endblock %}
 
-    <div class="tab-content">
-
-        <div class="tab-pane active" id="info">
-            <br>
-            {{ section("Status", "Status", patient['status']) }}
-            {{ section("resourceType", "resourceType", patient['resourceType']) }}
-        </div><!--/tab-pane-->
-        <div class="tab-pane" id="diseases">
-                <table class="custom-table">
-                        <thead>
-                            <tr>
-                                <th>Disease</th>
-                                <th>ICD-9 Code</th>
-                                <th>System</th>
-                            </tr>
-                        </thead>
-
-                        {%- for disease in patient['diagnosis'] %}
-                            <tbody>
-                                <tr>
-                                    <td>{{disease["diagnosisCodeableConcept"]["coding"][0]["display"]}}</td>
-                                    <td>{{ disease["diagnosisCodeableConcept"]["coding"][0]["code"] }}</td>
-                                    <td>{{ disease["diagnosisCodeableConcept"]["coding"][0]["system"] }}</td>
-                                </tr>
-                            </tbody>
-                        {%- endfor %}
-                    </table>
-
-        </div><!--/tab-pane-->
-    </div><!--/tab-content-->
-
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Disease</th>
+                <th>ICD-9 Code</th>
+                <th>System</th>
+            </tr>
+        </thead>
+        {%- for key, disease in patient['diagnosis'].items() %}
+            <tbody>
+                <tr>
+                    <td>{{disease["diagnosisCodeableConcept"]["coding"][0]["display"]}}</td>
+                    <td>{{ key }}</td>
+                    <td>{{ disease["diagnosisCodeableConcept"]["coding"][0]["system"] }}</td>
+                </tr>
+            </tbody>
+        {%- endfor %}
+    </table>
 {% endblock %}

@@ -1,0 +1,69 @@
+[{
+	"fullUrl": "https:///v1/fhir/Patient/19990000002901",
+	"resource": {
+		"address": [{
+			"district": "999",
+			"postalCode": "99999",
+			"state": "34"
+		}],
+		"birthDate": "1999-06-01",
+		"extension": [{
+			"url": "https://bluebutton.cms.gov/resources/variables/race",
+			"valueCoding": {
+				"code": "1",
+				"display": "White",
+				"system": "https://bluebutton.cms.gov/resources/variables/race"
+			}
+		}],
+		"gender": "unknown",
+		"id": "19990000002901",
+		"identifier": [{
+			"system": "https://bluebutton.cms.gov/resources/variables/bene_id",
+			"value": "19990000002901"
+		}, {
+			"system": "https://bluebutton.cms.gov/resources/identifier/hicn-hash",
+			"value": "77174c6546668151f741cca47739271baf364d19825a387101d39fc303d91f2c"
+		}],
+		"name": [{
+			"family": "Doe",
+			"given": ["Jane", "X"],
+			"use": "usual"
+		}],
+		"resourceType": "Patient"
+	}
+},
+{
+	"fullUrl": "https:///v1/fhir/Patient/19990000002901",
+	"resource": {
+		"address": [{
+			"district": "999",
+			"postalCode": "99999",
+			"state": "34"
+		}],
+		"birthDate": "1999-06-01",
+		"extension": [{
+			"url": "https://bluebutton.cms.gov/resources/variables/race",
+			"valueCoding": {
+				"code": "1",
+				"display": "White",
+				"system": "https://bluebutton.cms.gov/resources/variables/race"
+			}
+		}],
+		"gender": "unknown",
+		"id": "19990000002902",
+		"identifier": [{
+			"system": "https://bluebutton.cms.gov/resources/variables/bene_id",
+			"value": "19990000002901"
+		}, {
+			"system": "https://bluebutton.cms.gov/resources/identifier/hicn-hash",
+			"value": "77174c6546668151f741cca47739271baf364d19825a387101d39fc303d91f2c"
+		}],
+		"name": [{
+			"family": "Doe",
+			"given": ["Jane", "X"],
+			"use": "usual"
+		}],
+		"resourceType": "Patient"
+	}
+}
+	]
