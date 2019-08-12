@@ -14,7 +14,7 @@ from umls import Authentication
 
 GCM_NONCE_SIZE = 12
 GCM_TAG_SIZE = 16
-EXPORT_URL = 'https://sandbox.bcda.cms.gov/api/v1/ExplanationOfBenefit/$export'
+EXPORT_URL = 'https://sandbox.bcda.cms.gov/api/v1/{data_type}/$export'
 HEADERS = {
     'Authorization': "Bearer eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY28iOiJkM2U1MGEwNC0zMzA0LTRkMDEtYWUwMC1jNGNlOTIzODBkMTEiLCJleHAiOjE2MTYwODk3NTYsImlhdCI6MTU1MzAxNzc1NiwiaWQiOiJlNzFmMDQyYi1hMWZiLTQ0MDItYTgzZS1lZDlhYThlMTg4NmEiLCJzdWIiOiI1MDlkMjYwMy0wNzhiLTQ2YzgtODVmYi1lYzU3ZWEyY2QzYmQifQ.W2YKCNQNHkUukW1gP76cXr3J0JVeuYXSbgZQ9pAf2Rb_dnJ_GRn8g7rGwoGZUkCCv9fEOGUrbDpjpPJbNJUiwUqcfXCWkdQxTEfimAx5orC6UiNorjqPuKmloALWmN-B7b_62-BJ62u0xR5glbHl7CV5buI9yzWVzbMgvwuUH3VY3B7FQ-MXL3aqLtNoqlmfXjnARb4PsFBBReyJseIPpIbCQB3fUfV3DFL6wRWk4AW_Sa1w4UamzCyZER398cXE9CvpTylyVVdZSoP_p3V7tVyi5xVC8Jjf_zY3wJi2nc0ONqLqyMET8vfItVdYmJ6R4ShdIVRzDHFln7mXYVwOVw"
 }
@@ -45,25 +45,29 @@ def decrypt(ek: str, filepath: str,  pk: str = 'ATO_private.pem'):
     return result
 
 
-def submit_get_patients_job() -> List:
+def submit_get_patients_job(url: str) -> List:
     submit_header = {
         'Accept': "application/fhir+json",
         'Prefer': "respond-async"
     }
     submit_header.update(HEADERS)
+    job_attempts = 0
     try:
-        response = request("GET", EXPORT_URL, headers=submit_header)
+        response = request("GET", url, headers=submit_header)
         response.raise_for_status()
         job_url = response.headers['Content-Location']
-        sleep(20)   # TODO async call
-        job_response = request('GET', job_url, headers=HEADERS)
-        if job_response.status_code == 200:
-            job_response.raise_for_status()
-            output = job_response.json().get('output', None)
-            if output:
-                patients = get_patients(output[0])
-                print('done')
-                return patients
+        while job_attempts < 10:
+            job_response = request('GET', job_url, headers=HEADERS)
+            job_attempts += 1
+            if job_response.status_code == 200:
+                job_response.raise_for_status()
+                output = job_response.json().get('output', None)
+                if output:
+                    patients = get_patients(output[0])
+                    return patients
+            print('Waiting 5sec  for the job to complete')
+            sleep(1)
+        print(f'Failed to get response from the url: {job_url} after {job_attempts} attempts')
     except Exception as exc:
         print(f'Failed due to : {exc}')
         raise Exception(exc)
@@ -75,6 +79,7 @@ def get_patients(body: Dict) -> List:
     patients_url = body['url']
     file_name = patients_url.split('/')[-1]
     response = request('GET', patients_url, headers=HEADERS)
+    # TODO delete files
     with open(file_name, 'wb') as f:
         f.write(response.content)
     nd_patients = decrypt(encrypted_key, file_name)
@@ -82,18 +87,40 @@ def get_patients(body: Dict) -> List:
     return patients
 
 
-def get_infected_patients(patients: List[Dict], code: str = 'NCT02194738'):
+def get_infected_patients(code: str = 'NCT02194738'):
     codes = get_diseases_icd_codes(code)
+    print(codes)
+    url = EXPORT_URL.format(
+        data_type='ExplanationOfBenefit'
+    )
+    # patients = submit_get_patients_job(url=url)
     codes.append('5672')    # TODO
-    with open('outp.json') as f:
+    with open('out2.json') as f:
         patients = ndjson.load(f)
     parser = parse(f'$.resource.diagnosis[*].diagnosisCodeableConcept.coding[*].code')
     infected_patients = {}
     for patient in patients:
         patient_id = patient['resource']['patient']['reference']
         for match in parser.find(patient):
-            if match.value in codes:
-                infected_patients[patient_id] = patient['resource']
+            if match.value:
+                if patient_id in infected_patients:
+                    infected_patients[patient_id] = patient['resource']
+                else:
+
+    return infected_patients
+
+
+def get_infected_patients_info():
+    url = EXPORT_URL.format(
+        data_type='Patient'
+    )
+    # patients = submit_get_patients_job(url=url)
+    with open('info.json') as f:
+        patients = ndjson.load(f)
+    infected_patients = {}
+    for patient in patients:
+        patient_id = patient['resource']['id']
+        infected_patients[patient_id] = patient['resource']
     return infected_patients
 
 

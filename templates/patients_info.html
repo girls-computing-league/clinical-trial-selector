@@ -28,11 +28,10 @@
     Browse Patient # {{id}}
 {% endblock %}
 
-{% block extra_button %}
-    <a class="btn btn-primary" href="/">All Patients</a>
-{% endblock %}
-
 {% block content %}
+{% block extra_button %}
+    <a class="btn btn-primary" href="/infected_patients">All Patients</a>
+{% endblock %}
 <div class="tab-pane" >
             <br>
             <table class="custom-table">

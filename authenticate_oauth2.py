@@ -27,7 +27,7 @@ cms = oauth.remote_app(
     base_url = "https://sandbox.bluebutton.cms.gov/v1/o",
     consumer_key = keys_dict["cms_key"],
     consumer_secret = keys_dict["cms_secret"],
-    request_token_params = {'scope': 'profile'},
+    request_token_params = {'scope': 'profile patient/Patient.read'},
     request_token_url = None,
     access_token_url = "https://sandbox.bluebutton.cms.gov/v1/o/token/",
     authorize_url = "https://sandbox.bluebutton.cms.gov/v1/o/authorize/",
@@ -129,6 +129,8 @@ def cmsredirect():
     session['cms_patient'] = resp['patient']
     session.pop("trials", None)
     pat_token = {"mrn": resp["patient"], "token": resp["access_token"]}
+    print(resp['patient'])
+    print(resp)
     pat = hack.CMSPatient(resp['patient'], pat_token)
     pat.load_demographics()
     session['cms_gender'] = pat.gender
@@ -228,7 +230,7 @@ def filter_by_lab_results():
 @app.route('/infected_patients')
 def infected_patients():
     # nci_trial_id = session['nci_trial_id']
-    patients = get_infected_patients([])
+    patients = get_infected_patients()
     session['infected_patients'] = patients
     return render_template("infected_patients.html")
 
