@@ -6,6 +6,7 @@ import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 from infected_patients import get_infected_patients
 import json
+from wtforms import Form, StringField, validators
 
 # creates the flask webserver and the secret key of the web server
 app = Flask(__name__)
@@ -27,7 +28,7 @@ cms = oauth.remote_app(
     base_url = "https://sandbox.bluebutton.cms.gov/v1/o",
     consumer_key = keys_dict["cms_key"],
     consumer_secret = keys_dict["cms_secret"],
-    request_token_params = {'scope': 'profile patient/Patient.read'},
+    request_token_params = {'scope': 'profile'},
     request_token_url = None,
     access_token_url = "https://sandbox.bluebutton.cms.gov/v1/o/token/",
     authorize_url = "https://sandbox.bluebutton.cms.gov/v1/o/authorize/",
@@ -129,8 +130,6 @@ def cmsredirect():
     session['cms_patient'] = resp['patient']
     session.pop("trials", None)
     pat_token = {"mrn": resp["patient"], "token": resp["access_token"]}
-    print(resp['patient'])
-    print(resp)
     pat = hack.CMSPatient(resp['patient'], pat_token)
     pat.load_demographics()
     session['cms_gender'] = pat.gender
@@ -227,12 +226,19 @@ def filter_by_lab_results():
     return redirect('/')
 
 
-@app.route('/infected_patients')
+class InfectedPatientsForm(Form):
+    trial_nci_id = StringField('Trial ID ', [validators.Length(max=25)])
+
+
+@app.route('/infected_patients', methods=['GET', 'POST'])
 def infected_patients():
-    # nci_trial_id = session['nci_trial_id']
-    patients = get_infected_patients()
-    session['infected_patients'] = patients
-    return render_template("infected_patients.html")
+    form = InfectedPatientsForm(request.form)
+    if request.method == 'POST' and form.validate():
+        nci_trial_id = form.trial_nci_id.data
+        patients = get_infected_patients(nci_trial_id)
+        session['infected_patients'] = patients
+        return render_template("infected_patients.html", form=form)
+    return render_template("infected_patients.html", form=form)
 
 
 @app.route('/infected_patients_info')

@@ -148,6 +148,6 @@ def get_diseases_icd_codes(code: str):
             continue
         for result in res.json()["result"]:
             if result["ui"] not in ("TCGA", "OMFAQ", "MPN-SAF"):
-                code_ncit = result["ui"].replace('.','')
+                code_ncit = result["ui"].replace('.', '')
                 icd_codes.append(code_ncit)
     return icd_codes

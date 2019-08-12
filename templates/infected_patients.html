@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
+
+{% from "_form_helpers.html" import render_field %}
+<form method=post>
+    <dl>
+        {{ render_field(form.trial_nci_id) }}
+        </dl>
+    <p><input type=submit value=Search>
+</form>
+
+
 <ul class="nav nav-tabs" id="myTab">
     <li class="nav-item"><a class="nav-link" href="#patients" data-toggle="tab">Patients</a></li>
 </ul>
