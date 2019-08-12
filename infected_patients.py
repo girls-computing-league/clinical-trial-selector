@@ -87,8 +87,9 @@ def get_patients(body: Dict) -> List:
     return patients
 
 
-def get_infected_patients(code: str = 'NCT02194738'):
-    codes = get_diseases_icd_codes(code)
+def get_infected_patients(code: str):
+    # codes = get_diseases_icd_codes(code)
+    codes = []
     print(codes)
     url = EXPORT_URL.format(
         data_type='ExplanationOfBenefit'
@@ -97,16 +98,20 @@ def get_infected_patients(code: str = 'NCT02194738'):
     codes.append('5672')    # TODO
     with open('out2.json') as f:
         patients = ndjson.load(f)
+    patient_info = get_infected_patients_info()
     parser = parse(f'$.resource.diagnosis[*].diagnosisCodeableConcept.coding[*].code')
     infected_patients = {}
     for patient in patients:
-        patient_id = patient['resource']['patient']['reference']
+        patient_id = patient['resource']['patient']['reference'].split('/-')[-1]
         for match in parser.find(patient):
             if match.value:
                 if patient_id in infected_patients:
-                    infected_patients[patient_id] = patient['resource']
-                else:
+                    infected_patients[patient_id]['diagnosis'].extend(patient['resource']['diagnosis'])
 
+                else:
+                    infected_patients[patient_id] = patient['resource']
+                    infected_patients[patient_id]['demo_info'] = patient_info.get(patient_id, None)
+    print(infected_patients)
     return infected_patients
 
 
@@ -115,8 +120,9 @@ def get_infected_patients_info():
         data_type='Patient'
     )
     # patients = submit_get_patients_job(url=url)
+    from json import load
     with open('info.json') as f:
-        patients = ndjson.load(f)
+        patients = load(f)
     infected_patients = {}
     for patient in patients:
         patient_id = patient['resource']['id']
@@ -125,6 +131,7 @@ def get_infected_patients_info():
 
 
 def get_nci_thesaurus_concept_ids(code: str):
+    import ipdb;ipdb.sset_trace()
     diseases = requests.get(CLINICAL_TRIALS_URL+code).json()['diseases']
     nci_thesaurus_concept_ids = [disease['nci_thesaurus_concept_id'] for disease in diseases]
     return nci_thesaurus_concept_ids
@@ -139,7 +146,8 @@ def get_diseases_icd_codes(code: str):
 
     url = f'https://uts-ws.nlm.nih.gov/rest/crosswalk/current/source/{codeset}/'
     icd_codes = []
-    for nci_thesaurus_concept_id in get_nci_thesaurus_concept_ids(code):
+    nci_thesaurus_concept_ids = get_nci_thesaurus_concept_ids(code)
+    for nci_thesaurus_concept_id in nci_thesaurus_concept_ids:
         res = requests.get(url + nci_thesaurus_concept_id, params=params)
         try:
             print(res.status_code)

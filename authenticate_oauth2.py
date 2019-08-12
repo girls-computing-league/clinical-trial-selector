@@ -234,7 +234,7 @@ class InfectedPatientsForm(Form):
 def infected_patients():
     form = InfectedPatientsForm(request.form)
     if request.method == 'POST' and form.validate():
-        nci_trial_id = form.trial_nci_id.data
+        nci_trial_id = form.trial_nci_id.data or 'NCT02194738'
         patients = get_infected_patients(nci_trial_id)
         session['infected_patients'] = patients
         return render_template("infected_patients.html", form=form)
