@@ -4,22 +4,41 @@ import binascii
 import os
 import ndjson
 import requests
+import tempfile
 from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from requests import request
 from jsonpath_rw_ext import parse
+from base64 import b64encode
 from typing import Dict, List
 from umls import Authentication
 
 GCM_NONCE_SIZE = 12
 GCM_TAG_SIZE = 16
+BCDA_URL = 'https://sandbox.bcda.cms.gov/'
 EXPORT_URL = 'https://sandbox.bcda.cms.gov/api/v1/{data_type}/$export'
-HEADERS = {
-    'Authorization': "Bearer eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY28iOiJkM2U1MGEwNC0zMzA0LTRkMDEtYWUwMC1jNGNlOTIzODBkMTEiLCJleHAiOjE2MTYwODk3NTYsImlhdCI6MTU1MzAxNzc1NiwiaWQiOiJlNzFmMDQyYi1hMWZiLTQ0MDItYTgzZS1lZDlhYThlMTg4NmEiLCJzdWIiOiI1MDlkMjYwMy0wNzhiLTQ2YzgtODVmYi1lYzU3ZWEyY2QzYmQifQ.W2YKCNQNHkUukW1gP76cXr3J0JVeuYXSbgZQ9pAf2Rb_dnJ_GRn8g7rGwoGZUkCCv9fEOGUrbDpjpPJbNJUiwUqcfXCWkdQxTEfimAx5orC6UiNorjqPuKmloALWmN-B7b_62-BJ62u0xR5glbHl7CV5buI9yzWVzbMgvwuUH3VY3B7FQ-MXL3aqLtNoqlmfXjnARb4PsFBBReyJseIPpIbCQB3fUfV3DFL6wRWk4AW_Sa1w4UamzCyZER398cXE9CvpTylyVVdZSoP_p3V7tVyi5xVC8Jjf_zY3wJi2nc0ONqLqyMET8vfItVdYmJ6R4ShdIVRzDHFln7mXYVwOVw"
-}
+TOKEN = ''
 CLINICAL_TRIALS_URL = 'https://clinicaltrialsapi.cancer.gov/v1/clinical-trial/'
 CROSS_WALK_URL = 'https://uts-ws.nlm.nih.gov/rest/crosswalk/current/source/'
+
+
+def set_authenticate_bcda_api_token(client_id: str, client_secret: str):
+    token_url = f'{BCDA_URL}auth/token'
+    encoded_auth = b64encode(f'{client_id}:{client_secret}'.encode()).decode()
+    headers = {
+        'Authorization': f'Basic {encoded_auth}'
+    }
+    try:
+        response = request("POST", token_url, headers=headers)
+        response.raise_for_status()
+        bearer_token = response.json().get('access_token', '')
+        global TOKEN
+        TOKEN = bearer_token
+    except Exception as e:
+        raise Exception(f'authentication failed: {e}')
+    return bearer_token
+
 
 def decrypt_cipher(ct: 'File', key: str):
     nonce = ct.read(GCM_NONCE_SIZE)
@@ -48,25 +67,28 @@ def decrypt(ek: str, filepath: str,  pk: str = 'ATO_private.pem'):
 def submit_get_patients_job(url: str) -> List:
     submit_header = {
         'Accept': "application/fhir+json",
-        'Prefer': "respond-async"
+        'Prefer': "respond-async",
+        'Authorization': f'Bearer {TOKEN}'
     }
-    submit_header.update(HEADERS)
     job_attempts = 0
     try:
         response = request("GET", url, headers=submit_header)
         response.raise_for_status()
         job_url = response.headers['Content-Location']
-        while job_attempts < 10:
-            job_response = request('GET', job_url, headers=HEADERS)
+        while job_attempts < 20:
+            job_response = request('GET', job_url, headers={
+                'Authorization': f'Bearer {TOKEN}'
+            })
             job_attempts += 1
             if job_response.status_code == 200:
                 job_response.raise_for_status()
                 output = job_response.json().get('output', None)
                 if output:
                     patients = get_patients(output[0])
+                    print('job_done')
                     return patients
-            print('Waiting 5sec  for the job to complete')
-            sleep(1)
+            print(f'response code {job_response.status_code} Waiting 2sec  for the job to complete')
+            sleep(2)
         print(f'Failed to get response from the url: {job_url} after {job_attempts} attempts')
     except Exception as exc:
         print(f'Failed due to : {exc}')
@@ -78,51 +100,60 @@ def get_patients(body: Dict) -> List:
     encrypted_key = body['encryptedKey']
     patients_url = body['url']
     file_name = patients_url.split('/')[-1]
-    response = request('GET', patients_url, headers=HEADERS)
-    # TODO delete files
-    with open(file_name, 'wb') as f:
-        f.write(response.content)
-    nd_patients = decrypt(encrypted_key, file_name)
+    response = request('GET', patients_url, headers={
+        'Authorization': f'Bearer {TOKEN}'
+    })
+    tmp_dir = tempfile.mkdtemp()
+    file_path = os.path.join(tmp_dir, file_name)
+    try:
+        with open(file_path, 'wb') as f:
+            f.write(response.content)
+        nd_patients = decrypt(encrypted_key, file_path)
+    except Exception as e:
+        raise Exception(e)
+    else:
+        os.remove(file_path)
+    finally:
+        print('removing files')
+        os.rmdir(tmp_dir)
     patients = ndjson.loads(nd_patients)
     return patients
 
 
 def get_infected_patients(trial_nci_code: str):
     # codes = get_diseases_icd_codes(trial_nci_code)    #TODO use this
-    codes = ['5672']
+    codes = ['4011']
 
     url = EXPORT_URL.format(
         data_type='ExplanationOfBenefit'
     )
-
-    # TODO: fix me
-    # patients = submit_get_patients_job(url=url)
-    with open('out2.json') as f:
-        patients = ndjson.load(f)
+    patients = submit_get_patients_job(url=url)
 
     patient_info = get_infected_patients_info()
     infected_patients = {}
     diagnosis = {}
-    for patient in patients:
-        patient_id = patient['resource']['patient']['reference'].split('/-')[-1]
-        if patient_id not in diagnosis:
-            diagnosis[patient_id] = {}
-        for disease in patient['resource']['diagnosis']:
-            if 'diagnosisCodeableConcept' in disease:
-                icd_code = disease['diagnosisCodeableConcept']['coding'][0]['code']
-                if icd_code not in ['9999999', 'XX000']:
-                    diagnosis[patient_id][icd_code] = disease
-                if icd_code in codes:
-                    patient_bene_data = {
-                        'status': patient['resource']['status'],
-                        'diagnosis': diagnosis[patient_id]
-                    }
-                    if patient_id in infected_patients:
-                        infected_patients[patient_id].update(patient_bene_data)
-                    else:
-                        infected_patients[patient_id] = patient_bene_data
-                        infected_patients[patient_id]['demo_info'] = patient_info.get(patient_id, None)
-
+    try:
+        for patient in patients:
+            patient_id = patient['patient']['reference'].split('/-')[-1]
+            if patient_id not in diagnosis:
+                diagnosis[patient_id] = {}
+            for disease in patient['diagnosis']:
+                if 'diagnosisCodeableConcept' in disease:
+                    icd_code = disease['diagnosisCodeableConcept']['coding'][0]['code']
+                    if icd_code not in ['9999999', 'XX000']:
+                        diagnosis[patient_id][icd_code] = disease
+                    if icd_code in codes:
+                        patient_bene_data = {
+                            'status': patient['status'],
+                            'diagnosis': diagnosis[patient_id]
+                        }
+                        if patient_id in infected_patients:
+                            infected_patients[patient_id].update(patient_bene_data)
+                        else:
+                            infected_patients[patient_id] = patient_bene_data
+                            infected_patients[patient_id]['demo_info'] = patient_info.get(patient_id, None)
+    except Exception as e:
+        raise Exception(e)
         # parser = parse(f'$.resource.diagnosis[*].diagnosisCodeableConcept.coding[*].code')
         # for match in parser.find(patient):
         #     if match.value:
@@ -139,14 +170,11 @@ def get_infected_patients_info():
     url = EXPORT_URL.format(
         data_type='Patient'
     )
-    # patients = submit_get_patients_job(url=url)
-    from json import load   # TODO replace
-    with open('info.json') as f:
-        patients = load(f)
+    patients = submit_get_patients_job(url=url)
     infected_patients = {}
     for patient in patients:
-        patient_id = patient['resource']['id']
-        infected_patients[patient_id] = patient['resource']
+        patient_id = patient['id'].replace('-', '')
+        infected_patients[patient_id] = patient
     return infected_patients
 
 
