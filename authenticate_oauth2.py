@@ -4,7 +4,7 @@ from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
 import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
-from infected_patients import get_infected_patients
+from infected_patients import get_infected_patients, set_authenticate_bcda_api_token
 import json
 from wtforms import Form, StringField, validators
 
@@ -235,6 +235,9 @@ def infected_patients():
     form = InfectedPatientsForm(request.form)
     if request.method == 'POST' and form.validate():
         nci_trial_id = form.trial_nci_id.data or 'NCT02194738'
+        # TODO use this to enable authentication with client_id, client_secret tokens
+        set_authenticate_bcda_api_token(client_id='09869a7f-46ce-4908-a914-6129d080a2ae',
+                                        client_secret='64916fe96f71adc79c5735e49f4e72f18ff941d0dd62cf43ee1ae0857e204f173ba10e4250c12c48')
         patients = get_infected_patients(nci_trial_id)
         session['infected_patients'] = patients
         return render_template("infected_patients.html", form=form)
