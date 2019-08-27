@@ -1,10 +1,10 @@
-from flask import Flask, session, jsonify, redirect, render_template, request
+from flask import Flask, session, jsonify, redirect, render_template, request, flash
 from flask_session import Session
 from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
 import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
-from infected_patients import get_infected_patients, set_authenticate_bcda_api_token
+from infected_patients import get_infected_patients, get_authenticate_bcda_api_token
 import json
 from wtforms import Form, StringField, validators
 
@@ -227,20 +227,44 @@ def filter_by_lab_results():
 
 
 class InfectedPatientsForm(Form):
-    trial_nci_id = StringField('Trial ID ', [validators.Length(max=25)])
+    trial_nci_id = StringField('NCI Trial ID ', [validators.Length(max=25)])
+
+
+@app.route('/doctor_login')
+def doctor_login():
+    # TODO implement doctor login
+    # TODO use this to enable authentication with client_id, client_secret tokens
+    # get client id and client secret by authentication by redirecting to doctor authentication page
+    # below are the dev tokens we got from https://sandbox.bcda.cms.gov/user_guide.html#authentication-and-authorization
+    doc_client_id = '09869a7f-46ce-4908-a914-6129d080a2ae'
+    doc_client_secret = '64916fe96f71adc79c5735e49f4e72f18ff941d0dd62cf43ee1ae0857e204f173ba10e4250c12c48'
+    session['bcda_doc_token'] = get_authenticate_bcda_api_token(client_id=doc_client_id,
+                                                                client_secret=doc_client_secret)
+    return redirect("/infected_patients")
+
+
+@app.route('/doctor_logout')
+def doctor_logout():
+    session['bcda_doc_token'] = None
+    session['infected_patients'] = None
+    return redirect("/infected_patients")
 
 
 @app.route('/infected_patients', methods=['GET', 'POST'])
 def infected_patients():
-    form = InfectedPatientsForm(request.form)
-    if request.method == 'POST' and form.validate():
-        nci_trial_id = form.trial_nci_id.data or 'NCT02194738'
-        # TODO use this to enable authentication with client_id, client_secret tokens
-        set_authenticate_bcda_api_token(client_id='09869a7f-46ce-4908-a914-6129d080a2ae',
-                                        client_secret='64916fe96f71adc79c5735e49f4e72f18ff941d0dd62cf43ee1ae0857e204f173ba10e4250c12c48')
-        patients = get_infected_patients(nci_trial_id)
-        session['infected_patients'] = patients
-        return render_template("infected_patients.html", form=form)
+    try:
+        form = InfectedPatientsForm(request.form)
+        if request.method == 'POST' and form.validate():
+            nci_trial_id = form.trial_nci_id.data or 'NCT02750826'
+            bcda_doc_token = session.get('bcda_doc_token', None)
+            if not bcda_doc_token:
+                flash('Sign in using  Doctor Login button')
+                return render_template("infected_patients.html", form=form)
+            patients = get_infected_patients(nci_trial_id, bcda_doc_token)
+            session['infected_patients'] = patients
+    except Exception as exc:
+        flash(f'Failed to process NCT ID: {nci_trial_id}')
+
     return render_template("infected_patients.html", form=form)
 
 

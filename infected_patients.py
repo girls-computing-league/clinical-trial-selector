@@ -18,12 +18,11 @@ GCM_NONCE_SIZE = 12
 GCM_TAG_SIZE = 16
 BCDA_URL = 'https://sandbox.bcda.cms.gov/'
 EXPORT_URL = 'https://sandbox.bcda.cms.gov/api/v1/{data_type}/$export'
-TOKEN = ''
 CLINICAL_TRIALS_URL = 'https://clinicaltrialsapi.cancer.gov/v1/clinical-trial/'
 CROSS_WALK_URL = 'https://uts-ws.nlm.nih.gov/rest/crosswalk/current/source/'
 
 
-def set_authenticate_bcda_api_token(client_id: str, client_secret: str):
+def get_authenticate_bcda_api_token(client_id: str, client_secret: str):
     token_url = f'{BCDA_URL}auth/token'
     encoded_auth = b64encode(f'{client_id}:{client_secret}'.encode()).decode()
     headers = {
@@ -33,8 +32,6 @@ def set_authenticate_bcda_api_token(client_id: str, client_secret: str):
         response = request("POST", token_url, headers=headers)
         response.raise_for_status()
         bearer_token = response.json().get('access_token', '')
-        global TOKEN
-        TOKEN = bearer_token
     except Exception as e:
         raise Exception(f'authentication failed: {e}')
     return bearer_token
@@ -64,11 +61,11 @@ def decrypt(ek: str, filepath: str,  pk: str = 'ATO_private.pem'):
     return result
 
 
-def submit_get_patients_job(url: str) -> List:
+def submit_get_patients_job(url: str, token: str) -> List:
     submit_header = {
         'Accept': "application/fhir+json",
         'Prefer': "respond-async",
-        'Authorization': f'Bearer {TOKEN}'
+        'Authorization': f'Bearer {token}'
     }
     job_attempts = 0
     try:
@@ -77,14 +74,14 @@ def submit_get_patients_job(url: str) -> List:
         job_url = response.headers['Content-Location']
         while job_attempts < 20:
             job_response = request('GET', job_url, headers={
-                'Authorization': f'Bearer {TOKEN}'
+                'Authorization': f'Bearer {token}'
             })
             job_attempts += 1
             if job_response.status_code == 200:
                 job_response.raise_for_status()
                 output = job_response.json().get('output', None)
                 if output:
-                    patients = get_patients(output[0])
+                    patients = get_patients(output[0], token)
                     print('job_done')
                     return patients
             print(f'response code {job_response.status_code} Waiting 2sec  for the job to complete')
@@ -96,12 +93,12 @@ def submit_get_patients_job(url: str) -> List:
     return []
 
 
-def get_patients(body: Dict) -> List:
+def get_patients(body: Dict, token: str) -> List:
     encrypted_key = body['encryptedKey']
     patients_url = body['url']
     file_name = patients_url.split('/')[-1]
     response = request('GET', patients_url, headers={
-        'Authorization': f'Bearer {TOKEN}'
+        'Authorization': f'Bearer {token}'
     })
     tmp_dir = tempfile.mkdtemp()
     file_path = os.path.join(tmp_dir, file_name)
@@ -114,22 +111,22 @@ def get_patients(body: Dict) -> List:
     else:
         os.remove(file_path)
     finally:
-        print('removing files')
+        print(f'removing files {file_path}')
         os.rmdir(tmp_dir)
     patients = ndjson.loads(nd_patients)
     return patients
 
 
-def get_infected_patients(trial_nci_code: str):
-    # codes = get_diseases_icd_codes(trial_nci_code)    #TODO use this
-    codes = ['4011']
+def get_infected_patients(trial_nci_code: str, token: str):
+    codes = get_diseases_icd_codes(trial_nci_code)
+    # codes = ['4011']  # TODO use this to get more patients
 
     url = EXPORT_URL.format(
         data_type='ExplanationOfBenefit'
     )
-    patients = submit_get_patients_job(url=url)
+    patients = submit_get_patients_job(url=url, token=token)
 
-    patient_info = get_infected_patients_info()
+    patient_info = get_infected_patients_info(token)
     infected_patients = {}
     diagnosis = {}
     try:
@@ -154,23 +151,14 @@ def get_infected_patients(trial_nci_code: str):
                             infected_patients[patient_id]['demo_info'] = patient_info.get(patient_id, None)
     except Exception as e:
         raise Exception(e)
-        # parser = parse(f'$.resource.diagnosis[*].diagnosisCodeableConcept.coding[*].code')
-        # for match in parser.find(patient):
-        #     if match.value:
-        #         if patient_id in infected_patients:
-        #             infected_patients[patient_id]['diagnosis'].extend(patient['resource']['diagnosis'])
-        #         else:
-        #             infected_patients[patient_id] = patient['resource']
-        #             infected_patients[patient_id]['demo_info'] = patient_info.get(patient_id, None)
-    # print(infected_patients)
     return infected_patients
 
 
-def get_infected_patients_info():
+def get_infected_patients_info(token: str):
     url = EXPORT_URL.format(
         data_type='Patient'
     )
-    patients = submit_get_patients_job(url=url)
+    patients = submit_get_patients_job(url=url, token=token)
     infected_patients = {}
     for patient in patients:
         patient_id = patient['id'].replace('-', '')
@@ -179,8 +167,11 @@ def get_infected_patients_info():
 
 
 def get_nci_thesaurus_concept_ids(code: str):
-    diseases = requests.get(CLINICAL_TRIALS_URL+code).json()['diseases']
-    nci_thesaurus_concept_ids = [disease['nci_thesaurus_concept_id'] for disease in diseases]
+    try:
+        diseases = requests.get(CLINICAL_TRIALS_URL+code).json()['diseases']
+        nci_thesaurus_concept_ids = [disease['nci_thesaurus_concept_id'] for disease in diseases]
+    except Exception as exc:
+        raise Exception(exc)
     return nci_thesaurus_concept_ids
 
 
@@ -188,9 +179,10 @@ def get_diseases_icd_codes(code: str):
     auth = Authentication("***REMOVED***")
 
     codeset = 'NCI'
-    url = f'{CROSS_WALK_URL}/{codeset}/'
+    url = f'{CROSS_WALK_URL}{codeset}/'
     params = {'targetSource': 'ICD9CM'}
 
+    print(f'Getting Icd codes for NCT id {code} from {url}')
     icd_codes = []
     nci_thesaurus_concept_ids = get_nci_thesaurus_concept_ids(code)
     for nci_thesaurus_concept_id in nci_thesaurus_concept_ids:

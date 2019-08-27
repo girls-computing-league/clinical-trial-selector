@@ -29,11 +29,22 @@
 {% endblock %}
 
 {% block content %}
-    <br>
-    {% block extra_button %}
-        <a class="btn btn-primary" href="/infected_patients">All Patients</a>
-    {% endblock %}
+    <hr>
+        <div class="container bootstrap snippet">
+            <div class="row">
+                <div class="col-sm-9">
+                    <h1>Patient Diseases and ICD codes</h1>
+                </div>
+                <div class="col">
+                        <span class="float-right">
+                            <a class="btn btn-primary" href="/infected_patients">All Patients</a>
+                        </span>
+                </div>
+            </div>
+        </div>
+    <hr>
 
+<div class="container bootstrap snippet">
     <table class="custom-table">
         <thead>
             <tr>
@@ -45,11 +56,14 @@
         {%- for key, disease in patient['diagnosis'].items() %}
             <tbody>
                 <tr>
-                    <td>{{disease["diagnosisCodeableConcept"]["coding"][0]["display"]}}</td>
-                    <td>{{ key }}</td>
-                    <td>{{ disease["diagnosisCodeableConcept"]["coding"][0]["system"] }}</td>
+                    <td>{{disease["diagnosisCodeableConcept"]["coding"][0].get("display", 'NA')}}</td>
+                    <td>{{ key or 'NA'}}</td>
+                    <td>{{ disease["diagnosisCodeableConcept"]["coding"][0].get("system", 'NA') }}</td>
                 </tr>
             </tbody>
         {%- endfor %}
     </table>
+</div>
+
+<br>
 {% endblock %}
