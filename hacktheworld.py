@@ -79,8 +79,9 @@ class Patient:
         no_match = {"ncit": "999999", "ncit_desc": "No code match"}
         condition = self.conditions[code_list.index(code_orig)]
         tik = self.auth.getst(self.tgt)
-        params = {"targetSource":"NCI","ticket":tik}
-        res = req.get("https://uts-ws.nlm.nih.gov/rest/crosswalk/current/source/{}/".format(codeset)+code_orig,params = params)
+        params = {"targetSource": "NCI", "ticket": tik}
+
+        res = req.get(f'https://uts-ws.nlm.nih.gov/rest/crosswalk/current/source/{codeset}/+{code_orig}', params=params)
         if (res.status_code != 200):
             logging.info("{} CODE {} ({}) --> NO MATCH ({})".format(codeset, code_orig, condition, res.status_code))
             return no_match

@@ -28,7 +28,7 @@
                             {% if session["Laboratory_Results"][cell_type] %}
                                 <td class="page-header">{{ session["Laboratory_Results"][cell_type][0]|float|round(2)}} {{session["Laboratory_Results"][cell_type][1]}}</td>
                             {% else %}
-                                <td class="page-header"> N/A </td>
+                                <td class="page-header"> NA </td>
                             {%- endif %}
                         {%- endfor %}
                     </tr>

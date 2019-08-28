@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% from "_form_helpers.html" import render_field %}
+
+
+{% block inf_pt_main %}
+    <hr>
+    <div class="container bootstrap snippet">
+        <div class="row">
+            <div class="col-sm-9">
+                <h1>Filter patients by NCI trial id</h1>
+            </div>
+            <div class="col">
+                    <span class="float-right">
+                        <a class="btn btn-primary" href="/">Clinical trials</a>
+                        {% if not session.get('bcda_doc_token', None) %}
+                            <a class="btn btn-primary" href="/doctor_login">Doctor Login</a>
+                        {%- else %}
+                            <a class="btn btn-primary" href="/doctor_logout">Logout</a>
+                        {%- endif %}
+                    </span>
+            </div>
+        </div>
+    </div>
+    <hr>
+
+    <div class="container bootstrap snippet">
+
+        <form method=post>
+            NCT ID: {{ form.trial_nci_id(class_="InfectedPatientsForm", placeholder="NCT02750826") }}
+            <input type=submit value=Search>
+        </form>
+
+        <br>
+
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Patient Id</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Gender</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if session["infected_patients"] %}
+                    {%- for key, patient in session["infected_patients"].items() %}
+                        <tr>
+                            <td>
+                                <a href="/infected_patients_info?id={{ key }}">
+                                    {{ key }}
+                                </a>
+                            </td>
+                            {% if patient['demo_info'] %}
+                                <td class="page-header">{{ patient['demo_info']['name'][0]['given'][0] or 'NA' }}</td>
+                                <td class="page-header">{{ patient['demo_info']['name'][0].get('family', 'NA') }}</td>
+                                <td class="page-header">{{ patient['demo_info'].get('gender', 'NA') }}</td>
+                                <td class="page-header">{{ patient.get('status', 'NA') }}</td>
+                            {% endif %}
+                        </tr>
+                    {%- endfor %}
+                {%- endif %}
+            </tbody>
+        </table>
+    </div>
+    <br>
+{% endblock %}
