@@ -121,7 +121,6 @@ def get_patients(body: Dict, token: str) -> List:
 def get_infected_patients(trial_nci_code: str, token: str):
     codes = get_diseases_icd_codes(trial_nci_code)
     # codes = ['4011']  # TODO use this to get more patients
-    codes.append('486')
     url = EXPORT_URL.format(
         data_type='ExplanationOfBenefit'
     )
