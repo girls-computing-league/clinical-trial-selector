@@ -5,6 +5,7 @@ import os
 import ndjson
 import requests
 import tempfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
@@ -120,7 +121,7 @@ def get_patients(body: Dict, token: str) -> List:
 def get_infected_patients(trial_nci_code: str, token: str):
     codes = get_diseases_icd_codes(trial_nci_code)
     # codes = ['4011']  # TODO use this to get more patients
-
+    codes.append('486')
     url = EXPORT_URL.format(
         data_type='ExplanationOfBenefit'
     )
@@ -140,6 +141,8 @@ def get_infected_patients(trial_nci_code: str, token: str):
                     if icd_code not in ['9999999', 'XX000']:
                         diagnosis[patient_id][icd_code] = disease
                     if icd_code in codes:
+                        # Matches disease
+                        diagnosis[patient_id][icd_code]['match'] = True
                         patient_bene_data = {
                             'status': patient['status'],
                             'diagnosis': diagnosis[patient_id]
@@ -177,27 +180,37 @@ def get_nci_thesaurus_concept_ids(code: str):
 
 def get_diseases_icd_codes(code: str):
     auth = Authentication("***REMOVED***")
+    icd_codes = []
+    nci_thesaurus_concept_ids = get_nci_thesaurus_concept_ids(code)
+    print(f'Getting Icd codes for NCT id {code} with disease codes {nci_thesaurus_concept_ids}')
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = {
+            executor.submit(process_codes, auth, nci_thesaurus_concept_id): nci_thesaurus_concept_id
+            for nci_thesaurus_concept_id in nci_thesaurus_concept_ids
+        }
+        for future in as_completed(futures):
+            codes = future.result()
+            if codes:
+                icd_codes.extend(codes)
+    print(icd_codes)
+    return icd_codes
 
+
+def process_codes(auth: 'Authentication', nci_thesaurus_concept_id: str):
     codeset = 'NCI'
     url = f'{CROSS_WALK_URL}{codeset}/'
     params = {'targetSource': 'ICD9CM'}
-
-    print(f'Getting Icd codes for NCT id {code} from {url}')
+    target = auth.gettgt()
+    ticket = auth.getst(target)
+    params['ticket'] = ticket
+    res = requests.get(url + nci_thesaurus_concept_id, params=params)
     icd_codes = []
-    nci_thesaurus_concept_ids = get_nci_thesaurus_concept_ids(code)
-    for nci_thesaurus_concept_id in nci_thesaurus_concept_ids:
-        target = auth.gettgt()
-        ticket = auth.getst(target)
-        params['ticket'] = ticket
-        res = requests.get(url + nci_thesaurus_concept_id, params=params)
-
-        try:
-            res.raise_for_status()
-        except:
-            continue
-        for result in res.json()["result"]:
-            if result["ui"] not in ("TCGA", "OMFAQ", "MPN-SAF"):
-                code_ncit = result["ui"].replace('.', '')
-                icd_codes.append(code_ncit)
-    print(icd_codes)
+    try:
+        res.raise_for_status()
+    except:
+        return
+    for result in res.json()["result"]:
+        if result["ui"] not in ("TCGA", "OMFAQ", "MPN-SAF"):
+            code_ncit = result["ui"].replace('.', '')
+            icd_codes.append(code_ncit)
     return icd_codes
