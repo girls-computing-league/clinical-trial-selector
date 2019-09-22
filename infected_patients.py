@@ -152,6 +152,7 @@ def get_infected_patients(trial_nci_code: str, token: str):
                             infected_patients[patient_id] = patient_bene_data
                             infected_patients[patient_id]['demo_info'] = patient_info.get(patient_id, None)
     except Exception as e:
+        print(e)
         raise Exception(e)
     return infected_patients
 

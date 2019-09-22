@@ -1,10 +1,10 @@
-from flask import Flask, session, jsonify, redirect, render_template, request, flash
+from flask import Flask, session, jsonify, redirect, render_template, request, flash, Response
 from flask_session import Session
 from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
 import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
-from infected_patients import get_infected_patients, get_authenticate_bcda_api_token
+from infected_patients import get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes
 import json
 from wtforms import Form, StringField, validators
 
@@ -18,6 +18,7 @@ app.config.from_object(__name__)
 Session(app)
 Bootstrap(app)
 oauth = OAuth(app)
+prog = 0
 
 keys_fp = open("keys.json", "r")
 keys_dict = json.load(keys_fp)
@@ -232,12 +233,12 @@ class InfectedPatientsForm(Form):
 
 @app.route('/doctor_login')
 def doctor_login():
-    # TODO implement doctor login
+    # TODO implement doctor login client ids are changing
     # TODO use this to enable authentication with client_id, client_secret tokens
     # get client id and client secret by authentication by redirecting to doctor authentication page
     # below are the dev tokens we got from https://sandbox.bcda.cms.gov/user_guide.html#authentication-and-authorization
-    doc_client_id = '09869a7f-46ce-4908-a914-6129d080a2ae'
-    doc_client_secret = '64916fe96f71adc79c5735e49f4e72f18ff941d0dd62cf43ee1ae0857e204f173ba10e4250c12c48'
+    doc_client_id = '***REMOVED***c'
+    doc_client_secret = '***REMOVED***'
     session['bcda_doc_token'] = get_authenticate_bcda_api_token(client_id=doc_client_id,
                                                                 client_secret=doc_client_secret)
     return redirect("/infected_patients")
@@ -260,12 +261,23 @@ def infected_patients():
             if not bcda_doc_token:
                 flash('Sign in using  Doctor Login button')
                 return render_template("infected_patients.html", form=form)
+            # codes = get_diseases_icd_codes(nci_trial_id)
+            progress(50)
             patients = get_infected_patients(nci_trial_id, bcda_doc_token)
             session['infected_patients'] = patients
+            progress(100)
     except Exception as exc:
         flash(f'Failed to process NCT ID: {nci_trial_id}')
 
     return render_template("infected_patients.html", form=form)
+
+
+@app.route('/progress')
+def progress(x=None):
+    if x:
+        global prog
+        prog = x
+    return Response({f'data:{prog}\n\n'}, mimetype='text/event-stream')
 
 
 @app.route('/infected_patients_info')

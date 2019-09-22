@@ -25,7 +25,26 @@
     <hr>
 
     <div class="container bootstrap snippet">
-
+        {% if not session["infected_patients"] %}
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+        <script>
+        var source = new EventSource("/progress");
+        source.onmessage = function(event) {
+            if(event.data == 100){
+                source.close()
+            }
+            $('.progress-bar').css('width', event.data+'%').attr('aria-valuenow', event.data);
+            $('.progress-bar-label').text(event.data+'%');
+        }
+        </script>
+            <div class="progress" style="width: 50%; margin: 50px;">
+            <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                <span class="progress-bar-label">0%</span>
+            </div>
+        </div>
+        {%- endif %}
         <form method=post>
             NCT ID: {{ form.trial_nci_id(class_="InfectedPatientsForm", placeholder="NCT02750826") }}
             <input type=submit value=Search>
@@ -53,10 +72,10 @@
                                 </a>
                             </td>
                             {% if patient['demo_info'] %}
-                                <td class="page-header">{{ patient['demo_info']['name'][0]['given'][0] or 'NA' }}</td>
-                                <td class="page-header">{{ patient['demo_info']['name'][0].get('family', 'NA') }}</td>
-                                <td class="page-header">{{ patient['demo_info'].get('gender', 'NA') }}</td>
-                                <td class="page-header">{{ patient.get('status', 'NA') }}</td>
+                                <td>{{ patient['demo_info']['name'][0]['given'][0] or 'NA' }}</td>
+                                <td>{{ patient['demo_info']['name'][0].get('family', 'NA') }}</td>
+                                <td>{{ patient['demo_info'].get('gender', 'NA') }}</td>
+                                <td>{{ patient.get('status', 'NA') }}</td>
                             {% endif %}
                         </tr>
                     {%- endfor %}
