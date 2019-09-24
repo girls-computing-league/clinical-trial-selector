@@ -87,11 +87,10 @@ def submit_get_patients_job(url: str, token: str) -> List:
                     return patients
             print(f'response code {job_response.status_code} Waiting 2sec  for the job to complete')
             sleep(2)
-        print(f'Failed to get response from the url: {job_url} after {job_attempts} attempts')
+        raise Exception(f'Failed to get response from the url: {job_url} after {job_attempts} attempts')
     except Exception as exc:
         print(f'Failed due to : {exc}')
         raise Exception(exc)
-    return []
 
 
 def get_patients(body: Dict, token: str) -> List:
@@ -118,15 +117,9 @@ def get_patients(body: Dict, token: str) -> List:
     return patients
 
 
-def get_infected_patients(trial_nci_code: str, token: str):
-    codes = get_diseases_icd_codes(trial_nci_code)
+def get_infected_patients(codes: List, patients: List[Dict], patient_info: Dict):
     # codes = ['4011']  # TODO use this to get more patients
-    url = EXPORT_URL.format(
-        data_type='ExplanationOfBenefit'
-    )
-    patients = submit_get_patients_job(url=url, token=token)
 
-    patient_info = get_infected_patients_info(token)
     infected_patients = {}
     diagnosis = {}
     try:

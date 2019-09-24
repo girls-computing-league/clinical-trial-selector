@@ -1,16 +1,21 @@
-from flask import Flask, session, jsonify, redirect, render_template, request, flash, Response
+from flask_socketio import SocketIO
+from flask import Flask, session, redirect, render_template, request, flash
 from flask_session import Session
 from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
 import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
-from infected_patients import get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes
+from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
+                               EXPORT_URL, submit_get_patients_job, get_infected_patients_info)
 import json
 from wtforms import Form, StringField, validators
 
 # creates the flask webserver and the secret key of the web server
+
 app = Flask(__name__)
-app.secret_key = "development" 
+app.secret_key = "development"
+socketio = SocketIO(app)
+
 
 # runs the app with the OAuthentication protocol
 SESSION_TYPE = 'filesystem'
@@ -18,7 +23,6 @@ app.config.from_object(__name__)
 Session(app)
 Bootstrap(app)
 oauth = OAuth(app)
-prog = 0
 
 keys_fp = open("keys.json", "r")
 keys_dict = json.load(keys_fp)
@@ -253,31 +257,40 @@ def doctor_logout():
 
 @app.route('/infected_patients', methods=['GET', 'POST'])
 def infected_patients():
+    form = InfectedPatientsForm(request.form)
+    bcda_doc_token = session.get('bcda_doc_token', None)
+
+    if not request.method == 'POST' or not form.validate():
+        return render_template("infected_patients.html", form=form)
+
+    if not bcda_doc_token:
+        flash('Sign in using  Doctor Login button')
+        return render_template("infected_patients.html", form=form)
+
+    event_name = 'update_progress'
+    nci_trial_id = form.trial_nci_id.data or 'NCT02750826'
+    socketio.emit(event_name, {"data": 5}, broadcast=False)
     try:
-        form = InfectedPatientsForm(request.form)
-        if request.method == 'POST' and form.validate():
-            nci_trial_id = form.trial_nci_id.data or 'NCT02750826'
-            bcda_doc_token = session.get('bcda_doc_token', None)
-            if not bcda_doc_token:
-                flash('Sign in using  Doctor Login button')
-                return render_template("infected_patients.html", form=form)
-            # codes = get_diseases_icd_codes(nci_trial_id)
-            progress(50)
-            patients = get_infected_patients(nci_trial_id, bcda_doc_token)
-            session['infected_patients'] = patients
-            progress(100)
+        codes = get_diseases_icd_codes(nci_trial_id)
+        socketio.emit(event_name, {"data": 15}, broadcast=False)
+
+        url = EXPORT_URL.format(
+            data_type='ExplanationOfBenefit'
+        )
+        patients = submit_get_patients_job(url=url, token=bcda_doc_token)
+        socketio.emit(event_name, {"data": 50}, broadcast=False)
+
+        patient_info = get_infected_patients_info(bcda_doc_token)
+        socketio.emit(event_name, {"data": 80}, broadcast=False)
+
+        patients = get_infected_patients(codes, patients, patient_info)
+        session['infected_patients'] = patients
+        socketio.emit(event_name, {"data": 100}, broadcast=False)
     except Exception as exc:
+        print(exc)
         flash(f'Failed to process NCT ID: {nci_trial_id}')
 
     return render_template("infected_patients.html", form=form)
-
-
-@app.route('/progress')
-def progress(x=None):
-    if x:
-        global prog
-        prog = x
-    return Response({f'data:{prog}\n\n'}, mimetype='text/event-stream')
 
 
 @app.route('/infected_patients_info')
@@ -305,4 +318,4 @@ def get_va_token(token=None):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000)
