@@ -1,11 +1,6 @@
 {% extends "base.html" %}
 
-{% from "_form_helpers.html" import render_field %}
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+{% from "_form_helpers.html" import render_field, progress_bar %}
 
 
 {% block inf_pt_main %}
@@ -29,32 +24,12 @@
     </div>
     <hr>
 
-    {% if not session["infected_patients"] %}
-        <div class="container bootstrap snippet">
-
-           <script type="text/javascript" charset="utf-8">
-                var socket = io();
-                    socket.on('update_progress', function(message) {
-                        console.log(message.data)
-                        $('.progress-bar').css('width', message.data+'%')
-                                                .attr('aria-valuenow', message.data);
-                        $('.progress-bar-label').text(message.data+'%');
-                    });
-           </script>
-
-            <div class="progress" style="width: 50%; margin: 50px;">
-                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
-                    <span class="progress-bar-label">0%</span>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <form method=post>
+        <form method=post onsubmit="openSocket()">
             NCT ID: {{ form.trial_nci_id(class_="InfectedPatientsForm", placeholder="NCT02750826") }}
-            <input type=submit value=Search>
+            <input type=submit value=Search >
         </form>
 
+        {{progress_bar()}}
         <br>
 
         <table class="custom-table">

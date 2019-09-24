@@ -1,4 +1,4 @@
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, disconnect
 from flask import Flask, session, redirect, render_template, request, flash
 from flask_session import Session
 from flask_oauthlib.client import OAuth
@@ -9,6 +9,7 @@ from infected_patients import (get_infected_patients, get_authenticate_bcda_api_
                                EXPORT_URL, submit_get_patients_job, get_infected_patients_info)
 import json
 from wtforms import Form, StringField, validators
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # creates the flask webserver and the secret key of the web server
 
@@ -271,21 +272,23 @@ def infected_patients():
     nci_trial_id = form.trial_nci_id.data or 'NCT02750826'
     socketio.emit(event_name, {"data": 5}, broadcast=False)
     try:
-        codes = get_diseases_icd_codes(nci_trial_id)
-        socketio.emit(event_name, {"data": 15}, broadcast=False)
-
-        url = EXPORT_URL.format(
-            data_type='ExplanationOfBenefit'
-        )
-        patients = submit_get_patients_job(url=url, token=bcda_doc_token)
-        socketio.emit(event_name, {"data": 50}, broadcast=False)
-
-        patient_info = get_infected_patients_info(bcda_doc_token)
-        socketio.emit(event_name, {"data": 80}, broadcast=False)
-
-        patients = get_infected_patients(codes, patients, patient_info)
+        futures = {}
+        progress = 15
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            futures[executor.submit(get_diseases_icd_codes, nci_trial_id)]= 'codes'
+            futures[executor.submit(submit_get_patients_job, EXPORT_URL.format(data_type='ExplanationOfBenefit' ),
+                                    bcda_doc_token)] = 'patients'
+            futures[executor.submit(get_infected_patients_info, bcda_doc_token)] = 'patient_info'
+            result = {}
+            for future in as_completed(futures):
+                result[futures[future]] = future.result()
+                socketio.emit(event_name, {"data": progress}, broadcast=False)
+                progress += 25
+        patients = get_infected_patients(**result)
         session['infected_patients'] = patients
         socketio.emit(event_name, {"data": 100}, broadcast=False)
+
+        socketio.emit('disconnect', {"data": 100}, broadcast=False)
     except Exception as exc:
         print(exc)
         flash(f'Failed to process NCT ID: {nci_trial_id}')

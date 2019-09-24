@@ -73,7 +73,7 @@ def submit_get_patients_job(url: str, token: str) -> List:
         response = request("GET", url, headers=submit_header)
         response.raise_for_status()
         job_url = response.headers['Content-Location']
-        while job_attempts < 20:
+        while job_attempts < 30:
             job_response = request('GET', job_url, headers={
                 'Authorization': f'Bearer {token}'
             })
