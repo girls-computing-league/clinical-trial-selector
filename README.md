@@ -18,7 +18,7 @@ git push origin <branch_name>
 ### Setup Virtual environment
 ```bash
 pip install virtualenv
-virtualenv -p python3.5 <env_name>
+virtualenv -p python3.7 <env_name>
 source activate <env_name>/bin/activate
 ```
 
