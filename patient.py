@@ -154,7 +154,7 @@ def get_lab_observations_by_patient(patient_id, token):
     current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=40'
 
     lab_results = {}
-    while current_url is not None:
+    while len(lab_results) != 3 and current_url is not None:
         observations = get_api(token, url=current_url)
 
         # extract values from observations.

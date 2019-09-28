@@ -21,7 +21,7 @@ $ git push origin <branch_name>
 ```bash
 $ pip install virtualenv
 $ virtualenv -p python3.7 <env_name>
-$ source activate <env_name>/bin/activate
+$ source <env_name>/bin/activate
 ```
 
 ### Install requirements
@@ -42,10 +42,11 @@ Default output format [None]: json
 ### Run locally
 Download keys.json file to the (pathto/hackworld-poc)working directory
 ```bash
-$ python authenticate_ouath2.py
+$ python authenticate_oauth2.py 
 ```
 
 ### Notes
+- Supported browsers: Google Chrome and Firefox
 - If doctor login fails, use [bcda url](https://bcda.cms.gov/sandbox/user-guide/) and get Client ID and Client Secret
 - And change lines 255,258 in authenticate_oauth2.py 
 ```python
