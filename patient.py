@@ -2,12 +2,13 @@ from pathlib import Path
 import json
 import requests as req
 import logging
-import pyodbc
 import re
 import boto3
 from jsonpath_rw_ext import parse
 from typing import Dict, List, Any, Tuple, Union
 import concurrent.futures as futures
+
+client = boto3.client(service_name="comprehendmedical")
 
 # BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
@@ -36,13 +37,6 @@ TABLE_NAME_BY_CELL_TYPE = {
     'wbc': 'Dataset1_WBC_Trials_First',
     'platelets': 'Dataset1_Platelets_Trials_First',
 }
-
-
-def execute_sql(sql):
-    with pyodbc.connect(connection_details) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-            return cursor.fetchall()
 
 
 def rchop(thestring, ending):
@@ -156,8 +150,8 @@ def find_all_codes(disease_list):
 
 
 def get_lab_observations_by_patient(patient_id, token):
-    loinc_codes = ','.join(list(LOINC_CODES.keys()))
-    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=40&code={loinc_codes}'
+    # loinc_codes = ','.join(list(LOINC_CODES.keys()))
+    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=40'
 
     lab_results = {}
     while current_url is not None:
@@ -176,7 +170,7 @@ def get_lab_observations_by_patient(patient_id, token):
                 continue
 
             # Store the latest observation result
-            if code not in lab_results or effective_date_time > lab_results[code]['effectiveDateTime']:
+            if code in LOINC_CODES and (code not in lab_results or effective_date_time > lab_results[code]['effectiveDateTime']):
                 lab_results[code] = {'effectiveDateTime': effective_date_time, 'value': value}
 
         current_url = None
@@ -270,7 +264,6 @@ def find_conditions(trial: Dict) -> Dict:
 
 
 def get_mapping_with_aws_comprehend(descriptions: List) -> Dict:
-    client = boto3.client(service_name="comprehendmedical")
     description = ' '.join([match.value.replace('\r\n', ' ').lower() for match in descriptions]).replace(',', '')
     entities = []
     limit = 19999
@@ -293,7 +286,7 @@ def get_mapping_with_aws_comprehend(descriptions: List) -> Dict:
             try:
                 entities.extend(client.detect_entities(Text=split)['Entities'])
             except Exception as exc:
-                print(exc)
+                print(f'Failed to retrieve aws comprehend entities: {str(exc)}')
                 continue
     cell_types = ['hemoglobin', 'platelets', 'leukocytes']
     conditions = {}
