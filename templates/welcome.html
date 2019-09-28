@@ -1,4 +1,5 @@
 {% extends "patient.html" %}
+{% from "_form_helpers.html" import  progress_bar %}
 
 {% block title %}
     Clinical Trials Selector
@@ -36,7 +37,8 @@
             </table>
             {%  if session["combined_patient"] and session["Laboratory_Results"] and not session["combined_patient"].filtered  %}
             <br>
-            <a class="btn btn-primary" href="/filter_by_lab_results">Filter trials by inclusion criteria</a>
+            <a class="btn btn-primary" href="/filter_by_lab_results" onclick="openSocket()">Filter trials by inclusion criteria</a>
+            {{progress_bar()}}
             <br>
             {%- endif %}
     </div>
@@ -86,7 +88,8 @@
                     {%- endfor %}
                 </table>
             {% else %}
-                <a class="btn btn-primary" href="/getInfo">Find Clinical Trials</a>
+                <a class="btn btn-primary" href="/getInfo" onclick="openSocket()">Find Clinical Trials</a>
+                {{progress_bar()}}
             {% endif %}
         </div><!--/tab-pane-->
         <div class="tab-pane" id="Excluded">

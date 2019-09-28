@@ -27,7 +27,7 @@
             });
         }
         socket.on('disconnect', function(message) {
-                socket.close()
+                socket.disconnect()
                 console.log('disconnect')
             });
     </script>

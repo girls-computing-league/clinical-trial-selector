@@ -27,6 +27,7 @@ oauth = OAuth(app)
 
 keys_fp = open("keys.json", "r")
 keys_dict = json.load(keys_fp)
+event_name = 'update_progress'
 
 # specifies possible parameters for the protocol dealing with the CMS
 cms = oauth.remote_app(
@@ -187,9 +188,11 @@ def getInfo():
     print("GETTING INFO NOW")
     combined = session.get("combined_patient", hack.CombinedPatient())
     auts = authentications()
+    socketio.emit(event_name, {"data": 15}, broadcast=False)
     if (not auts):
         return redirect("/")
     combined.load_data()
+    socketio.emit(event_name, {"data": 50}, broadcast=False)
     
     patient_id = session.get('va_patient')
     token = session.get('va_access_token')
@@ -199,10 +202,13 @@ def getInfo():
     session['numTrials'] = combined.numTrials
     session['index'] = 0
     session["combined_patient"] = combined
+    socketio.emit(event_name, {"data": 70}, broadcast=False)
 
     if patient_id is not None and token is not None:
         session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
         print("FROM SESSION", session['Laboratory_Results'])
+    socketio.emit(event_name, {"data": 95}, broadcast=False)
+    socketio.emit('disconnect', {"data": 100}, broadcast=False)
 
     return redirect("/")
 
@@ -217,9 +223,11 @@ def filter_by_lab_results():
     combined_patient = session['combined_patient']
     lab_results = session['Laboratory_Results']
     trials_by_ncit = combined_patient.trials_by_ncit
+    socketio.emit(event_name, {"data": 20}, broadcast=False)
 
     filter_trails_by_inclusion_criteria, excluded_trails_by_inclusion_criteria = \
         filter_by_inclusion_criteria(trials_by_ncit, lab_results)
+    socketio.emit(event_name, {"data": 65}, broadcast=False)
 
     session['combined_patient'].trials_by_ncit = filter_trails_by_inclusion_criteria
     session['combined_patient'].numTrials = sum([len(x['trials']) for x in filter_trails_by_inclusion_criteria])
@@ -229,6 +237,8 @@ def filter_by_lab_results():
     session['combined_patient'].filtered = True
     session['excluded_num_trials'] = sum([len(x['trials']) for x in excluded_trails_by_inclusion_criteria])
     session['excluded_num_conditions_with_trials'] = len(excluded_trails_by_inclusion_criteria)
+    socketio.emit(event_name, {"data": 95}, broadcast=False)
+    socketio.emit('disconnect', {"data": 100}, broadcast=False)
     return redirect('/')
 
 
