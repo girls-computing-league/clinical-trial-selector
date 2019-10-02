@@ -25,7 +25,7 @@
                 <tbody>
 
                     <tr>
-                        {% for cell_type in ['platelets', 'leukocytes','hemoglobin'] %}
+                        {% for cell_type in ['hemoglobin', 'leukocytes','platelets'] %}
                             {% if session["Laboratory_Results"][cell_type] %}
                                 <td class="page-header">{{ session["Laboratory_Results"][cell_type][0]|float|round(2)}} {{session["Laboratory_Results"][cell_type][1]}}</td>
                             {% else %}

@@ -125,11 +125,10 @@ def find_trials(ncit_codes, gender="unknown", age=0):
     trials = []
     for ncit_dict in ncit_codes:
         ncit = ncit_dict["ncit"]
-        params = {}     # TODO Check this for trials
-        #params = {"diseases.nci_thesaurus_concept_id": ncit}
-        #if (gender != "unknown"):
+        params = {"diseases.nci_thesaurus_concept_id": ncit}
+        # if (gender != "unknown"):
         #    params["eligibility.structured.gender"] = gender
-        #if (age != 0):
+        # if (age != 0):
         #    params["eligibility.structured.max_age_in_years_gte"] = age
         #    params["eligibility.structured.min_age_in_years_lte"] = age
         res = req.get(TRIALS_URL, params=params)
@@ -255,7 +254,8 @@ def find_conditions(trial: Dict) -> Dict:
         pattern = re.compile(f'(\[?({match_type})\]?\s?[\>\=\<]+\s?\d+[\.\,]?\d*\s?\w+\/?\s?\w+(\^\d*)?)')
         matches = pattern.findall(description)
         if matches:
-            return {match[1]: str(match[0]) for match in matches}
+            conditions = {match[1]: str(match[0]) for match in matches}
+            return conditions if len(conditions) == 3 else get_mapping_with_aws_comprehend(unstructured_descriptions)
         else:
             entity_mapping = get_mapping_with_aws_comprehend(unstructured_descriptions)
             return entity_mapping

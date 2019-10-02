@@ -20,7 +20,6 @@
        function openSocket() {
             document.getElementById("progress").style.display = "block";
             socket.on('update_progress', function(message) {
-                console.log(message.data)
                 $('.progress-bar').css('width', message.data+'%')
                                         .attr('aria-valuenow', message.data);
                 $('.progress-bar-label').text(message.data+'%');
@@ -28,7 +27,6 @@
         }
         socket.on('disconnect', function(message) {
                 socket.disconnect()
-                console.log('disconnect')
             });
     </script>
 {% endblock %}
