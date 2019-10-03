@@ -80,7 +80,7 @@
                                     <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                     <td>{{ trial.title }}</td>
                                     {%- if trial.filter_condition %}
-                                    <td>{{ trial.filter_condition }}</td>
+                                    <td><strong>{{ trial.filter_condition }}</strong></td>
                                     {% endif %}
                                 </tr>
                             {%- endfor %}
@@ -119,7 +119,7 @@
                                 <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                 <td>{{ trial.title }}</td>
                                 {%- if trial.filter_condition %}
-                                <td>{{ trial.filter_condition }}</td>
+                                <td><strong>{{ trial.filter_condition }}</strong></td>
                                 {% endif %}
                             </tr>
                         {%- endfor %}

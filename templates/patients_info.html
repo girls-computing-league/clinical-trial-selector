@@ -7,7 +7,7 @@
     .legend li { float: right; margin-right: 10px; }
     .legend span { border: 1px solid #ccc; float: left; width: 16px; height: 16px; margin: 5px; }
     /* your colors */
-    .legend .match { background-color: #787878 }
+    .legend .match { background-color: #98FB98 }
     </style>
 {%- endblock %}
 
@@ -71,7 +71,7 @@
             </thead>
             {%- for key, disease in patient['diagnosis'].items() %}
                 <tbody>
-                    <tr style="background-color:{% if disease['match'] %}#787878{% endif %}">
+                    <tr style="background-color:{% if disease['match'] %}#98FB98{% endif %}">
                         <td>{{disease["diagnosisCodeableConcept"]["coding"][0].get("display", 'NA')}}</td>
                         <td>{{ key or 'NA'}}</td>
                         <td>{{ disease["diagnosisCodeableConcept"]["coding"][0].get("system", 'NA') }}</td>
