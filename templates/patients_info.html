@@ -1,4 +1,15 @@
 {% extends "base.html" %}
+{% block styles %}
+    {{super()}}
+    <style>
+    /* basic positioning */
+    .legend { list-style: none; }
+    .legend li { float: right; margin-right: 10px; }
+    .legend span { border: 1px solid #ccc; float: left; width: 16px; height: 16px; margin: 5px; }
+    /* your colors */
+    .legend .match { background-color: #98FB98 }
+    </style>
+{%- endblock %}
 
 {%- set id = request.args.get('id', '0') %}
 {%- set patient = session['infected_patients'].get(id, None) %}
@@ -30,40 +41,44 @@
 
 {% block content %}
     <hr>
-        <div class="container bootstrap snippet">
-            <div class="row">
-                <div class="col-sm-9">
-                    <h1>Patient Diseases and ICD codes</h1>
-                </div>
-                <div class="col">
-                        <span class="float-right">
-                            <a class="btn btn-primary" href="/infected_patients">All Patients</a>
-                        </span>
-                </div>
+    <div class="container bootstrap snippet">
+        <div class="row">
+            <div class="col-sm-9">
+                <h1>Patient Diseases and ICD codes</h1>
+            </div>
+            <div class="col">
+                    <span class="float-right">
+                        <a class="btn btn-primary" href="/infected_patients">All Patients</a>
+                    </span>
             </div>
         </div>
+    </div>
     <hr>
 
-<div class="container bootstrap snippet">
-    <table class="custom-table">
-        <thead>
-            <tr>
-                <th>Disease</th>
-                <th>ICD-9 Code</th>
-                <th>System</th>
-            </tr>
-        </thead>
-        {%- for key, disease in patient['diagnosis'].items() %}
-            <tbody>
-                <tr>
-                    <td>{{disease["diagnosisCodeableConcept"]["coding"][0].get("display", 'NA')}}</td>
-                    <td>{{ key or 'NA'}}</td>
-                    <td>{{ disease["diagnosisCodeableConcept"]["coding"][0].get("system", 'NA') }}</td>
-                </tr>
-            </tbody>
-        {%- endfor %}
-    </table>
-</div>
+    <div class="container bootstrap snippet">
 
-<br>
+    <ul class="legend">
+        <li><span class="default"></span>No Match</li>
+        <li><span class="match"></span> Disease Match</li>
+    </ul>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Disease</th>
+                    <th>ICD-9 Code</th>
+                    <th>System</th>
+                </tr>
+            </thead>
+            {%- for key, disease in patient['diagnosis'].items() %}
+                <tbody>
+                    <tr style="background-color:{% if disease['match'] %}#98FB98{% endif %}">
+                        <td>{{disease["diagnosisCodeableConcept"]["coding"][0].get("display", 'NA')}}</td>
+                        <td>{{ key or 'NA'}}</td>
+                        <td>{{ disease["diagnosisCodeableConcept"]["coding"][0].get("system", 'NA') }}</td>
+                    </tr>
+                </tbody>
+            {%- endfor %}
+        </table>
+    </div>
+    <br>
 {% endblock %}

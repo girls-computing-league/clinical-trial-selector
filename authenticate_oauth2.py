@@ -1,16 +1,22 @@
-from flask import Flask, session, jsonify, redirect, render_template, request, flash
+from flask_socketio import SocketIO, disconnect
+from flask import Flask, session, redirect, render_template, request, flash
 from flask_session import Session
 from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
 import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
-from infected_patients import get_infected_patients, get_authenticate_bcda_api_token
+from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
+                               EXPORT_URL, submit_get_patients_job, get_infected_patients_info)
 import json
 from wtforms import Form, StringField, validators
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # creates the flask webserver and the secret key of the web server
+
 app = Flask(__name__)
-app.secret_key = "development" 
+app.secret_key = "development"
+socketio = SocketIO(app)
+
 
 # runs the app with the OAuthentication protocol
 SESSION_TYPE = 'filesystem'
@@ -21,6 +27,7 @@ oauth = OAuth(app)
 
 keys_fp = open("keys.json", "r")
 keys_dict = json.load(keys_fp)
+event_name = 'update_progress'
 
 # specifies possible parameters for the protocol dealing with the CMS
 cms = oauth.remote_app(
@@ -181,9 +188,11 @@ def getInfo():
     print("GETTING INFO NOW")
     combined = session.get("combined_patient", hack.CombinedPatient())
     auts = authentications()
+    socketio.emit(event_name, {"data": 15}, broadcast=False)
     if (not auts):
         return redirect("/")
     combined.load_data()
+    socketio.emit(event_name, {"data": 50}, broadcast=False)
     
     patient_id = session.get('va_patient')
     token = session.get('va_access_token')
@@ -193,10 +202,13 @@ def getInfo():
     session['numTrials'] = combined.numTrials
     session['index'] = 0
     session["combined_patient"] = combined
+    socketio.emit(event_name, {"data": 70}, broadcast=False)
 
     if patient_id is not None and token is not None:
         session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
         print("FROM SESSION", session['Laboratory_Results'])
+    socketio.emit(event_name, {"data": 95}, broadcast=False)
+    socketio.emit('disconnect', {"data": 100}, broadcast=False)
 
     return redirect("/")
 
@@ -211,9 +223,11 @@ def filter_by_lab_results():
     combined_patient = session['combined_patient']
     lab_results = session['Laboratory_Results']
     trials_by_ncit = combined_patient.trials_by_ncit
+    socketio.emit(event_name, {"data": 20}, broadcast=False)
 
     filter_trails_by_inclusion_criteria, excluded_trails_by_inclusion_criteria = \
         filter_by_inclusion_criteria(trials_by_ncit, lab_results)
+    socketio.emit(event_name, {"data": 65}, broadcast=False)
 
     session['combined_patient'].trials_by_ncit = filter_trails_by_inclusion_criteria
     session['combined_patient'].numTrials = sum([len(x['trials']) for x in filter_trails_by_inclusion_criteria])
@@ -223,6 +237,8 @@ def filter_by_lab_results():
     session['combined_patient'].filtered = True
     session['excluded_num_trials'] = sum([len(x['trials']) for x in excluded_trails_by_inclusion_criteria])
     session['excluded_num_conditions_with_trials'] = len(excluded_trails_by_inclusion_criteria)
+    socketio.emit(event_name, {"data": 95}, broadcast=False)
+    socketio.emit('disconnect', {"data": 100}, broadcast=False)
     return redirect('/')
 
 
@@ -232,12 +248,12 @@ class InfectedPatientsForm(Form):
 
 @app.route('/doctor_login')
 def doctor_login():
-    # TODO implement doctor login
+    # TODO implement doctor login client ids are changing
     # TODO use this to enable authentication with client_id, client_secret tokens
     # get client id and client secret by authentication by redirecting to doctor authentication page
     # below are the dev tokens we got from https://sandbox.bcda.cms.gov/user_guide.html#authentication-and-authorization
-    doc_client_id = '09869a7f-46ce-4908-a914-6129d080a2ae'
-    doc_client_secret = '64916fe96f71adc79c5735e49f4e72f18ff941d0dd62cf43ee1ae0857e204f173ba10e4250c12c48'
+    doc_client_id = '***REMOVED***c'
+    doc_client_secret = '***REMOVED***'
     session['bcda_doc_token'] = get_authenticate_bcda_api_token(client_id=doc_client_id,
                                                                 client_secret=doc_client_secret)
     return redirect("/infected_patients")
@@ -252,17 +268,39 @@ def doctor_logout():
 
 @app.route('/infected_patients', methods=['GET', 'POST'])
 def infected_patients():
+    form = InfectedPatientsForm(request.form)
+    bcda_doc_token = session.get('bcda_doc_token', None)
+
+    if not request.method == 'POST' or not form.validate():
+        return render_template("infected_patients.html", form=form)
+
+    if not bcda_doc_token:
+        flash('Sign in using  Doctor Login button')
+        return render_template("infected_patients.html", form=form)
+
+    event_name = 'update_progress'
+    nci_trial_id = form.trial_nci_id.data or 'NCT02750826'
+    socketio.emit(event_name, {"data": 5}, broadcast=False)
     try:
-        form = InfectedPatientsForm(request.form)
-        if request.method == 'POST' and form.validate():
-            nci_trial_id = form.trial_nci_id.data or 'NCT02750826'
-            bcda_doc_token = session.get('bcda_doc_token', None)
-            if not bcda_doc_token:
-                flash('Sign in using  Doctor Login button')
-                return render_template("infected_patients.html", form=form)
-            patients = get_infected_patients(nci_trial_id, bcda_doc_token)
-            session['infected_patients'] = patients
+        futures = {}
+        progress = 15
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            futures[executor.submit(get_diseases_icd_codes, nci_trial_id)]= 'codes'
+            futures[executor.submit(submit_get_patients_job, EXPORT_URL.format(data_type='ExplanationOfBenefit' ),
+                                    bcda_doc_token)] = 'patients'
+            futures[executor.submit(get_infected_patients_info, bcda_doc_token)] = 'patient_info'
+            result = {}
+            for future in as_completed(futures):
+                result[futures[future]] = future.result()
+                socketio.emit(event_name, {"data": progress}, broadcast=False)
+                progress += 25
+        patients = get_infected_patients(**result)
+        session['infected_patients'] = patients
+        socketio.emit(event_name, {"data": 100}, broadcast=False)
+
+        socketio.emit('disconnect', {"data": 100}, broadcast=False)
     except Exception as exc:
+        print(exc)
         flash(f'Failed to process NCT ID: {nci_trial_id}')
 
     return render_template("infected_patients.html", form=form)
@@ -293,4 +331,4 @@ def get_va_token(token=None):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000)

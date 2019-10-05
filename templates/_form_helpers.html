@@ -10,3 +10,12 @@
     </ul>
   {% endif %}
 {% endmacro %}
+
+
+{% macro progress_bar() %}
+    <div class="progress" id="progress" style="width: 25%; margin: 5px; display: none;">
+        <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+            <span class="progress-bar-label">0%</span>
+        </div>
+    </div>
+{% endmacro %}

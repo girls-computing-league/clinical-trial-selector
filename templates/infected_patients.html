@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% from "_form_helpers.html" import render_field %}
+{% from "_form_helpers.html" import render_field, progress_bar %}
 
 
 {% block inf_pt_main %}
@@ -24,13 +24,12 @@
     </div>
     <hr>
 
-    <div class="container bootstrap snippet">
-
-        <form method=post>
+        <form method=post onsubmit="openSocket()">
             NCT ID: {{ form.trial_nci_id(class_="InfectedPatientsForm", placeholder="NCT02750826") }}
-            <input type=submit value=Search>
+            <input type=submit value=Search >
         </form>
 
+        {{progress_bar()}}
         <br>
 
         <table class="custom-table">
@@ -53,10 +52,10 @@
                                 </a>
                             </td>
                             {% if patient['demo_info'] %}
-                                <td class="page-header">{{ patient['demo_info']['name'][0]['given'][0] or 'NA' }}</td>
-                                <td class="page-header">{{ patient['demo_info']['name'][0].get('family', 'NA') }}</td>
-                                <td class="page-header">{{ patient['demo_info'].get('gender', 'NA') }}</td>
-                                <td class="page-header">{{ patient.get('status', 'NA') }}</td>
+                                <td>{{ patient['demo_info']['name'][0]['given'][0] or 'NA' }}</td>
+                                <td>{{ patient['demo_info']['name'][0].get('family', 'NA') }}</td>
+                                <td>{{ patient['demo_info'].get('gender', 'NA') }}</td>
+                                <td>{{ patient.get('status', 'NA') }}</td>
                             {% endif %}
                         </tr>
                     {%- endfor %}
