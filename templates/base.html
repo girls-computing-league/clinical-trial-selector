@@ -31,6 +31,13 @@
     </script>
 {% endblock %}
 
+{% block navbar %}
+<span class="float-left" style="padding-left:5%">
+			<a class="btn btn-primary" href="/">
+			<i class="glyphicon glyphicon-home" style="font-size:20px;"></i>
+			</a>
+			</span>
+{% endblock %}
 
 {% block content %}
     <div class="container">
@@ -42,7 +49,7 @@
             </div>
         {% endfor %}
     </div>
-
+		
     <div class="container">
     {% block inf_pt_main %}{% endblock %}
         </div>
