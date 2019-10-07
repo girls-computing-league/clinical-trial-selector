@@ -44,16 +44,18 @@
     </div>
     <br>
     {%- endif %}
-    <ul class="nav nav-tabs" id="myTab">
-        <li class="nav-item active"><a class="nav-link active" href="#trials" data-toggle="tab">Trials</a></li>
+    <div class="nav nav-tabs" id="myTab">
+        <div class="nav-link active" href="#trials" data-toggle="tab">Trials</div>
         {%- if session["excluded"] %}
-        <li class="nav-item"><a class="nav-link" href="#Excluded" data-toggle="tab">Excluded</a></li>
+        <div class="nav-link" href="#Excluded" data-toggle="tab">Excluded</div>
         {% endif %}
-        <li class="nav-item"><a class="nav-link" href="#conditions" data-toggle="tab">Conditions w/o Trials</a></li>
-        <li class="nav-item"><a class="nav-link" href="#matches" data-toggle="tab">Code Matches</a></li>
-        <li class="nav-item"><a class="nav-link" href="#nomatches" data-toggle="tab">Codes w/o Matches</a></li>
-    </ul>
-    <a class="btn btn-primary" href="/download_trials">Download Trials</a>
+        <div class="nav-link" href="#conditions" data-toggle="tab">Conditions w/o Trials</div>
+        <div class="nav-link" href="#matches" data-toggle="tab">Code Matches</div>
+        <div class="nav-link" href="#nomatches" data-toggle="tab">Codes w/o Matches</div>
+		<span class="float-right"><a class="btn btn-primary" href="/download_trials">Trials 
+			<i class="glyphicon glyphicon-download" style="font-size:20px;"></i>
+			</a></span>
+    </div>
     
     <div class="tab-content">
         <div class="tab-pane active" id="trials">
