@@ -1,5 +1,9 @@
+import csv
+import io
+import json
+
 from flask_socketio import SocketIO, disconnect
-from flask import Flask, session, redirect, render_template, request, flash
+from flask import Flask, session, redirect, render_template, request, flash, make_response
 from flask_session import Session
 from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
@@ -7,7 +11,6 @@ import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
                                EXPORT_URL, submit_get_patients_job, get_infected_patients_info)
-import json
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -211,6 +214,28 @@ def getInfo():
     socketio.emit('disconnect', {"data": 100}, broadcast=False)
 
     return redirect("/")
+
+
+@app.route('/download_trials')
+def download_trails():
+    combined_patient = session['combined_patient']
+    header = ['id', 'code_ncit', 'title', 'pi']
+
+    si = io.StringIO()
+    cw = csv.writer(si)
+
+    data = []
+    for trial_by_ncit in combined_patient.trials_by_ncit:
+        for trial in trial_by_ncit.get("trials", []):
+            data.append([getattr(trial, attribute) for attribute in header])
+
+    cw.writerow(header)
+    cw.writerows(data)
+
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=info.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
 
 
 @app.route('/filter_by_lab_results')
