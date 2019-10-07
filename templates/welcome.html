@@ -35,6 +35,13 @@
                     </tr>
                 </tbody>
             </table>
+	    <br>
+            <form method=post onsubmit="openSocket()" action="/filter_by_lab_results">
+                hemoglobin: {{ form.hemoglobin(class_="FilterForm", placeholder="17.04 g/dL") }}
+                leukocytes: {{ form.leukocytes(class_="FilterForm", placeholder="9.94 10*3/uL") }}
+                platelets: {{ form.platelets(class_="FilterForm", placeholder="11.37 fL") }}
+            <input class="btn btn-primary" type=submit value="Filter trials" >
+            </form>
             {%  if session["combined_patient"] and session["Laboratory_Results"] and not session["combined_patient"].filtered  %}
                 <br>
                 <a class="btn btn-primary" href="/filter_by_lab_results" onclick="openSocket()">Filter trials by inclusion criteria</a>
