@@ -122,7 +122,7 @@ def home():
 
 @app.route('/')
 def showtrials():
-    return render_template('welcome.html')
+    return render_template('welcome.html', form=FilterForm(request.form))
 
 @app.route('/cms/authenticate')
 def cmsauthenticate():
@@ -237,16 +237,29 @@ def download_trails():
     output.headers["Content-type"] = "text/csv"
     return output
 
+class FilterForm(Form):
+    hemoglobin = StringField('hemoglobin ', [validators.Length(max=25)])
+    leukocytes = StringField('leukocytes ', [validators.Length(max=25)])
+    platelets = StringField('platelets ', [validators.Length(max=25)])
 
-@app.route('/filter_by_lab_results')
+
+@app.route('/filter_by_lab_results', methods=['GET', 'POST'])
 def filter_by_lab_results():
     """
     A view that filters trials based on:
     Filter1 -> Filters the DB tables based on nci_id of trials. We only show the results with matching records in DB.
     Filter2 -> Filters results based on inclusion condition and value from the Observation API.
     """
+
+    form = FilterForm(request.form)
+
+    if request.method == 'POST':
+        form.validate()
+        lab_results = {key: (value.split()[0], value.split()[1]) for key, value in form.data.items()}
+    else:
+        lab_results = session['Laboratory_Results']
+
     combined_patient = session['combined_patient']
-    lab_results = session['Laboratory_Results']
     trials_by_ncit = combined_patient.trials_by_ncit
     socketio.emit(event_name, {"data": 20}, broadcast=False)
 
