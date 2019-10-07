@@ -36,10 +36,10 @@
                 </tbody>
             </table>
             {%  if session["combined_patient"] and session["Laboratory_Results"] and not session["combined_patient"].filtered  %}
-            <br>
-            <a class="btn btn-primary" href="/filter_by_lab_results" onclick="openSocket()">Filter trials by inclusion criteria</a>
-            {{progress_bar()}}
-            <br>
+                <br>
+                <a class="btn btn-primary" href="/filter_by_lab_results" onclick="openSocket()">Filter trials by inclusion criteria</a>
+                {{progress_bar()}}
+                <br>
             {%- endif %}
     </div>
     <br>
@@ -53,8 +53,6 @@
         <li class="nav-item"><a class="nav-link" href="#matches" data-toggle="tab">Code Matches</a></li>
         <li class="nav-item"><a class="nav-link" href="#nomatches" data-toggle="tab">Codes w/o Matches</a></li>
     </ul>
-    <a class="btn btn-primary" href="/download_trials">Download Trials</a>
-    
     <div class="tab-content">
         <div class="tab-pane active" id="trials">
             <br>
@@ -82,7 +80,11 @@
                                     <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                     <td>{{ trial.title }}</td>
                                     {%- if trial.filter_condition %}
-                                    <td><strong>{{ trial.filter_condition }}</strong></td>
+                                    <td>
+                                        {%- for condition, include in trial.filter_condition %}
+                                            {{condition}}
+                                        {%- endfor %}
+                                    </td>
                                     {% endif %}
                                 </tr>
                             {%- endfor %}
@@ -121,7 +123,15 @@
                                 <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                 <td>{{ trial.title }}</td>
                                 {%- if trial.filter_condition %}
-                                <td><strong>{{ trial.filter_condition }}</strong></td>
+                                <td>
+                                    {%- for condition, include in trial.filter_condition %}
+                                        {%- if include %}
+                                            {{ condition }}
+                                        {%- else%}
+                                            <strong>{{condition}}</strong>
+                                        {% endif %}
+                                    {%- endfor %}
+                                </td>
                                 {% endif %}
                             </tr>
                         {%- endfor %}
