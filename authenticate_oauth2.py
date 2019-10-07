@@ -219,7 +219,7 @@ def getInfo():
 @app.route('/download_trials')
 def download_trails():
     combined_patient = session['combined_patient']
-    header = ['id', 'code_ncit', 'title', 'pi']
+    header = ['id', 'code_ncit', 'title', 'pi','official','summary','description']
 
     si = io.StringIO()
     cw = csv.writer(si)
