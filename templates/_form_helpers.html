@@ -19,3 +19,8 @@
         </div>
     </div>
 {% endmacro %}
+
+
+{% macro render_input(fieldname, value) %}
+    <input type="text" name="{{ fieldname }}" value="{{ value }}" />
+{% endmacro %}
