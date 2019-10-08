@@ -1,5 +1,5 @@
 {% extends "patient.html" %}
-{% from "_form_helpers.html" import  progress_bar %}
+{% from "_form_helpers.html" import  progress_bar, render_input %}
 
 {% block title %}
     Clinical Trials Selector
@@ -49,15 +49,19 @@
 
     <br>
     {%- endif %}
-    <ul class="nav nav-tabs" id="myTab">
-        <li class="nav-item active"><a class="nav-link active" href="#trials" data-toggle="tab">Trials</a></li>
+    <div class="nav nav-tabs" id="myTab">
+        <a class="nav-link active" href="#trials" data-toggle="tab">Trials</a>
         {%- if session["excluded"] %}
-        <li class="nav-item"><a class="nav-link" href="#Excluded" data-toggle="tab">Excluded</a></li>
+        <a class="nav-link" href="#Excluded" data-toggle="tab">Excluded</a>
         {% endif %}
-        <li class="nav-item"><a class="nav-link" href="#conditions" data-toggle="tab">Conditions w/o Trials</a></li>
-        <li class="nav-item"><a class="nav-link" href="#matches" data-toggle="tab">Code Matches</a></li>
-        <li class="nav-item"><a class="nav-link" href="#nomatches" data-toggle="tab">Codes w/o Matches</a></li>
-    </ul>
+        <a class="nav-link" href="#conditions" data-toggle="tab">Conditions w/o Trials</a>
+        <a class="nav-link" href="#matches" data-toggle="tab">Code Matches</a>
+        <a class="nav-link" href="#nomatches" data-toggle="tab">Codes w/o Matches</a>
+		<span class="float-right"><a class="btn btn-primary" href="/download_trials">Trials 
+			<i class="glyphicon glyphicon-download" style="font-size:20px;"></i>
+			</a></span>
+    </div>
+    
     <div class="tab-content">
         <div class="tab-pane active" id="trials">
             <br>
