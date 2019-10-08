@@ -14,6 +14,7 @@
     {%  if session["Laboratory_Results"] %}
         <b>Lab Results</b>
     <div class="tab-pane" id="LaboratoryObservations">
+        <form method=post onsubmit="openSocket()" action="/filter_by_lab_results">
             <table class="custom-table">
                 <thead>
                     <tr>
@@ -23,11 +24,15 @@
                     </tr>
                 </thead>
                 <tbody>
-
                     <tr>
                         {% for cell_type in ['hemoglobin', 'leukocytes','platelets'] %}
                             {% if session["Laboratory_Results"][cell_type] %}
-                                <td class="page-header">{{ session["Laboratory_Results"][cell_type][0]|float|round(2)}} {{session["Laboratory_Results"][cell_type][1]}}</td>
+                                <td class="page-header">
+                                    {{ render_input(cell_type,
+                                                    session["Laboratory_Results"][cell_type][0]|float|round(2)|string + ' ' + session["Laboratory_Results"][cell_type][1]
+                                                    )
+                                    }}
+                                </td>
                             {% else %}
                                 <td class="page-header"> NA </td>
                             {%- endif %}
@@ -35,13 +40,13 @@
                     </tr>
                 </tbody>
             </table>
-            {%  if session["combined_patient"] and session["Laboratory_Results"] and not session["combined_patient"].filtered  %}
             <br>
-            <a class="btn btn-primary" href="/filter_by_lab_results" onclick="openSocket()">Filter trials by inclusion criteria</a>
-            {{progress_bar()}}
-            <br>
-            {%- endif %}
+            <input class="btn btn-primary" type=submit value="Filter trials">
+        </form>
+        {{progress_bar()}}
+        <br>
     </div>
+
     <br>
     {%- endif %}
     <div class="nav nav-tabs" id="myTab">
@@ -84,7 +89,11 @@
                                     <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                     <td>{{ trial.title }}</td>
                                     {%- if trial.filter_condition %}
-                                    <td><strong>{{ trial.filter_condition }}</strong></td>
+                                    <td>
+                                        {%- for condition, include in trial.filter_condition %}
+                                            {{condition}}
+                                        {%- endfor %}
+                                    </td>
                                     {% endif %}
                                 </tr>
                             {%- endfor %}
@@ -123,7 +132,15 @@
                                 <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                 <td>{{ trial.title }}</td>
                                 {%- if trial.filter_condition %}
-                                <td><strong>{{ trial.filter_condition }}</strong></td>
+                                <td>
+                                    {%- for condition, include in trial.filter_condition %}
+                                        {%- if include %}
+                                            {{ condition }}
+                                        {%- else%}
+                                            <strong>{{condition}}</strong>
+                                        {% endif %}
+                                    {%- endfor %}
+                                </td>
                                 {% endif %}
                             </tr>
                         {%- endfor %}

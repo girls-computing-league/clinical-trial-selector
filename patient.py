@@ -220,25 +220,26 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
     excluded_trials = []
     for trial in trials:
         conditions = find_conditions(trial.trial_json)
+        trial.filter_condition = []
         if conditions:
-            trial.filter_condition = ',\t'.join(value for key, value in conditions.items())
+            include_trail = True
             for cell_type, condition in conditions.items():
                 lab_value = lab_results.get(cell_type)
                 if not lab_value:
-                    flag = True
+                    trial.filter_condition.append((condition, True))
                     continue
-                lab_value, condition = convert_expressions(lab_value, condition)
-                if eval(lab_value + condition):
-                    flag = True
+                lab_value, converted_condition = convert_expressions(lab_value, condition)
+                if eval(lab_value + converted_condition):
+                    trial.filter_condition.append((condition, True))
                 else:
-                    flag = False
-                    break
-            if flag:
+                    include_trail = False
+                    trial.filter_condition.append((condition, False))
+            if include_trail:
                 filtered_trials.append(trial)
             else:
                 excluded_trials.append(trial)
         else:
-            trial.filter_condition = 'No Inclusion Criteria Found'
+            trial.filter_condition.append(('No Inclusion Criteria Found', True))
             filtered_trials.append(trial)
     return filtered_trials, excluded_trials
 
@@ -263,37 +264,42 @@ def find_conditions(trial: Dict) -> Dict:
         return {}
 
 
+def split_description(description, limit):
+    data = []
+    while len(description) > limit:
+        data.append(description[:limit])
+        description = description[limit:]
+    data.append(description)
+    return data
+
+
 def get_mapping_with_aws_comprehend(descriptions: List) -> Dict:
-    description = ' '.join([match.value.replace('\r\n', ' ').lower() for match in descriptions]).replace(',', '')
-    entities = []
-    limit = 19999
-    if len(description) < limit:
-        entities.extend(client.detect_entities(Text=description)['Entities'])
-    else:
-        splits = ['']
-        count = 0
-        for desc in descriptions:
-            if len(desc.value) >= limit:
-                splits[count] = desc.value[:limit]
-                splits[count] = desc.value[limit:]
-                count += 2
-                continue
-            if len(desc.value)+len(splits[count]) >= limit:
-                count += 1
+    def get_description():
+        data = ''
+        limit = 19999
+        for match in descriptions:
+            description = match.value.replace('\r\n', ' ').lower().replace(',', '')
+            if len(description) > limit:
+                for split in split_description(description, limit):
+                    yield split
+            elif len(data) + len(description) > limit:
+                yield data
+                data = description
             else:
-                splits[count] += desc.value
-        for split in splits:
-            try:
-                entities.extend(client.detect_entities(Text=split)['Entities'])
-            except Exception as exc:
-                print(f'Failed to retrieve aws comprehend entities: {str(exc)}')
-                continue
-    cell_types = ['hemoglobin', 'platelets', 'leukocytes']
+                data += description
+        yield data
+
     conditions = {}
-    for entity in entities:
-        entity_type = entity['Text']
-        if any(cell_type in entity_type for cell_type in cell_types) and entity.get('Attributes'):
-            conditions[entity_type] = entity_type + entity['Attributes'][0]['Text']
+    cell_types = ['hemoglobin', 'platelets', 'leukocytes']
+    for description in get_description():
+        try:
+            entities = client.detect_entities(Text=description)['Entities']
+            for entity in entities:
+                entity_type = entity['Text']
+                if any(cell_type == entity_type.lower() for cell_type in cell_types) and entity.get('Attributes'):
+                    conditions[entity_type] = entity_type + entity['Attributes'][0]['Text']
+        except Exception as exc:
+            print(f'Failed to retrieve aws comprehend entities: {str(exc)}')
     return conditions
 
 
