@@ -220,6 +220,7 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
     excluded_trials = []
     for trial in trials:
         conditions = find_conditions(trial.trial_json)
+        trial.filter_condition = []
         if conditions:
             include_trail = True
             for cell_type, condition in conditions.items():
