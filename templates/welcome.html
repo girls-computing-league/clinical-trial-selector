@@ -57,9 +57,11 @@
         <a class="nav-link" href="#conditions" data-toggle="tab">Conditions w/o Trials</a>
         <a class="nav-link" href="#matches" data-toggle="tab">Code Matches</a>
         <a class="nav-link" href="#nomatches" data-toggle="tab">Codes w/o Matches</a>
-		<span class="float-right"><a class="btn btn-primary" href="/download_trials">Trials 
-			<i class="glyphicon glyphicon-download" style="font-size:20px;"></i>
-			</a></span>
+        {%- if session["combined_patient"] and session["combined_patient"].loaded %}
+            <span class="float-right"><a class="btn btn-primary" href="/download_trials">Trials
+                <i class="glyphicon glyphicon-download" style="font-size:20px;"></i>
+                </a></span>
+        {% endif %}
     </div>
     
     <div class="tab-content">

@@ -370,5 +370,17 @@ def get_va_token(token=None):
     return session.get('va_access_token')
 
 
+@app.route('/generalprivacypolicy.html')
+def privacy_policy():
+    session.clear()
+    return render_template("generalprivacypolicy.html")
+
+
+@app.route('/generaltermsofuse.html')
+def consumerpolicynotice():
+    session.clear()
+    return render_template("generaltermsofuse.html")
+
+
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
