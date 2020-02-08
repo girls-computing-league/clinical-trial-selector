@@ -1,5 +1,6 @@
 appnope==0.1.0
 asn1crypto==0.24.0
+awscli==1.16.248
 backcall==0.1.0
 blinker==1.4
 boto3==1.9.205
