@@ -1,5 +1,6 @@
 from __future__ import print_function
 from time import sleep
+import logging
 import binascii
 import os
 import ndjson
@@ -175,7 +176,7 @@ def get_diseases_icd_codes(code: str):
     auth = Authentication("***REMOVED***")
     icd_codes = []
     nci_thesaurus_concept_ids = get_nci_thesaurus_concept_ids(code)
-    print(f'Getting Icd codes for NCT id {code} with disease codes {nci_thesaurus_concept_ids}')
+    logging.info(f'Getting Icd codes for NCT id {code} with disease codes {nci_thesaurus_concept_ids}')
     with ThreadPoolExecutor(max_workers=8) as executor:
         futures = {
             executor.submit(process_codes, auth, nci_thesaurus_concept_id): nci_thesaurus_concept_id
@@ -185,7 +186,7 @@ def get_diseases_icd_codes(code: str):
             codes = future.result()
             if codes:
                 icd_codes.extend(codes)
-    print(icd_codes)
+    logging.info(f'icd_codes:{icd_codes}')
     return icd_codes
 
 

@@ -6,10 +6,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='accordion.css')}}">   
 {%- endblock %}
 
-{% block body_attribs %}
-style="display: flex;flex-direction: column;min-height: 100vh;"
-{% endblock body_attribs %}
-
 {% block scripts %}
     {{ super() }}
     <script src="{{ url_for('static', filename='accordion.js') }}"></script>
@@ -24,6 +20,7 @@ style="display: flex;flex-direction: column;min-height: 100vh;"
        function openSocket() {
             document.getElementById("progress").style.display = "block";
             socket.on('update_progress', function(message) {
+                console.log(message.data)
                 $('.progress-bar').css('width', message.data+'%')
                                         .attr('aria-valuenow', message.data);
                 $('.progress-bar-label').text(message.data+'%');
@@ -31,30 +28,11 @@ style="display: flex;flex-direction: column;min-height: 100vh;"
         }
         socket.on('disconnect', function(message) {
                 socket.disconnect()
+                console.log('disconnect')
             });
     </script>
-    <br>
-    <div class="row" style="width:100%;background: linear-gradient(#33ccff, #3399ff, 38%); height: 30px; bottom: 0; margin-top: auto;text-align:left;">
-        <br>
-        <div class="col-md-6" style="display: inline-block; margin-left: 5%;color: #000000;">
-            Copyrighted © 2019 Clinical Trial Selector (CTS) – Girls Computing League. All Rights Reserved.
-            <br>
-        </div>
-        <div class="col-md-4" style="margin-left: 5%;float: right;text-align:right; color:#428bca">
-            <a target="_blank" href="/generalprivacypolicy.html">General Privacy Policy</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a target="_blank" href="/generaltermsofuse.html">General Terms of Use</a>
-        </div>
-        <br>
-        <br>
-    </div>
 {% endblock %}
 
-{% block navbar %}
-<span class="float-left" style="padding-left:5%">
-			<a class="btn btn-primary" href="/">
-			<i class="glyphicon glyphicon-home" style="font-size:20px;"></i>
-			</a>
-			</span>
-{% endblock %}
 
 {% block content %}
     <div class="container">
@@ -66,7 +44,7 @@ style="display: flex;flex-direction: column;min-height: 100vh;"
             </div>
         {% endfor %}
     </div>
-		
+
     <div class="container">
     {% block inf_pt_main %}{% endblock %}
         </div>

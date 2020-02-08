@@ -2,12 +2,13 @@ from pathlib import Path
 import json
 import requests as req
 import logging
-import pyodbc
 import re
 import boto3
 from jsonpath_rw_ext import parse
 from typing import Dict, List, Any, Tuple, Union
 import concurrent.futures as futures
+
+client = boto3.client(service_name="comprehendmedical")
 
 # BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
@@ -36,13 +37,6 @@ TABLE_NAME_BY_CELL_TYPE = {
     'wbc': 'Dataset1_WBC_Trials_First',
     'platelets': 'Dataset1_Platelets_Trials_First',
 }
-
-
-def execute_sql(sql):
-    with pyodbc.connect(connection_details) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-            return cursor.fetchall()
 
 
 def rchop(thestring, ending):
@@ -131,11 +125,10 @@ def find_trials(ncit_codes, gender="unknown", age=0):
     trials = []
     for ncit_dict in ncit_codes:
         ncit = ncit_dict["ncit"]
-        params = {}     # TODO Check this for trials
-        #params = {"diseases.nci_thesaurus_concept_id": ncit}
-        #if (gender != "unknown"):
+        params = {"diseases.nci_thesaurus_concept_id": ncit}
+        # if (gender != "unknown"):
         #    params["eligibility.structured.gender"] = gender
-        #if (age != 0):
+        # if (age != 0):
         #    params["eligibility.structured.max_age_in_years_gte"] = age
         #    params["eligibility.structured.min_age_in_years_lte"] = age
         res = req.get(TRIALS_URL, params=params)
@@ -156,11 +149,11 @@ def find_all_codes(disease_list):
 
 
 def get_lab_observations_by_patient(patient_id, token):
-    loinc_codes = ','.join(list(LOINC_CODES.keys()))
-    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=40&code={loinc_codes}'
+    # loinc_codes = ','.join(list(LOINC_CODES.keys()))
+    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=40'
 
     lab_results = {}
-    while current_url is not None:
+    while len(lab_results) != 3 and current_url is not None:
         observations = get_api(token, url=current_url)
 
         # extract values from observations.
@@ -176,7 +169,7 @@ def get_lab_observations_by_patient(patient_id, token):
                 continue
 
             # Store the latest observation result
-            if code not in lab_results or effective_date_time > lab_results[code]['effectiveDateTime']:
+            if code in LOINC_CODES and (code not in lab_results or effective_date_time > lab_results[code]['effectiveDateTime']):
                 lab_results[code] = {'effectiveDateTime': effective_date_time, 'value': value}
 
         current_url = None
@@ -227,25 +220,26 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
     excluded_trials = []
     for trial in trials:
         conditions = find_conditions(trial.trial_json)
+        trial.filter_condition = []
         if conditions:
-            trial.filter_condition = ',\t'.join(value for key, value in conditions.items())
+            include_trail = True
             for cell_type, condition in conditions.items():
                 lab_value = lab_results.get(cell_type)
                 if not lab_value:
-                    flag = True
+                    trial.filter_condition.append((condition, True))
                     continue
-                lab_value, condition = convert_expressions(lab_value, condition)
-                if eval(lab_value + condition):
-                    flag = True
+                lab_value, converted_condition = convert_expressions(lab_value, condition)
+                if eval(lab_value + converted_condition):
+                    trial.filter_condition.append((condition, True))
                 else:
-                    flag = False
-                    break
-            if flag:
+                    include_trail = False
+                    trial.filter_condition.append((condition, False))
+            if include_trail:
                 filtered_trials.append(trial)
             else:
                 excluded_trials.append(trial)
         else:
-            trial.filter_condition = 'No Inclusion Criteria Found'
+            trial.filter_condition.append(('No Inclusion Criteria Found', True))
             filtered_trials.append(trial)
     return filtered_trials, excluded_trials
 
@@ -261,7 +255,8 @@ def find_conditions(trial: Dict) -> Dict:
         pattern = re.compile(f'(\[?({match_type})\]?\s?[\>\=\<]+\s?\d+[\.\,]?\d*\s?\w+\/?\s?\w+(\^\d*)?)')
         matches = pattern.findall(description)
         if matches:
-            return {match[1]: str(match[0]) for match in matches}
+            conditions = {match[1]: str(match[0]) for match in matches}
+            return conditions if len(conditions) == 3 else get_mapping_with_aws_comprehend(unstructured_descriptions)
         else:
             entity_mapping = get_mapping_with_aws_comprehend(unstructured_descriptions)
             return entity_mapping
@@ -269,38 +264,42 @@ def find_conditions(trial: Dict) -> Dict:
         return {}
 
 
+def split_description(description, limit):
+    data = []
+    while len(description) > limit:
+        data.append(description[:limit])
+        description = description[limit:]
+    data.append(description)
+    return data
+
+
 def get_mapping_with_aws_comprehend(descriptions: List) -> Dict:
-    client = boto3.client(service_name="comprehendmedical")
-    description = ' '.join([match.value.replace('\r\n', ' ').lower() for match in descriptions]).replace(',', '')
-    entities = []
-    limit = 19999
-    if len(description) < limit:
-        entities.extend(client.detect_entities(Text=description)['Entities'])
-    else:
-        splits = ['']
-        count = 0
-        for desc in descriptions:
-            if len(desc.value) >= limit:
-                splits[count] = desc.value[:limit]
-                splits[count] = desc.value[limit:]
-                count += 2
-                continue
-            if len(desc.value)+len(splits[count]) >= limit:
-                count += 1
+    def get_description():
+        data = ''
+        limit = 19999
+        for match in descriptions:
+            description = match.value.replace('\r\n', ' ').lower().replace(',', '')
+            if len(description) > limit:
+                for split in split_description(description, limit):
+                    yield split
+            elif len(data) + len(description) > limit:
+                yield data
+                data = description
             else:
-                splits[count] += desc.value
-        for split in splits:
-            try:
-                entities.extend(client.detect_entities(Text=split)['Entities'])
-            except Exception as exc:
-                print(exc)
-                continue
-    cell_types = ['hemoglobin', 'platelets', 'leukocytes']
+                data += description
+        yield data
+
     conditions = {}
-    for entity in entities:
-        entity_type = entity['Text']
-        if any(cell_type in entity_type for cell_type in cell_types) and entity.get('Attributes'):
-            conditions[entity_type] = entity_type + entity['Attributes'][0]['Text']
+    cell_types = ['hemoglobin', 'platelets', 'leukocytes']
+    for description in get_description():
+        try:
+            entities = client.detect_entities(Text=description)['Entities']
+            for entity in entities:
+                entity_type = entity['Text']
+                if any(cell_type == entity_type.lower() for cell_type in cell_types) and entity.get('Attributes'):
+                    conditions[entity_type] = entity_type + entity['Attributes'][0]['Text']
+        except Exception as exc:
+            print(f'Failed to retrieve aws comprehend entities: {str(exc)}')
     return conditions
 
 

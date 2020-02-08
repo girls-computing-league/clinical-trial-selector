@@ -1,5 +1,9 @@
+import csv
+import io
+import json
+
 from flask_socketio import SocketIO, disconnect
-from flask import Flask, session, redirect, render_template, request, flash
+from flask import Flask, session, redirect, render_template, request, flash, make_response
 from flask_session import Session
 from flask_oauthlib.client import OAuth
 from flask_bootstrap import Bootstrap
@@ -7,7 +11,6 @@ import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
                                EXPORT_URL, submit_get_patients_job, get_infected_patients_info)
-import json
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -119,7 +122,7 @@ def home():
 
 @app.route('/')
 def showtrials():
-    return render_template('welcome.html')
+    return render_template('welcome.html', form=FilterForm(request.form))
 
 @app.route('/cms/authenticate')
 def cmsauthenticate():
@@ -213,15 +216,52 @@ def getInfo():
     return redirect("/")
 
 
-@app.route('/filter_by_lab_results')
+@app.route('/download_trials')
+def download_trails():
+    combined_patient = session['combined_patient']
+    header = ['id', 'code_ncit', 'title', 'pi','official','summary','description']
+
+
+    si = io.StringIO()
+    cw = csv.writer(si)
+
+    data = []
+    for trial_by_ncit in combined_patient.trials_by_ncit:
+        for trial in trial_by_ncit.get("trials", []):
+            data.append([getattr(trial, attribute) for attribute in header])
+
+    cw.writerow(header)
+    cw.writerows(data)
+
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=info.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
+
+class FilterForm(Form):
+    hemoglobin = StringField('hemoglobin ', [validators.Length(max=25)])
+    leukocytes = StringField('leukocytes ', [validators.Length(max=25)])
+    platelets = StringField('platelets ', [validators.Length(max=25)])
+
+
+@app.route('/filter_by_lab_results', methods=['GET', 'POST'])
 def filter_by_lab_results():
     """
     A view that filters trials based on:
     Filter1 -> Filters the DB tables based on nci_id of trials. We only show the results with matching records in DB.
     Filter2 -> Filters results based on inclusion condition and value from the Observation API.
     """
+
+    form = FilterForm(request.form)
+
+    if request.method == 'POST':
+        form.validate()
+        lab_results = {key: (value.split()[0], value.split()[1]) for key, value in form.data.items()}
+    else:
+        lab_results = session['Laboratory_Results']
+
     combined_patient = session['combined_patient']
-    lab_results = session['Laboratory_Results']
     trials_by_ncit = combined_patient.trials_by_ncit
     socketio.emit(event_name, {"data": 20}, broadcast=False)
 
@@ -328,6 +368,18 @@ def get_cms_token(token=None):
 @va.tokengetter
 def get_va_token(token=None):
     return session.get('va_access_token')
+
+
+@app.route('/generalprivacypolicy.html')
+def privacy_policy():
+    session.clear()
+    return render_template("generalprivacypolicy.html")
+
+
+@app.route('/generaltermsofuse.html')
+def consumerpolicynotice():
+    session.clear()
+    return render_template("generaltermsofuse.html")
 
 
 if __name__ == '__main__':
