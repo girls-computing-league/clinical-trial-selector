@@ -2,5 +2,7 @@
     "cms_key": "***REMOVED***",
     "cms_secret": "***REMOVED***",
     "va_key": "***REMOVED***",
-    "va_secret": "***REMOVED***"
+    "va_secret": "***REMOVED***",
+    "va_key_local": "***REMOVED***",
+    "va_secret_local": "***REMOVED***"
 }

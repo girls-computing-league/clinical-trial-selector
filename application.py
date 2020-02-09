@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+import argparse
 
 from flask_socketio import SocketIO, disconnect
 from flask import Flask, session, redirect, render_template, request, flash, make_response
@@ -14,12 +15,14 @@ from infected_patients import (get_infected_patients, get_authenticate_bcda_api_
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# creates the flask webserver and the secret key of the web server
+parser = argparse.ArgumentParser()
+parser.add_argument("-l", "--local", help="Run application from localhost", action="store_true")
+args = parser.parse_args()
 
+# creates the flask webserver and the secret key of the web server
 app = Flask(__name__)
 app.secret_key = "development"
 socketio = SocketIO(app)
-
 
 # runs the app with the OAuthentication protocol
 SESSION_TYPE = 'filesystem'
@@ -31,6 +34,9 @@ oauth = OAuth(app)
 keys_fp = open("keys.json", "r")
 keys_dict = json.load(keys_fp)
 event_name = 'update_progress'
+
+AWS_IP = "18.218.61.101"
+callback_urlbase ="localhost:5000" if args.local else AWS_IP
 
 # specifies possible parameters for the protocol dealing with the CMS
 cms = oauth.remote_app(
@@ -48,8 +54,8 @@ cms = oauth.remote_app(
 va = oauth.remote_app(
     'va',
     base_url="https://dev-api.va.gov/",
-    consumer_key = keys_dict["va_key"],
-    consumer_secret = keys_dict["va_secret"],
+    consumer_key = keys_dict["va_key_local" if args.local else "va_key"],
+    consumer_secret = keys_dict["va_secret_local" if args.local else "va_secret"],
     request_token_params={
         'scope': 'openid offline_access profile email launch/patient veteran_status.read patient/Observation.read patient/Patient.read patient/Condition.read', "state": "12345"},
     request_token_url=None,
@@ -126,11 +132,11 @@ def showtrials():
 
 @app.route('/cms/authenticate')
 def cmsauthenticate():
-    return cms.authorize(callback='http://18.218.61.101/cmsredirect')
+    return cms.authorize(callback=f'http://{callback_urlbase}/cmsredirect')
 
 @app.route('/va/authenticate')
 def vaauthenticate():
-    return va.authorize(callback='http://18.218.61.101/varedirect')
+    return va.authorize(callback=f'http://{callback_urlbase}/varedirect')
 
 @app.route('/cmsredirect')
 def cmsredirect():
@@ -383,4 +389,4 @@ def consumerpolicynotice():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=80)
+    socketio.run(app, host='0.0.0.0', port=5000)
