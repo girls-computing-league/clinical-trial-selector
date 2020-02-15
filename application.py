@@ -169,6 +169,7 @@ def varedirect():
     session['va_gender'] = pat.gender
     session['va_birthdate'] = pat.birthdate
     session['va_name'] = pat.name
+    session['va_zipcode'] = pat.zipcode
     combined.VAPatient = pat
     combined.loaded = False
     session['combined_patient'] = combined

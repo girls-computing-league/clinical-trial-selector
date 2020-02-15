@@ -19,7 +19,7 @@ class Patient:
         self.tgt = self.auth.gettgt()
 
     def load_demographics(self):
-        self.gender, self.birthdate, self.name, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
+        self.gender, self.birthdate, self.name, self.zipcode, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
         logging.info("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def calculate_age(self):
