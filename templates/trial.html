@@ -114,14 +114,14 @@
                                 <th>Address</th>
                                 <th>Phone</th>
                                 <th>Status</th>
-                                <th>Distance</th>
+                                <th>Distance (miles)</th>
                             </tr>
                         </thead>
         
                         {%- for site in ns.trial.sites %}
                             <tbody>
                                 <tr>
-                                    <td colspan="3" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{site["org_name"]}}</button> </td>
+                                    <td colspan="4" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{site["org_name"]}}</button> </td>
                                 </tr>
                                         <tr class="toggler">
                                             <td>
@@ -133,7 +133,7 @@
                                             </td>
                                             <td>{{ site["org_phone"] }}</td>
                                             <td>{{ site["org_status"] }}</td>
-                                            <td>{{ site["distance"] }} 50</td>
+                                            <td>{{ site["distance"]|round|int }}</td>
                                         </tr>
                             </tbody>
                         {%- endfor %}

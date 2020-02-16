@@ -6,6 +6,8 @@ import sys
 import umls
 import requests as req
 from datetime import date
+from distances import distance
+from zipcode import Zipcode
 
 import json
 
@@ -206,12 +208,38 @@ class CombinedPatient:
         self.matches = []
         self.codes_without_matches = []
 
+    def calculate_distances(self):
+        """
+        patzip = zipcode of patient
+        pat_latlong = zip2geo(patzip)
+
+        for trial in trials:
+            for site in sites:
+                site["distance"] = haversin(pat_latlong, zip2geo(site['postalCode']))
+        """
+
+        db = Zipcode()
+        patzip = self.VAPatient.zipcode
+        pat_latlong = db.zip2geo(patzip)
+
+        for trial in self.trials:
+            for site in trial.sites:
+                coordinates = site.get("org_coordinates", 0)
+                if coordinates == 0:
+                    site_latlong = db.zip2geo(site["org_postal_code"][:5])
+                else:
+                    site_latlong = (coordinates["lat"], coordinates["lon"])
+                if (site_latlong is None) or (pat_latlong is None):
+                    return
+                site["distance"] = distance(pat_latlong, site_latlong)
+
     def load_data(self):
         self.clear_collections() 
-        if self.VAPatient is not None:
-            self.append_patient_data(self.VAPatient)
         if self.CMSPatient is not None:
             self.append_patient_data(self.CMSPatient)
+        if self.VAPatient is not None:
+            self.append_patient_data(self.VAPatient)
+            self.calculate_distances()
         for code in self.ncit_codes:
             trials = []
             for trial in self.trials:
