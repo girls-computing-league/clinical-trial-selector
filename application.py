@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import argparse
+import logging, sys
 
 from flask_socketio import SocketIO, disconnect
 from flask import Flask, session, redirect, render_template, request, flash, make_response
@@ -18,6 +19,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", "--local", help="Run application from localhost", action="store_true")
 args = parser.parse_args()
+
+logging.getLogger().setLevel(logging.DEBUG)
 
 # creates the flask webserver and the secret key of the web server
 app = Flask(__name__)

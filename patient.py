@@ -150,7 +150,7 @@ def find_all_codes(disease_list):
 
 def get_lab_observations_by_patient(patient_id, token):
     # loinc_codes = ','.join(list(LOINC_CODES.keys()))
-    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=40'
+    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=100'
 
     lab_results = {}
     while len(lab_results) != 3 and current_url is not None:
