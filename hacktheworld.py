@@ -209,15 +209,6 @@ class CombinedPatient:
         self.codes_without_matches = []
 
     def calculate_distances(self):
-        """
-        patzip = zipcode of patient
-        pat_latlong = zip2geo(patzip)
-
-        for trial in trials:
-            for site in sites:
-                site["distance"] = haversin(pat_latlong, zip2geo(site['postalCode']))
-        """
-
         db = Zipcode()
         patzip = self.VAPatient.zipcode
         pat_latlong = db.zip2geo(patzip)
