@@ -133,7 +133,7 @@
                                             </td>
                                             <td>{{ site["org_phone"] }}</td>
                                             <td>{{ site["org_status"] }}</td>
-                                            <td>{{ site["distance"]|round|int }}</td>
+                                            <td>{% if site["distance"] is defined %}{{ site["distance"]|round|int }}{% endif %}</td>
                                         </tr>
                             </tbody>
                         {%- endfor %}
