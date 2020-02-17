@@ -51,7 +51,7 @@
     {%- endif %}
     <div class="nav nav-tabs" id="myTab">
         <a class="nav-link active" href="#trials" data-toggle="tab">Trials</a>
-        {%- if session["excluded"] %}
+        {%- if session["excluded"] is defined %}
         <a class="nav-link" href="#Excluded" data-toggle="tab">Excluded</a>
         {% endif %}
         <a class="nav-link" href="#conditions" data-toggle="tab">Conditions w/o Trials</a>
@@ -109,7 +109,7 @@
         </div><!--/tab-pane-->
         <div class="tab-pane" id="Excluded">
             <br>
-            {%- if session["excluded"] %}
+            {%- if session["excluded"] is defined %}
 				There are {{ session['excluded_num_trials'] }} trials for {{ session['excluded_num_conditions_with_trials'] }} conditions
 				<br>
 

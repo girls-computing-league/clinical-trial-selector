@@ -198,13 +198,15 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
         }
         for future in futures.as_completed(tasks):
             ncit_code = tasks[future]
-            try:
-                filtered_trials, excluded_trails = future.result()
-                filtered_trials_by_ncit.append({"ncit": ncit_code, "trials": filtered_trials})
-                excluded_trials_by_ncit.append({"ncit": ncit_code, "trials": excluded_trails})
-            except Exception as exc:
-                print('Failed task: ', exc)
-                continue
+            # try:
+            filtered_trials, excluded_trails = future.result()
+            logging.debug(f"FILTER NCIT: {ncit_code}, ")
+            filtered_trials_by_ncit.append({"ncit": ncit_code, "trials": filtered_trials})
+            excluded_trials_by_ncit.append({"ncit": ncit_code, "trials": excluded_trails})
+            # except Exception as exc:
+            #     print('Failed task: ', exc)
+            #     raise Exception
+            #     continue
 
     return filtered_trials_by_ncit, excluded_trials_by_ncit
 
@@ -229,7 +231,7 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
                     trial.filter_condition.append((condition, True))
                     continue
                 lab_value, converted_condition = convert_expressions(lab_value, condition)
-                if eval(lab_value + converted_condition):
+                if (lab_value != "0") and eval(lab_value + converted_condition):
                     trial.filter_condition.append((condition, True))
                 else:
                     include_trail = False
@@ -315,6 +317,11 @@ def convert_expressions(lab_value: str, condition: str):
     # leukocytes: 3000/ mm^3, >= 3000/mcl
 
     pattern = re.compile('(\s?[\>\=\<]+\s?\d+[\,\.]?\d*)')
-    condition = pattern.findall(condition)[0].replace(',', '')
+    # if type(condition) is List:
+    #     condition = condition[0]
+    condition = pattern.findall(condition)
+    if len(condition) == 0:
+        return "0", ""
+    condition = condition[0].replace(',', '')
     lab_value = lab_value[0]
     return lab_value, condition
