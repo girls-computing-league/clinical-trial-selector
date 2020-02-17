@@ -1,21 +1,23 @@
 {% extends "bootstrap/base.html" %}
-
 {% block styles %}
     {{super()}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
-    <link rel="stylesheet" href="{{ url_for('static', filename='accordion.css')}}">   
+    <link rel="stylesheet" href="{{ url_for('static', filename='formation.min.css')}}">
+    <link rel="stylesheet" href="https://design.va.gov/assets/stylesheets/application.css">
+    <link rel="canonical" href="https://design.va.gov/design/index">
+    <script src="https://design.va.gov/assets/javascripts/polyfills/array.from.js"></script>
 {%- endblock %}
-
 {% block body_attribs %}
 style="display: flex;flex-direction: column;min-height: 100vh;"
 {% endblock body_attribs %}
 
 {% block scripts %}
     {{ super() }}
-    <script src="{{ url_for('static', filename='accordion.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='formation.js') }}"></script>
+    <script src="{{ url_for('static', filename='formationCSS.js') }}"></script>
+    <script src="https://design.va.gov/assets/javascripts/site.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 
     <script type="text/javascript" charset="utf-8">
@@ -34,6 +36,7 @@ style="display: flex;flex-direction: column;min-height: 100vh;"
             });
     </script>
     <br>
+
     <div class="row" style="width:100%;background: linear-gradient(#33ccff, #3399ff, 38%); height: 30px; bottom: 0; margin-top: auto;text-align:left;">
         <br>
         <div class="col-md-6" style="display: inline-block; margin-left: 5%;color: #000000;">
@@ -49,11 +52,7 @@ style="display: flex;flex-direction: column;min-height: 100vh;"
 {% endblock %}
 
 {% block navbar %}
-<span class="float-left" style="padding-left:5%">
-			<a class="btn btn-primary" href="/">
-			<i class="glyphicon glyphicon-home" style="font-size:20px;"></i>
-			</a>
-			</span>
+
 {% endblock %}
 
 {% block content %}

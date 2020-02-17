@@ -1,7 +1,53 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <hr>
+    <header class="site-header" role="banner">
+
+  <div class="site-l-wrapper">
+    <div class="site-header__masthead">
+      <div class="site-header__logo" id="extended-logo">
+        <em class="site-header__logo-text">
+          <a class="site-header__logo-link" title="Clinical Trials Selector homepage" href="/"><strong class="vads-u-display--block small-screen:vads-u-display--inline">Clinical Trials Selector</strong> </a>
+        </em>
+      </div>
+      <div class="site-header__utility-links">
+
+        <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a>
+          <a href="/logout" class="usa-button vads-u-margin--1">Logout</a>
+      </div>
+      <button type="button" id="toggle-mobile-search" aria-label="Show search" class="site-toggle-search" aria-controls="mobile-search-container"><i class="fas fa-search"></i></button>
+      <button class="site-header__open-mobile-nav-button" id="open-mobile-nav-button" aria-label="Open navigation menu" type="button">Menu</button>
+    </div>
+  </div>
+</header>
+    <div class="site-top-nav-wrapper site-l-wrapper sticky">
+      <nav class="site-header__nav">
+        <ul class="site-header__nav-list">
+          <li class="site-header__nav-item">
+            <a class="site-header__nav-item__link " href="#trials" data-toggle="tab">Trails</a>
+          </li>
+            {%- if session["excluded"] %}
+            <li class="site-header__nav-item">
+                <a class="site-header__nav-item__link " href="#Excluded" data-toggle="tab">Excluded</a>
+            </li>
+        {% endif %}
+          <li class="site-header__nav-item">
+            <a class="site-header__nav-item__link " href="#conditions" data-toggle="tab">Conditions w/o Trials</a>
+          </li>
+          <li class="site-header__nav-item">
+            <a class="site-header__nav-item__link " href="#matches" data-toggle="tab">Code Matches</a>
+          </li>
+          <li class="site-header__nav-item">
+            <a class="site-header__nav-item__link " href="#nomatches" data-toggle="tab">Codes w/o Matches</a>
+          </li>
+            {%- if session["combined_patient"] and session["combined_patient"].loaded %}
+          <li class="site-header__nav-item">
+            <a class="site-header__nav-item__link " href="/download_trials" data-toggle="tab">Download Trials</a>
+          </li>
+            {% endif %}
+        </ul>
+      </nav>
+    </div>
     <div class="container bootstrap snippet">
         <div class="row">
             <div class="col-sm-9">
@@ -9,49 +55,52 @@
             </div>
             <div class="col">
                 <span class="float-left">
-                    <a class="btn btn-primary" href="/infected_patients">Matcher for Doctors</a>
+                    <!-- a class="btn btn-primary" href="/infected_patients">Matcher for Doctors</a -->
+                    <!-- a class="usa-button" href="/infected_patients">Matcher for Doctors</a -->
                 </span>
             </div>
 			{% block extra_button %}{% endblock%}
             <div class="col">
 						<span class="float-right">
-                        <a class="btn btn-primary" href="/logout">Logout</a>
+
+                            <!-- a class="usa-button" href="/logout">Logout</a -->
                     </span>
             </div>
         </div>
     </div>
-    <hr>
 
-    <div class="container bootstrap snippet">
+    <div class="container">
         <div class="row">
-            <div class="col-sm-3"><!--left col-->
-                    
+            <div class="col-md-3"><!--left col-->
                 <ul class="list-group">
                     <li class="list-group-item text-muted">
-                        VA Patient Info
+                        <span>VA Patient Info </span>
                         {%- if not session["va_patient"] %}
-                            <a class="btn-sm btn-primary float-right" href="/va/authenticate">Login</a>
+                            <!-- a class="btn-sm btn-primary float-right" href="/va/authenticate">Login</a -->
+                        <a href="/va/authenticate" class="usa-button">Login</a>
                         {% endif %}
                     </li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Name</strong></span>{{ session["va_name"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>ID</strong></span>{{ session["va_patient"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>DOB</strong></span>{{ session["va_birthdate"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span>{{ session["va_gender"]}}</li>                
+                    <li class="list-group-item text-left"><strong>Name</strong><p class=".vads-u-text-align--right">{{ session["va_name"]}}</p></li>
+                    <li class="list-group-item text-left"><strong>ID</strong><p class=".vads-u-text-align--right">{{ session["va_patient"]}}</li>
+                    <li class="list-group-item text-left"><strong>DOB</strong><p class=".vads-u-text-align--right">{{ session["va_birthdate"]}}</li>
+                    <li class="list-group-item text-left"><strong>Gender</strong><p class=".vads-u-text-align--right">{{ session["va_gender"]}}</li>
                 </ul> 
 
                 <br>
 
                 <ul class="list-group">
                     <li class="list-group-item text-muted">
-                        CMS Patient Info
+                        <span>CMS Patient Info</span>
+
                         {%- if not session["cms_patient"] %}
-                            <a class="btn-sm btn-primary float-right" href="/cms/authenticate">Login</a>
+                            <!-- a class="btn-sm btn-primary float-right" href="/cms/authenticate">Login</a -->
+                        <a href="/cms/authenticate" class="usa-button">Login</a>
                         {% endif %}
                     </li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Name</strong></span>{{ session["cms_name"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>ID</strong></span> {{ session["cms_patient"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>DOB</strong></span> {{ session["cms_birthdate"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span> {{ session["cms_gender"]}}</li>                
+                    <li class="list-group-item text-left"><strong>Name</strong><p class=".vads-u-text-align--right">{{ session["cms_name"]}}</li>
+                    <li class="list-group-item text-left"><strong>ID</strong><p class=".vads-u-text-align--right"> {{ session["cms_patient"]}}</li>
+                    <li class="list-group-item text-left"><strong>DOB</strong><p class=".vads-u-text-align--right"> {{ session["cms_birthdate"]}}</li>
+                    <li class="list-group-item text-left"><strong>Gender</strong><p class=".vads-u-text-align--right"> {{ session["cms_gender"]}}</li>
                 </ul>     
             
             </div><!--/col-3-->
