@@ -9,20 +9,19 @@
 {% endfor %}
 
 {% macro section(section_name, section_header, section_content, parent="info") %}
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">
-                <button class="btn btn-link" data-toggle="collapse" data-target="#trial_{{section_name}}" aria-expanded="true" aria-controls="collapseOne">
-                    {{section_header}}
-                </button>
-            </h5>
-        </div>
-        <div id="trial_{{section_name}}" class="collapse" aria-labelledby="headingOne" data-parent="#{{parent}}">
-            <div class="card-body">
-                {{section_content}}
-            </div>
-        </div>
+<ul class="usa-accordion">
+  <li>
+    <button class="usa-accordion-button"
+      aria-expanded="false"
+      aria-controls="{{section_name}}">
+      {{section_header}}
+    </button>
+    <div id="{{section_name}}" class="usa-accordion-content">
+         {{section_content}}
     </div>
+  </li>
+</ul>
+
 {% endmacro %}
 
 {% block title %}
@@ -42,12 +41,16 @@
 {% endblock %}
 
 {% block pt_main %}
-    <ul class="nav nav-tabs" id="myTab">
-        <li class="nav-item active"><a class="nav-link active" href="#info" data-toggle="tab">Info</a></li>
-        <li class="nav-item"><a class="nav-link" href="#measures" data-toggle="tab">Outcome Measures</a></li>
-        <li class="nav-item"><a class="nav-link" href="#diseases" data-toggle="tab">Diseases</a></li>
-        <li class="nav-item"><a class="nav-link" href="#locations" data-toggle="tab">Locations</a></li>
-    </ul> 
+    <section class="usa-banner">
+        <div class=".usa-accordion">
+            <header class="usa-banner-header">
+                <button class=".usa-accordion-button" aria-expanded="false" href="#info" data-toggle="tab">Info</button>
+                <button class=".usa-accordion-button" aria-expanded="false" href="#measures" data-toggle="tab">Outcome Measures</button>
+                <button class=".usa-accordion-button" aria-expanded="false" href="#diseases" data-toggle="tab">Diseases</button>
+                <button class=".usa-accordion-button" aria-expanded="false" href="#locations" data-toggle="tab">Locations</button>
+           </header>
+    </div>
+</section>
         
     <div class="tab-content">
         <div class="tab-pane active" id="info">
@@ -71,15 +74,26 @@
                 </thead>
 
                 {%- for measure in ns.trial.measures %}
-                    <tbody>
+
+                    <tbody class="usa-accordion">
                         <tr>
-                            <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{measure["name"]}}</button> </td>
-                        </tr>
-                                <tr class="toggler">
+                           <td colspan="2" class="page-header">
+                               <!-- button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{measure["name"]}}</button -->
+                               <button class="usa-accordion-button"
+                                  aria-expanded="false"
+                                  aria-controls="{{ loop.index0 }}">
+                                  {{measure["name"]}}
+                                </button>
+                           </td>
+                          </tr>
+
+                                <tr id="{{ loop.index0 }}" class="usa-accordion-content">
                                     <td>{{ measure["description"] }}</td>
                                     <td>{{ measure["timeframe"] }}</td>
                                 </tr>
+
                     </tbody>
+
                 {%- endfor %}
             </table>
         
@@ -94,11 +108,13 @@
                         </thead>
         
                         {%- for disease in ns.trial.diseases %}
-                            <tbody>
+                            <tbody class="usa-accordion">
                                 <tr>
-                                    <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{disease["preferred_name"]}}</button> </td>
+                                   <td colspan="2" class="page-header">
+                                        <button class="usa-accordion-button" aria-expanded="false" aria-controls="{{ loop.index0 }}"> {{disease["preferred_name"]}} </button>
+                                   </td>
                                 </tr>
-                                        <tr class="toggler">
+                                        <tr id="{{ loop.index0 }}" class="usa-accordion-content">
                                             <td>{{ disease["nci_thesaurus_concept_id"] }}</td>
                                             <td>{{ disease["inclusion_indicator"] }}</td>
                                         </tr>
@@ -119,13 +135,14 @@
                         </thead>
         
                         {%- for site in ns.trial.sites %}
-                            <tbody>
+                            <tbody class="usa-accordion">
                                 <tr>
-                                    <td colspan="4" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{site["org_name"]}}</button> </td>
+                                     <td colspan="4" class="page-header">
+                                     <button class="usa-accordion-button" aria-expanded="false" aria-controls="{{ loop.index0 }}"> {{site["org_name"]}}</button>
+                                     </td>
                                 </tr>
-                                        <tr class="toggler">
-                                            <td>
-                                                {{ site["org_address_line_1"] }}<br>
+                                        <tr id="{{ loop.index0 }}" class="usa-accordion-content">
+                                            <td> {{ site["org_address_line_1"] }}<br>
                                                 {%- if site["org_address_line_2"] %}
                                                     {{ site["org_address_line_2"] }}<br>
                                                 {%- endif %}
