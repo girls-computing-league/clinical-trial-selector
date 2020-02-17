@@ -122,19 +122,26 @@ def find_codes(disease):
     return codes, names
 
 def find_trials(ncit_codes, gender="unknown", age=0):
+    size = 50
     trials = []
     for ncit_dict in ncit_codes:
-        ncit = ncit_dict["ncit"]
-        params = {"size": "50", "diseases.nci_thesaurus_concept_id": ncit}
-        if (gender != "unknown"):
-           params["eligibility.structured.gender"] = gender
-        if (age != 0):
-           params["eligibility.structured.max_age_in_years_gte"] = age
-           params["eligibility.structured.min_age_in_years_lte"] = age
-        res = req.get(TRIALS_URL, params=params)
-        trialset = {"code_ncit": ncit, "trialset": res.json()}
+        total = 1
+        next_trial = 1
+        while next_trial<= total:
+            ncit = ncit_dict["ncit"]
+            params = {"size": f"{size}", "from": f"{next_trial}", "diseases.nci_thesaurus_concept_id": ncit}
+            if (gender != "unknown"):
+                params["eligibility.structured.gender"] = gender
+            if (age != 0):
+                params["eligibility.structured.max_age_in_years_gte"] = age
+                params["eligibility.structured.min_age_in_years_lte"] = age
+            res = req.get(TRIALS_URL, params=params)
+            res_dict = res.json()
+            trialset = {"code_ncit": ncit, "trialset": res_dict}
+            total = res_dict["total"]
+            next_trial += size
 
-        trials.append(trialset)
+            trials.append(trialset)
     return trials
 
 
