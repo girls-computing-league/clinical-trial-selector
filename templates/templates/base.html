@@ -1,0 +1,51 @@
+{% extends "bootstrap/base.html" %}
+
+{% block styles %}
+    {{super()}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='accordion.css')}}">   
+{%- endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='accordion.js') }}"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" charset="utf-8">
+       var socket = io();
+
+       function openSocket() {
+            document.getElementById("progress").style.display = "block";
+            socket.on('update_progress', function(message) {
+                console.log(message.data)
+                $('.progress-bar').css('width', message.data+'%')
+                                        .attr('aria-valuenow', message.data);
+                $('.progress-bar-label').text(message.data+'%');
+            });
+        }
+        socket.on('disconnect', function(message) {
+                socket.disconnect()
+                console.log('disconnect')
+            });
+    </script>
+{% endblock %}
+
+
+{% block content %}
+    <div class="container">
+        {% for message in get_flashed_messages() %}
+        <br>
+            <div class="alert alert-warning text-center">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>{{message}}</strong>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="container">
+    {% block inf_pt_main %}{% endblock %}
+        </div>
+{% endblock %}

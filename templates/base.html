@@ -6,6 +6,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='accordion.css')}}">   
 {%- endblock %}
 
+{% block body_attribs %}
+style="display: flex;flex-direction: column;min-height: 100vh;"
+{% endblock body_attribs %}
+
 {% block scripts %}
     {{ super() }}
     <script src="{{ url_for('static', filename='accordion.js') }}"></script>
@@ -29,16 +33,16 @@
                 socket.disconnect()
             });
     </script>
-<div class="row" style="width:100%;background: linear-gradient(#33ccff, #3399ff, 38%);position: fixed;bottom: 0;margin: 0;text-align:left;">
+    <br>
+    <div class="row" style="width:100%;background: linear-gradient(#33ccff, #3399ff, 38%); height: 30px; bottom: 0; margin-top: auto;text-align:left;">
         <br>
-        <br>
-            <div class="col-md-6" style="display: inline-block; margin-left: 5%;color: #000000;">
-                Copyrighted © 2019 Clinical Trial Selector (CTS) – Girls Computing League. All Rights Reserved.
-                <br>
-            </div>
-            <div class="col-md-4" style="margin-left: 5%;float: right;text-align:right; color:#428bca">
-                <a target="_blank" href="/generalprivacypolicy.html">General Privacy Policy</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a target="_blank" href="/generaltermsofuse.html">General Terms of Use</a>
-            </div>
+        <div class="col-md-6" style="display: inline-block; margin-left: 5%;color: #000000;">
+            Copyrighted © 2019 Clinical Trial Selector (CTS) – Girls Computing League. All Rights Reserved.
+            <br>
+        </div>
+        <div class="col-md-4" style="margin-left: 5%;float: right;text-align:right; color:#428bca">
+            <a target="_blank" href="/generalprivacypolicy.html">General Privacy Policy</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a target="_blank" href="/generaltermsofuse.html">General Terms of Use</a>
+        </div>
         <br>
         <br>
     </div>

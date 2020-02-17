@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block styles %}
+    {{super()}}
+    <style>
+    /* basic positioning */
+    .legend { list-style: none; }
+    .legend li { float: right; margin-right: 10px; }
+    .legend span { border: 1px solid #ccc; float: left; width: 16px; height: 16px; margin: 5px; }
+    /* your colors */
+    .legend .match { background-color: #787878 }
+    </style>
+{%- endblock %}
+
+{%- set id = request.args.get('id', '0') %}
+{%- set patient = session['infected_patients'].get(id, None) %}
+
+{% macro section(section_name, section_header, section_content, parent="info") %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#trial_{{section_name}}" aria-expanded="true" aria-controls="collapseOne">
+                    {{section_header}}
+                </button>
+            </h5>
+        </div>
+        <div id="trial_{{section_name}}" class="collapse" aria-labelledby="headingOne" data-parent="#{{parent}}">
+            <div class="card-body">
+                {{section_content}}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% block title %}
+    Patients Browser
+{% endblock %}
+
+{% block header %}
+    Browse Patient # {{id}}
+{% endblock %}
+
+{% block content %}
+    <hr>
+    <div class="container bootstrap snippet">
+        <div class="row">
+            <div class="col-sm-9">
+                <h1>Patient Diseases and ICD codes</h1>
+            </div>
+            <div class="col">
+                    <span class="float-right">
+                        <a class="btn btn-primary" href="/infected_patients">All Patients</a>
+                    </span>
+            </div>
+        </div>
+    </div>
+    <hr>
+
+    <div class="container bootstrap snippet">
+
+    <ul class="legend">
+        <li><span class="default"></span>No Match</li>
+        <li><span class="match"></span> Disease Match</li>
+    </ul>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Disease</th>
+                    <th>ICD-9 Code</th>
+                    <th>System</th>
+                </tr>
+            </thead>
+            {%- for key, disease in patient['diagnosis'].items() %}
+                <tbody>
+                    <tr style="background-color:{% if disease['match'] %}#787878{% endif %}">
+                        <td>{{disease["diagnosisCodeableConcept"]["coding"][0].get("display", 'NA')}}</td>
+                        <td>{{ key or 'NA'}}</td>
+                        <td>{{ disease["diagnosisCodeableConcept"]["coding"][0].get("system", 'NA') }}</td>
+                    </tr>
+                </tbody>
+            {%- endfor %}
+        </table>
+    </div>
+    <br>
+{% endblock %}

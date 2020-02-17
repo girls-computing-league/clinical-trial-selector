@@ -1,0 +1,139 @@
+{% extends "patient.html" %}
+
+{%- set id = request.args.get('id', '0') %}
+{%- set ns = namespace(trial=none) %}
+{%- for tr in session["trials"] %}
+    {%- if tr.id == id %}
+        {%- set ns.trial = tr %}
+    {% endif %}
+{% endfor %}
+
+{% macro section(section_name, section_header, section_content, parent="info") %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#trial_{{section_name}}" aria-expanded="true" aria-controls="collapseOne">
+                    {{section_header}}
+                </button>
+            </h5>
+        </div>
+        <div id="trial_{{section_name}}" class="collapse" aria-labelledby="headingOne" data-parent="#{{parent}}">
+            <div class="card-body">
+                {{section_content}}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% block title %}
+    Clinical Trials Browser
+{% endblock %}
+
+{% block header %}
+    Browse Trial # {{id}}
+{% endblock %}
+
+{% block extra_button %}
+    <a class="btn btn-primary" href="/">All Trials</a>
+{% endblock %}
+
+{% block pt_main %}
+    <ul class="nav nav-tabs" id="myTab">
+        <li class="nav-item active"><a class="nav-link active" href="#info" data-toggle="tab">Info</a></li>
+        <li class="nav-item"><a class="nav-link" href="#measures" data-toggle="tab">Outcome Measures</a></li>
+        <li class="nav-item"><a class="nav-link" href="#diseases" data-toggle="tab">Diseases</a></li>
+        <li class="nav-item"><a class="nav-link" href="#locations" data-toggle="tab">Locations</a></li>
+    </ul> 
+        
+    <div class="tab-content">
+        <div class="tab-pane active" id="info">
+            <br>
+            {{ section("title", "Brief Title", ns.trial.title) }}
+            {{ section("pi", "Principal Investigator", ns.trial.pi) }}
+            {{ section("official", "Official Title", ns.trial.official) }}
+            {%- if ns.trial.population["population"] %}
+                {{ section("population", "Target Population", ns.trial.population)}}
+            {% endif %}
+            {{ section("summary", "Summary", ns.trial.summary) }}
+            {{ section("description", "Detailed Description", ns.trial.description) }}
+        </div><!--/tab-pane-->
+        <div class="tab-pane" id="measures">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Timeframe</th>
+                    </tr>
+                </thead>
+
+                {%- for measure in ns.trial.measures %}
+                    <tbody>
+                        <tr>
+                            <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{measure["name"]}}</button> </td>
+                        </tr>
+                                <tr class="toggler">
+                                    <td>{{ measure["description"] }}</td>
+                                    <td>{{ measure["timeframe"] }}</td>
+                                </tr>
+                    </tbody>
+                {%- endfor %}
+            </table>
+        
+        </div><!--/tab-pane-->
+        <div class="tab-pane" id="diseases">
+                <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>NCIT Code</th>
+                                <th>Inclusion Indicator</th>
+                            </tr>
+                        </thead>
+        
+                        {%- for disease in ns.trial.diseases %}
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{disease["preferred_name"]}}</button> </td>
+                                </tr>
+                                        <tr class="toggler">
+                                            <td>{{ disease["nci_thesaurus_concept_id"] }}</td>
+                                            <td>{{ disease["inclusion_indicator"] }}</td>
+                                        </tr>
+                            </tbody>
+                        {%- endfor %}
+                    </table>
+        
+        </div><!--/tab-pane-->
+        <div class="tab-pane" id="locations">
+                <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Address</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+        
+                        {%- for site in ns.trial.sites %}
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{site["org_name"]}}</button> </td>
+                                </tr>
+                                        <tr class="toggler">
+                                            <td>
+                                                {{ site["org_address_line_1"] }}<br>
+                                                {%- if site["org_address_line_2"] %}
+                                                    {{ site["org_address_line_2"] }}<br>
+                                                {%- endif %}
+                                                {{ site["org_city"]}}, {{ site["org_state_or_province"] }} {{ site["org_postal_code"]}}
+                                            </td>
+                                            <td>{{ site["org_phone"] }}</td>
+                                            <td>{{ site["org_status"] }}</td>
+                                        </tr>
+                            </tbody>
+                        {%- endfor %}
+                    </table>
+        
+        </div><!--/tab-pane-->
+    </div><!--/tab-content-->
+
+{% endblock %}

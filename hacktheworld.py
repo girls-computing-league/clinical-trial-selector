@@ -6,6 +6,8 @@ import sys
 import umls
 import requests as req
 from datetime import date
+from distances import distance
+from zipcode import Zipcode
 
 import json
 
@@ -19,7 +21,7 @@ class Patient:
         self.tgt = self.auth.gettgt()
 
     def load_demographics(self):
-        self.gender, self.birthdate, self.name, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
+        self.gender, self.birthdate, self.name, self.zipcode, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
         logging.info("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def calculate_age(self):
@@ -206,12 +208,29 @@ class CombinedPatient:
         self.matches = []
         self.codes_without_matches = []
 
+    def calculate_distances(self):
+        db = Zipcode()
+        patzip = self.VAPatient.zipcode
+        pat_latlong = db.zip2geo(patzip)
+
+        for trial in self.trials:
+            for site in trial.sites:
+                coordinates = site.get("org_coordinates", 0)
+                if coordinates == 0:
+                    site_latlong = db.zip2geo(site["org_postal_code"][:5])
+                else:
+                    site_latlong = (coordinates["lat"], coordinates["lon"])
+                if (site_latlong is None) or (pat_latlong is None):
+                    return
+                site["distance"] = distance(pat_latlong, site_latlong)
+
     def load_data(self):
         self.clear_collections() 
-        if self.VAPatient is not None:
-            self.append_patient_data(self.VAPatient)
         if self.CMSPatient is not None:
             self.append_patient_data(self.CMSPatient)
+        if self.VAPatient is not None:
+            self.append_patient_data(self.VAPatient)
+            self.calculate_distances()
         for code in self.ncit_codes:
             trials = []
             for trial in self.trials:

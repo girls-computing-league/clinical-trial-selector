@@ -52,7 +52,7 @@ def load_demographics(mrn, token):
     url = DEMOGRAPHICS_URL + mrn
     api_res = get_api(token, url)
     logging.debug("Patient JSON: " + json.dumps(api_res))
-    return api_res["gender"], api_res["birthDate"], api_res["name"][0]["text"], json.dumps(api_res)
+    return api_res["gender"], api_res["birthDate"], api_res["name"][0]["text"], api_res["address"][0]["postalCode"], json.dumps(api_res)
 
 def load_patients(direct="va"):
     patients = {}
@@ -150,7 +150,7 @@ def find_all_codes(disease_list):
 
 def get_lab_observations_by_patient(patient_id, token):
     # loinc_codes = ','.join(list(LOINC_CODES.keys()))
-    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=40'
+    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=100'
 
     lab_results = {}
     while len(lab_results) != 3 and current_url is not None:

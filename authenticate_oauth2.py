@@ -126,11 +126,11 @@ def showtrials():
 
 @app.route('/cms/authenticate')
 def cmsauthenticate():
-    return cms.authorize(callback='http://localhost:5000/cmsredirect')
+    return cms.authorize(callback='http://18.218.61.101/cmsredirect')
 
 @app.route('/va/authenticate')
 def vaauthenticate():
-    return va.authorize(callback='http://localhost:5000/varedirect')
+    return va.authorize(callback='http://18.218.61.101/varedirect')
 
 @app.route('/cmsredirect')
 def cmsredirect():
@@ -383,4 +383,4 @@ def consumerpolicynotice():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=80)

@@ -9,7 +9,7 @@
             </div>
             <div class="col">
                 <span class="float-left">
-                    <a class="btn btn-primary" href="/infected_patients">Infected Patients</a>
+                    <a class="btn btn-primary" href="/infected_patients">Matcher for Doctors</a>
                 </span>
             </div>
 			{% block extra_button %}{% endblock%}
@@ -36,7 +36,8 @@
                     <li class="list-group-item text-right"><span class="float-left"><strong>Name</strong></span>{{ session["va_name"]}}</li>
                     <li class="list-group-item text-right"><span class="float-left"><strong>ID</strong></span>{{ session["va_patient"]}}</li>
                     <li class="list-group-item text-right"><span class="float-left"><strong>DOB</strong></span>{{ session["va_birthdate"]}}</li>
-                    <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span>{{ session["va_gender"]}}</li>                
+                    <li class="list-group-item text-right"><span class="float-left"><strong>Gender</strong></span>{{ session["va_gender"]}}</li>
+                    <li class="list-group-item text-right"><span class="float-left"><strong>Zip Code</strong></span>{{ session["va_zipcode"]}}</li>           
                 </ul> 
 
                 <br>
