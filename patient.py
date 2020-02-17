@@ -29,7 +29,7 @@ connection_details = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server +
 LOINC_CODES = {
     '718-7': 'hemoglobin',
     '6690-2': 'leukocytes',
-    '32623-1': 'platelets'
+    '777-3': 'platelets'
 }
 
 TABLE_NAME_BY_CELL_TYPE = {
@@ -159,6 +159,7 @@ def get_lab_observations_by_patient(patient_id, token):
         # extract values from observations.
         for entry in observations.get('entry'):
             resource = entry['resource']
+            logging.debug(f"Observation resource: {resource}")
 
             try:
                 code = resource['code']['coding'][0]['code']
