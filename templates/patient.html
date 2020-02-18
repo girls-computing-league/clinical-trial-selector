@@ -1,25 +1,72 @@
 {% extends "base.html" %}
 
+{%- set trailId = request.args.get('id', '0') %}
+{%- set trailns = namespace(trial=none) %}
+{%- for tr in session["trials"] %}
+    {%- if tr.id == trailId %}
+        {%- set trailns.trial = tr %}
+    {% endif %}
+{% endfor %}
+
 {% block content %}
+
+{%- if trailId != '0' %}
     <header class="site-header" role="banner">
 
-  <div class="site-l-wrapper">
-    <div class="site-header__masthead">
-      <div class="site-header__logo" id="extended-logo">
-        <em class="site-header__logo-text">
-          <a class="site-header__logo-link" title="Clinical Trials Selector homepage" href="/"><strong class="vads-u-display--block small-screen:vads-u-display--inline">Clinical Trials Selector</strong> </a>
-        </em>
-      </div>
-      <div class="site-header__utility-links">
+      <div class="site-l-wrapper">
+        <div class="site-header__masthead">
+          <div class="site-header__logo" id="extended-logo">
+            <em class="site-header__logo-text">
+              <a class="site-header__logo-link" title="Clinical Trials Broweser" href="#"><strong class="vads-u-display--block small-screen:vads-u-display--inline">Browse Trial # {{trailId}}</strong> </a>
+            </em>
+          </div>
+            <div class="site-header__logo" id="extended-logo">
+                <a href="/" class="usa-button vads-u-margin--1">All Trails</a>
+            </div>
+          <div class="site-header__utility-links">
 
-        <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a>
-          <a href="/logout" class="usa-button vads-u-margin--1">Logout</a>
+            <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a>
+              <a href="/logout" class="usa-button vads-u-margin--1">Logout</a>
+          </div>
+        </div>
       </div>
-      <button type="button" id="toggle-mobile-search" aria-label="Show search" class="site-toggle-search" aria-controls="mobile-search-container"><i class="fas fa-search"></i></button>
-      <button class="site-header__open-mobile-nav-button" id="open-mobile-nav-button" aria-label="Open navigation menu" type="button">Menu</button>
+    </header>
+    <div class="site-top-nav-wrapper site-l-wrapper sticky">
+      <nav class="site-header__nav">
+        <ul class="site-header__nav-list">
+          <li class="site-header__nav-item">
+            <a class="site-header__nav-item__link " href="#info" data-toggle="tab">Info</a>
+          </li>
+            <li class="site-header__nav-item">
+                <a class="site-header__nav-item__link " href="#measures" data-toggle="tab">Outcome Measures</a>
+            </li>
+          <li class="site-header__nav-item">
+            <a class="site-header__nav-item__link " href="#diseases" data-toggle="tab">Diseases</a>
+          </li>
+          <li class="site-header__nav-item">
+            <a class="site-header__nav-item__link " href="#locations" data-toggle="tab">Locations</a>
+          </li>
+        </ul>
+      </nav>
     </div>
-  </div>
-</header>
+{% else %}
+    <header class="site-header" role="banner">
+
+      <div class="site-l-wrapper">
+        <div class="site-header__masthead">
+          <div class="site-header__logo" id="extended-logo">
+            <em class="site-header__logo-text">
+              <a class="site-header__logo-link" title="Clinical Trials Selector homepage" href="/"><strong class="vads-u-display--block small-screen:vads-u-display--inline">Clinical Trials Selector</strong> </a>
+            </em>
+          </div>
+          <div class="site-header__utility-links">
+
+            <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a>
+              <a href="/logout" class="usa-button vads-u-margin--1">Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
     <div class="site-top-nav-wrapper site-l-wrapper sticky">
       <nav class="site-header__nav">
         <ul class="site-header__nav-list">
@@ -48,6 +95,9 @@
         </ul>
       </nav>
     </div>
+{% endif %}
+
+
     <div class="container bootstrap snippet">
         <div class="row">
             <div class="col-sm-9">
@@ -69,27 +119,25 @@
         </div>
     </div>
 
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3"><!--left col-->
-                <ul class="list-group">
+<div>
+    <div class="vads-l-row">
+      <div class="vads-l-col--3">
+          <ul class="site-sidenav-list">
                     <li class="list-group-item text-muted">
-                        <span>VA Patient Info </span>
+                        <span>VA Patient Info</span>
                         {%- if not session["va_patient"] %}
                             <!-- a class="btn-sm btn-primary float-right" href="/va/authenticate">Login</a -->
                         <a href="/va/authenticate" class="usa-button">Login</a>
                         {% endif %}
                     </li>
                     <li class="list-group-item text-left"><strong>Name</strong><p class=".vads-u-text-align--right">{{ session["va_name"]}}</p></li>
-                    <li class="list-group-item text-left"><strong>ID</strong><p class=".vads-u-text-align--right">{{ session["va_patient"]}}</li>
-                    <li class="list-group-item text-left"><strong>DOB</strong><p class=".vads-u-text-align--right">{{ session["va_birthdate"]}}</li>
-                    <li class="list-group-item text-left"><strong>Gender</strong><p class=".vads-u-text-align--right">{{ session["va_gender"]}}</li>
-                    <li class="list-group-item text-left"><strong>Zip Code</strong><p class=".vads-u-text-align--right">{{ session["va_zipcode"]}}</li>
-                      </ul> 
+                    <li class="list-group-item text-left"><strong>ID</strong><p class=".vads-u-text-align--right">{{ session["va_patient"]}}</p></li>
+                    <li class="list-group-item text-left"><strong>DOB</strong><p class=".vads-u-text-align--right">{{ session["va_birthdate"]}}</p></li>
+                    <li class="list-group-item text-left"><strong>Gender</strong><p class=".vads-u-text-align--right">{{ session["va_gender"]}}</p></li>
+                    <li class="list-group-item text-left"><strong>Zip Code</strong><p class=".vads-u-text-align--right">{{ session["va_zipcode"]}}</p></li>
+                      </ul>
 
-                <br>
-
-                <ul class="list-group">
+                <ul class="site-sidenav-list">
                     <li class="list-group-item text-muted">
                         <span>CMS Patient Info</span>
 
@@ -102,12 +150,11 @@
                     <li class="list-group-item text-left"><strong>ID</strong><p class=".vads-u-text-align--right"> {{ session["cms_patient"]}}</li>
                     <li class="list-group-item text-left"><strong>DOB</strong><p class=".vads-u-text-align--right"> {{ session["cms_birthdate"]}}</li>
                     <li class="list-group-item text-left"><strong>Gender</strong><p class=".vads-u-text-align--right"> {{ session["cms_gender"]}}</li>
-                </ul>     
-            
-            </div><!--/col-3-->
-            <div class="col-sm-9">
-                {% block pt_main %}{% endblock %}
-            </div><!--/col-9-->
-        </div><!--/row-->
-    </div>                                                        
+                </ul>
+      </div>
+      <div class="vads-l-col--9">
+          {% block pt_main %}{% endblock %}
+      </div>
+    </div>
+</div>
 {% endblock %}
