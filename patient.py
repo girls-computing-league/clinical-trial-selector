@@ -9,6 +9,7 @@ from typing import Dict, List, Any, Tuple, Union
 import concurrent.futures as futures
 
 client = boto3.client(service_name="comprehendmedical")
+client._client_config.max_pool_connections = 75
 
 # BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
@@ -18,7 +19,7 @@ DISEASES_URL = "https://clinicaltrialsapi.cancer.gov/v1/diseases"
 TRIALS_URL = "https://clinicaltrialsapi.cancer.gov/v1/clinical-trials"
 OBSERVATION_URL = BASE_URL + 'Observation'
 
-
+trial_filter_cnt = 0
 server = '108.31.54.198'
 database = 'CTA'
 username = 'ctauser'
@@ -197,20 +198,60 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
     :param lab_results: dict
     :return: (List[dict], List[dict])
     """
+    max_trials_in_future = 10
     filtered_trials_by_ncit = []
     excluded_trials_by_ncit = []
-    with futures.ThreadPoolExecutor(max_workers=8) as executor:
-        tasks = {
-            executor.submit(filter_trials_from_description, trial['trials'], lab_results): trial['ncit']
-            for trial in trials_by_ncit
-        }
+    trial_filter_cnt = 0
+    with futures.ThreadPoolExecutor(max_workers=75) as executor:
+        tasks = {}
+        for trialset in trials_by_ncit:
+            total = len(trialset['trials'])
+            if total<=max_trials_in_future:
+                tasks[executor.submit(filter_trials_from_description, trialset['trials'], lab_results)] = trialset['ncit']
+            else:
+                next_future = 0
+                while next_future < total:
+                    trials = []
+                    cnt = 1
+                    while next_future < total and cnt <= max_trials_in_future:
+                        trials.append(trialset['trials'][next_future])
+                        next_future += 1
+                        cnt += 1
+                    tasks[executor.submit(filter_trials_from_description, trials, lab_results)] = trialset['ncit']
+
+        # tasks = {
+        #     executor.submit(filter_trials_from_description, trial['trials'], lab_results): trial['ncit']
+        #     for trial in trials_by_ncit
+        # }
+        filtered = {}
+        excluded = {}
+        ncit_codes = {}
+        filtered_trials_by_ncit = []
+        excluded_trials_by_ncit = []
         for future in futures.as_completed(tasks):
-            ncit_code = tasks[future]
+            ncit_code = tasks[future]['ncit']
+            if ncit_code not in ncit_codes:
+                ncit_codes[ncit_code] = tasks[future]
+            if ncit_code not in filtered:
+                filtered[ncit_code] = []
+            filtered_list = filtered[ncit_code]
+            if ncit_code not in excluded:
+                excluded[ncit_code] = []
+            excluded_list = excluded[ncit_code]
             # try:
-            filtered_trials, excluded_trails = future.result()
-            logging.debug(f"FILTER NCIT: {ncit_code}, ")
-            filtered_trials_by_ncit.append({"ncit": ncit_code, "trials": filtered_trials})
-            excluded_trials_by_ncit.append({"ncit": ncit_code, "trials": excluded_trails})
+            filtered_trials, excluded_trials = future.result()
+            logging.debug(f"FILTER bundle NCIT: {ncit_code}")
+            filtered_list.extend(filtered_trials)
+            excluded_list.extend(excluded_trials)
+
+        for ncit_code in filtered:
+            filtered_trials_by_ncit.append({"ncit": ncit_codes[ncit_code], "trials": filtered[ncit_code]})
+
+        for ncit_code in excluded:
+            excluded_trials_by_ncit.append({"ncit": ncit_codes[ncit_code], "trials": excluded[ncit_code]})
+
+            # filtered_trials_by_ncit.append({"ncit": ncit_code, "trials": filtered_trials})
+            # excluded_trials_by_ncit.append({"ncit": ncit_code, "trials": excluded_trails})
             # except Exception as exc:
             #     print('Failed task: ', exc)
             #     raise Exception
@@ -251,6 +292,8 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
         else:
             trial.filter_condition.append(('No Inclusion Criteria Found', True))
             filtered_trials.append(trial)
+    logging.info(f"Filtered count: ")
+    #trial_filter_cnt += 1
     return filtered_trials, excluded_trials
 
 
