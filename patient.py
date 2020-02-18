@@ -9,7 +9,6 @@ from typing import Dict, List, Any, Tuple, Union
 import concurrent.futures as futures
 
 client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
-#client._client_config.max_pool_connections = 75
 
 # BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
 BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
