@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-l", "--local", help="Run application from localhost", action="store_true")
 args = parser.parse_args()
 
-#logging.getLogger().setLevel(logging.DEBUG)
+#logging.getLogger().setLevel(logging.INFO)
 
 # creates the flask webserver and the secret key of the web server
 app = Flask(__name__)

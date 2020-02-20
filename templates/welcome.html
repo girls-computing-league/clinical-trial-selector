@@ -91,8 +91,8 @@
             {% endif %}
         </div><!--/tab-pane-->
         <div class="tab-pane" id="Excluded">
-
-            {%- if session["excluded"] %}
+            <br>
+            {%- if session["excluded"] is defined %}
 				There are {{ session['excluded_num_trials'] }} trials for {{ session['excluded_num_conditions_with_trials'] }} conditions
 				<br>
 
