@@ -68,7 +68,7 @@
                                <!-- <td colspan="4" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button> </td>-->
                             </tr>
                         </tbody>
-                        <tbody id = "{{ code['ncit']['ncit']}}" class="usa-accordion-content">
+                        <tbody id = "{{ code['ncit']['ncit'] }}" class="usa-accordion-content">
                             {%- for trial in code["trials"] %}
                                 <tr >
                                     <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
