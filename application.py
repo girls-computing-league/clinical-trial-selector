@@ -67,10 +67,6 @@ va = oauth.remote_app(
     access_token_method='POST'
 )
 
-
-def nl(line):
-    return(line + "</br>")
-
 def save_access_code(filename, mrn, token):
 # creates a new file and gives permissions to write in it
 # creates a dictionary with the medical record number and the token to enter into the file
@@ -87,47 +83,6 @@ def authentications():
     if ('va_patient' in session): auts.append('va')
     if ('cms_patient' in session): auts.append('cms')
     return auts
-
-def success_msg(filename, mrn, token):
-# displays success message that shows file where credentials are stored, token, and mrn
-# makes new line to show each credential
-    html = nl("Success!")
-    html += nl('')
-    html += nl("Credentials stored in: " + filename)
-    html += nl('')
-    html += nl("Access token:")
-    html += nl(token)
-    html += nl('')
-    html += nl("Patient ID:")
-    html += nl(mrn)
-    html += nl('')
-    html += '<a href="/">Home</a>'
-    return html
-
-
-@app.route('/old')
-# creates home page with links to authenticate with the VA and CMS
-def home():
-    auts = authentications()
-    html = nl('Welcome!') + nl('')
-    if ('va' in auts):
-        html += nl('Your VA patient number is: ' +
-                   session["va_patient"]) + nl('')
-    else:
-        html += nl('<button type="button" onclick="location.href = &quot;/va/authenticate&quot;;" id="VAButton2">Authenticate with VA ID.me</button>')
-    if ('cms' in auts):
-        html += nl('Your CMS patient number is: ' + session["cms_patient"]) + nl('')
-    else:
-        html += nl('<button type="button" onclick="location.href = &quot;/cms/authenticate&quot;;" id="CMSButton2">Authenticate with CMS</button>')
-
-    if auts:
-        if('trials' not in session):
-            html += nl('<button type="button" onclick="location.href = &quot;/getInfo&quot;;" id="infoButton">Find Clinical Trials</button>')
-        else:
-            html += nl('<button type="button" onclick="location.href = &quot;/displayInfo&quot;;" id="infoButton">View Matched Clinical Trials</button>')
-        html += nl('<button type="button" onclick="location.href = &quot;/logout&quot;;" id="logoutButton">Logout</button>')
-
-    return html
 
 @app.route('/')
 def showtrials():
@@ -360,7 +315,6 @@ def infected_patients():
 def display_infected_patients():
     return render_template('patients_info.html')
 
-
 @app.route('/trial')
 def trial():
     return render_template('trial.html')
@@ -374,17 +328,14 @@ def logout():
 def get_cms_token(token=None):
     return session.get('cms_access_token')
 
-
 @va.tokengetter
 def get_va_token(token=None):
     return session.get('va_access_token')
-
 
 @app.route('/generalprivacypolicy.html')
 def privacy_policy():
     session.clear()
     return render_template("generalprivacypolicy.html")
-
 
 @app.route('/generaltermsofuse.html')
 def consumerpolicynotice():
