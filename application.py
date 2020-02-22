@@ -1,6 +1,7 @@
 """
 Clinical Trials Selector
 
+
 """
 # Monkey patch needed for proper websocket behavior
 # Must be first line before any other imports
