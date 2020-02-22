@@ -25,11 +25,14 @@ from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 localarg = False
+log_level = "DEFAULT"
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-l", "--local", help="Run application from localhost", action="store_true")
+    parser.add_argument("--log", help="Log level", default="DEFAULT")
     args = parser.parse_args()
     localarg = args.local
+    log_level = args.log.upper()
 
 app = Flask(__name__)
 app.secret_key = "***REMOVED***"
@@ -38,23 +41,25 @@ if localarg or app.env == "development":
     app.config.from_pyfile("config/local.cfg")
 else:
     app.config.from_pyfile("config/aws.cfg")
+if log_level == "DEFAULT":
+    log_level = app.config["CTS_LOGLEVEL"]
 
-logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().setLevel(log_level)
+logging.info("Clinical Trial Selector starting...")
 
-# runs the app with the OAuthentication protocol
-#SESSION_TYPE = 'filesystem'
-#app.config.from_object(__name__)
+app.logger.setLevel(log_level)
+app.logger.info("Flask starting")
+app.logger.debug("Debug level logging")
+
 Session(app)
 Bootstrap(app)
 oauth = OAuth(app)
 socketio = SocketIO(app)
-#args.local = (app.env == "development")
 
 keys_fp = open("keys.json", "r")
 keys_dict = json.load(keys_fp)
 event_name = 'update_progress'
 
-AWS_IP = "18.218.61.101"
 callback_urlbase = app.config["CTS_CALLBACK_URLBASE"]
 
 # specifies possible parameters for the protocol dealing with the CMS
