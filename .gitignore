@@ -2,7 +2,7 @@
 credentials.json
 hack-env/
 .idea
-.vscode
+.vscode/settings.json
 *.ipynb
 accesscodes/*.json
 accesscodes/va/*.json

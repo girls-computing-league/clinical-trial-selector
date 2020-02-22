@@ -20,6 +20,8 @@ Flask-OAuthlib==0.9.5
 Flask-Session==0.3.1
 Flask-SocketIO==4.2.1
 Flask-WTF==0.14.2
+gevent==1.4.0
+gevent-websocket==0.10.1
 idna==2.8
 ipdb==0.12
 ipython==7.6.1
