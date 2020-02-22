@@ -12,11 +12,11 @@
             </div>
             <div class="col">
                     <span class="float-right">
-                        <a class="btn btn-primary" href="/">Clinical trials</a>
+                        <a class="usa-button" href="/">Clinical trials</a>
                         {% if not session.get('bcda_doc_token', None) %}
-                            <a class="btn btn-primary" href="/doctor_login">Doctor Login</a>
+                            <a class="usa-button" href="/doctor_login">Doctor Login</a>
                         {%- else %}
-                            <a class="btn btn-primary" href="/doctor_logout">Logout</a>
+                            <a class="usa-button" href="/doctor_logout">Logout</a>
                         {%- endif %}
                     </span>
             </div>
