@@ -24,31 +24,38 @@ from infected_patients import (get_infected_patients, get_authenticate_bcda_api_
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-l", "--local", help="Run application from localhost", action="store_true")
-args = parser.parse_args()
+localarg = False
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-l", "--local", help="Run application from localhost", action="store_true")
+    args = parser.parse_args()
+    localarg = args.local
+
+app = Flask(__name__)
+app.secret_key = "***REMOVED***"
+app.config.from_pyfile("config/default.cfg")
+if localarg or app.env == "development":
+    app.config.from_pyfile("config/local.cfg")
+else:
+    app.config.from_pyfile("config/aws.cfg")
 
 logging.getLogger().setLevel(logging.INFO)
 
-# creates the flask webserver and the secret key of the web server
-app = Flask(__name__)
-app.secret_key = "development"
-
 # runs the app with the OAuthentication protocol
-SESSION_TYPE = 'filesystem'
-app.config.from_object(__name__)
+#SESSION_TYPE = 'filesystem'
+#app.config.from_object(__name__)
 Session(app)
 Bootstrap(app)
 oauth = OAuth(app)
 socketio = SocketIO(app)
-args.local = (app.config["ENV"] == "development")
+#args.local = (app.env == "development")
 
 keys_fp = open("keys.json", "r")
 keys_dict = json.load(keys_fp)
 event_name = 'update_progress'
 
 AWS_IP = "18.218.61.101"
-callback_urlbase ="localhost:5000" if args.local else AWS_IP
+callback_urlbase = app.config["CTS_CALLBACK_URLBASE"]
 
 # specifies possible parameters for the protocol dealing with the CMS
 cms = oauth.remote_app(
@@ -66,8 +73,8 @@ cms = oauth.remote_app(
 va = oauth.remote_app(
     'va',
     base_url="https://dev-api.va.gov/",
-    consumer_key = keys_dict["va_key_local" if args.local else "va_key"],
-    consumer_secret = keys_dict["va_secret_local" if args.local else "va_secret"],
+    consumer_key = keys_dict["va_key_local" if app.config["CTS_LOCAL"] else "va_key"],
+    consumer_secret = keys_dict["va_secret_local" if app.config["CTS_LOCAL"] else "va_secret"],
     request_token_params={
         'scope': 'openid offline_access profile email launch/patient veteran_status.read patient/Observation.read patient/Patient.read patient/Condition.read', "state": "12345"},
     request_token_url=None,
@@ -351,6 +358,5 @@ def consumerpolicynotice():
     session.clear()
     return render_template("generaltermsofuse.html")
 
-
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port = (5000 if args.local else 80), debug=False)
+    socketio.run(app, host="0.0.0.0", port = app.config["CTS_PORT"], debug=False)
