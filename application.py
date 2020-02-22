@@ -350,4 +350,4 @@ def consumerpolicynotice():
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=False)
+    socketio.run(app, port = (5000 if args.local else 80), debug=False)
