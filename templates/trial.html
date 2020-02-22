@@ -24,34 +24,9 @@
 
 {% endmacro %}
 
-{% block title %}
-    Clinical Trials Browser
-{% endblock %}
-
-{% block header %}
-    Browse Trial # {{id}}
-{% endblock %}
-
-{% block extra_button %}
-<div class="col">
-<span class="float-right">
-    <a class="btn btn-primary" href="/">All Trials</a>
-</span>	
-</div>
-{% endblock %}
-
 {% block pt_main %}
-    <section class="usa-banner">
-        <div class=".usa-accordion">
-            <header class="usa-banner-header">
-                <button class=".usa-accordion-button" aria-expanded="false" href="#info" data-toggle="tab">Info</button>
-                <button class=".usa-accordion-button" aria-expanded="false" href="#measures" data-toggle="tab">Outcome Measures</button>
-                <button class=".usa-accordion-button" aria-expanded="false" href="#diseases" data-toggle="tab">Diseases</button>
-                <button class=".usa-accordion-button" aria-expanded="false" href="#locations" data-toggle="tab">Locations</button>
-           </header>
-    </div>
-</section>
-        
+
+    <ul class="nav nav-tabs nav-stacked">
     <div class="tab-content">
         <div class="tab-pane active" id="info">
             <br>
@@ -64,7 +39,7 @@
             {{ section("summary", "Summary", ns.trial.summary) }}
             {{ section("description", "Detailed Description", ns.trial.description) }}
         </div><!--/tab-pane-->
-        <div class="tab-pane" id="measures">
+         <div class="tab-pane" id="measures">
             <table class="custom-table">
                 <thead>
                     <tr>
@@ -79,10 +54,7 @@
                         <tr>
                            <td colspan="2" class="page-header">
                                <!-- button type="button" class="tbtn"><i class="fa fa-plus-circle"></i> {{measure["name"]}}</button -->
-                               <button class="usa-accordion-button"
-                                  aria-expanded="false"
-                                  aria-controls="{{ loop.index0 }}">
-                                  {{measure["name"]}}
+                               <button class="usa-accordion-button" aria-expanded="false" aria-controls="{{ loop.index0 }}"> {{measure["name"]}}
                                 </button>
                            </td>
                           </tr>
@@ -130,27 +102,26 @@
                                 <th>Address</th>
                                 <th>Phone</th>
                                 <th>Status</th>
-                                <th>Distance (miles)</th>
+                                <th>Distance (Miles)</th>
                             </tr>
                         </thead>
-        
+
                         {%- for site in ns.trial.sites %}
                             <tbody class="usa-accordion">
                                 <tr>
-                                     <td colspan="4" class="page-header">
-                                     <button class="usa-accordion-button" aria-expanded="false" aria-controls="{{ loop.index0 }}"> {{site["org_name"]}}</button>
-                                     </td>
+                                    <td colspan="4" class="page-header">
+                                        <button class="usa-accordion-button" aria-expanded="false" aria-controls="{{site["org_postal_code"]}}{{ loop.index0 }}"> {{site["org_name"]}} </button>
+                                   </td>
                                 </tr>
-                                        <tr id="{{ loop.index0 }}" class="usa-accordion-content">
+                                        <tr id="{{site["org_postal_code"]}}{{ loop.index0 }}" class="usa-accordion-content">
                                             <td> {{ site["org_address_line_1"] }}<br>
                                                 {%- if site["org_address_line_2"] %}
-                                                    {{ site["org_address_line_2"] }}<br>
+                                                    {{ site["org_address_line_2"]}}<br>
                                                 {%- endif %}
-                                                {{ site["org_city"]}}, {{ site["org_state_or_province"] }} {{ site["org_postal_code"]}}
-                                            </td>
-                                            <td>{{ site["org_phone"] }}</td>
-                                            <td>{{ site["org_status"] }}</td>
-                                            <td>{{ site["distance"]|round|int }}</td>
+                                                {{site["org_city"]}}, {{site["org_state_or_province"]}} {{site["org_postal_code"]}} </td>
+                                            <td>{{site["org_phone"]}}</td>
+                                            <td>{{site["org_status"]}}</td>
+                                            <td>{% if site["distance"] is defined %}{{ site["distance"]|round|int }}{% endif %}</td>
                                         </tr>
                             </tbody>
                         {%- endfor %}
@@ -158,5 +129,6 @@
         
         </div><!--/tab-pane-->
     </div><!--/tab-content-->
+    </ul>
 
 {% endblock %}
