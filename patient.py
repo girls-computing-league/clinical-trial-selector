@@ -7,6 +7,7 @@ import boto3, botocore
 from jsonpath_rw_ext import parse
 from typing import Dict, List, Any, Tuple, Union
 import concurrent.futures as futures
+from gevent import Greenlet, spawn, iwait
 
 client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
 
@@ -201,22 +202,24 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
     filtered_trials_by_ncit = []
     excluded_trials_by_ncit = []
     trial_filter_cnt = 0
-    with futures.ThreadPoolExecutor(max_workers=75) as executor:
-        tasks = {}
-        for trialset in trials_by_ncit:
-            total = len(trialset['trials'])
-            if total<=max_trials_in_future:
-                tasks[executor.submit(filter_trials_from_description, trialset['trials'], lab_results)] = trialset['ncit']
-            else:
-                next_future = 0
-                while next_future < total:
-                    trials = []
-                    cnt = 1
-                    while next_future < total and cnt <= max_trials_in_future:
-                        trials.append(trialset['trials'][next_future])
-                        next_future += 1
-                        cnt += 1
-                    tasks[executor.submit(filter_trials_from_description, trials, lab_results)] = trialset['ncit']
+    # with futures.ThreadPoolExecutor(max_workers=75) as executor:
+    tasks = {}
+    for trialset in trials_by_ncit:
+        total = len(trialset['trials'])
+        if total<=max_trials_in_future:
+            # tasks[executor.submit(filter_trials_from_description, trialset['trials'], lab_results)] = trialset['ncit']
+            tasks[spawn(filter_trials_from_description, trialset['trials'], lab_results)] = trialset['ncit']
+        else:
+            next_future = 0
+            while next_future < total:
+                trials = []
+                cnt = 1
+                while next_future < total and cnt <= max_trials_in_future:
+                    trials.append(trialset['trials'][next_future])
+                    next_future += 1
+                    cnt += 1
+                # tasks[executor.submit(filter_trials_from_description, trials, lab_results)] = trialset['ncit']
+                tasks[spawn(filter_trials_from_description, trials, lab_results)] = trialset['ncit']
 
         # tasks = {
         #     executor.submit(filter_trials_from_description, trial['trials'], lab_results): trial['ncit']
@@ -227,7 +230,8 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
         ncit_codes = {}
         filtered_trials_by_ncit = []
         excluded_trials_by_ncit = []
-        for future in futures.as_completed(tasks):
+        # for future in futures.as_completed(tasks):
+        for future in iwait(tasks):
             ncit_code = tasks[future]['ncit']
             if ncit_code not in ncit_codes:
                 ncit_codes[ncit_code] = tasks[future]
@@ -238,7 +242,8 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
                 excluded[ncit_code] = []
             excluded_list = excluded[ncit_code]
             # try:
-            filtered_trials, excluded_trials = future.result()
+            # filtered_trials, excluded_trials = future.result()
+            filtered_trials, excluded_trials = future.value
             logging.debug(f"FILTER bundle NCIT: {ncit_code}")
             filtered_list.extend(filtered_trials)
             excluded_list.extend(excluded_trials)

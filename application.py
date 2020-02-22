@@ -1,3 +1,8 @@
+# Monkey patch needed for proper websocket behavior
+# Must be first line before any other imports
+from gevent import monkey
+monkey.patch_all()
+
 import csv
 import io
 import json
@@ -25,7 +30,6 @@ args = parser.parse_args()
 # creates the flask webserver and the secret key of the web server
 app = Flask(__name__)
 app.secret_key = "development"
-socketio = SocketIO(app)
 
 # runs the app with the OAuthentication protocol
 SESSION_TYPE = 'filesystem'
@@ -33,6 +37,8 @@ app.config.from_object(__name__)
 Session(app)
 Bootstrap(app)
 oauth = OAuth(app)
+socketio = SocketIO(app)
+args.local = (app.config["ENV"] == "development")
 
 keys_fp = open("keys.json", "r")
 keys_dict = json.load(keys_fp)
@@ -344,4 +350,4 @@ def consumerpolicynotice():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=(5000 if args.local else 80))
+    socketio.run(app, debug=False)
