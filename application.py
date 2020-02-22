@@ -15,7 +15,8 @@ import logging, sys
 from flask_socketio import SocketIO, disconnect
 from flask import Flask, session, redirect, render_template, request, flash, make_response
 from flask_session import Session
-from flask_oauthlib.client import OAuth
+#from flask_oauthlib.client import OAuth
+from authlib.integrations.flask_client import OAuth
 from flask_bootstrap import Bootstrap
 import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
@@ -50,6 +51,8 @@ app.logger.debug("Debug level logging")
 Session(app)
 Bootstrap(app)
 oauth = OAuth(app)
+oauth.register("va")
+oauth.register("cms")
 socketio = SocketIO(app)
 
 keys_fp = open("keys.json", "r")
@@ -59,6 +62,8 @@ event_name = 'update_progress'
 callback_urlbase = app.config["CTS_CALLBACK_URLBASE"]
 
 # specifies possible parameters for the protocol dealing with the CMS
+
+"""
 cms = oauth.remote_app(
     'cms',
     base_url = "https://sandbox.bluebutton.cms.gov/v1/o",
@@ -83,6 +88,7 @@ va = oauth.remote_app(
     authorize_url="https://dev-api.va.gov/oauth2/authorization/",
     access_token_method='POST'
 )
+"""
 
 def save_access_code(filename, mrn, token):
 # creates a new file and gives permissions to write in it
@@ -107,15 +113,20 @@ def showtrials():
 
 @app.route('/cms/authenticate')
 def cmsauthenticate():
-    return cms.authorize(callback=f'http://{callback_urlbase}/cmsredirect')
+    # return cms.authorize(callback=f'http://{callback_urlbase}/cmsredirect')
+    app.logger.info("Authenticting via CMS...")
+    return oauth.cms.authorize_redirect(f'http://{callback_urlbase}/cmsredirect')
 
 @app.route('/va/authenticate')
 def vaauthenticate():
-    return va.authorize(callback=f'http://{callback_urlbase}/varedirect')
+    # return va.authorize(callback=f'http://{callback_urlbase}/varedirect')
+    app.logger.info("Authenticating via VA...")
+    return oauth.va.authorize_redirect(f'http://{callback_urlbase}/varedirect')
 
 @app.route('/cmsredirect')
 def cmsredirect():
-    resp = cms.authorized_response()
+    app.logger.info("Redirected from CMS authentication")
+    resp = oauth.cms.authorize_access_token()
     combined = session.get("combined_patient", hack.CombinedPatient())
     session['cms_access_token'] = resp['access_token']
     session['cms_patient'] = resp['patient']
@@ -133,7 +144,8 @@ def cmsredirect():
 
 @app.route('/varedirect')
 def varedirect():
-    resp = va.authorized_response()
+    app.logger.info("Redirected from VA authentication")
+    resp = oauth.va.authorize_access_token()
     combined = session.get("combined_patient", hack.CombinedPatient())
     session['va_access_token'] = resp['access_token']
     session['va_patient'] = resp['patient']
@@ -150,7 +162,6 @@ def varedirect():
     session['combined_patient'] = combined
     return redirect('/va/authenticated')
 
-
 @app.route('/cms/authenticated')
 def cmsauthenticated():
     token = session.get('cms_access_token')
@@ -158,7 +169,6 @@ def cmsauthenticated():
     filename = 'accesscodes/cms/' + mrn + '.json'
     save_access_code(filename, mrn, token)
     return redirect("/")
-
 
 @app.route('/va/authenticated')
 def vaauthenticated():
@@ -341,13 +351,13 @@ def logout():
     session.clear()
     return redirect("/")
 
-@cms.tokengetter
-def get_cms_token(token=None):
-    return session.get('cms_access_token')
+# @cms.tokengetter
+# def get_cms_token(token=None):
+#     return session.get('cms_access_token')
 
-@va.tokengetter
-def get_va_token(token=None):
-    return session.get('va_access_token')
+# @va.tokengetter
+# def get_va_token(token=None):
+#     return session.get('va_access_token')
 
 @app.route('/generalprivacypolicy.html')
 def privacy_policy():
