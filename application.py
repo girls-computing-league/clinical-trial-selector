@@ -24,25 +24,21 @@ from infected_patients import (get_infected_patients, get_authenticate_bcda_api_
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-localarg = False
-log_level = "DEFAULT"
+args = {}
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--local", help="Run application from localhost", action="store_true")
-    parser.add_argument("--log", help="Log level", default="DEFAULT")
-    args = parser.parse_args()
-    localarg = args.local
-    log_level = args.log.upper()
+    parser.add_argument("-l", "--local", help="Run application from localhost", action="store_const", const="development", default=argparse.SUPPRESS)
+    parser.add_argument("--log", help="Log level", default=argparse.SUPPRESS)
+    args = vars(parser.parse_args())
 
 app = Flask(__name__)
 app.secret_key = "***REMOVED***"
 app.config.from_pyfile("config/default.cfg")
-if localarg or app.env == "development":
+if args.get("local", app.env) == "development":
     app.config.from_pyfile("config/local.cfg")
 else:
     app.config.from_pyfile("config/aws.cfg")
-if log_level == "DEFAULT":
-    log_level = app.config["CTS_LOGLEVEL"]
+log_level = args.get("log", app.config["CTS_LOGLEVEL"])
 
 logging.getLogger().setLevel(log_level)
 logging.info("Clinical Trial Selector starting...")
