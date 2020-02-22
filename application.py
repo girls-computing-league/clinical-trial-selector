@@ -15,7 +15,6 @@ import logging, sys
 from flask_socketio import SocketIO, disconnect
 from flask import Flask, session, redirect, render_template, request, flash, make_response
 from flask_session import Session
-#from flask_oauthlib.client import OAuth
 from authlib.integrations.flask_client import OAuth
 from flask_bootstrap import Bootstrap
 import hacktheworld as hack
@@ -61,34 +60,6 @@ event_name = 'update_progress'
 
 callback_urlbase = app.config["CTS_CALLBACK_URLBASE"]
 
-# specifies possible parameters for the protocol dealing with the CMS
-
-"""
-cms = oauth.remote_app(
-    'cms',
-    base_url = "https://sandbox.bluebutton.cms.gov/v1/o",
-    consumer_key = keys_dict["cms_key"],
-    consumer_secret = keys_dict["cms_secret"],
-    request_token_params = {'scope': 'profile'},
-    request_token_url = None,
-    access_token_url = "https://sandbox.bluebutton.cms.gov/v1/o/token/",
-    authorize_url = "https://sandbox.bluebutton.cms.gov/v1/o/authorize/",
-    access_token_method = 'POST'
-)
-
-va = oauth.remote_app(
-    'va',
-    base_url="https://dev-api.va.gov/",
-    consumer_key = keys_dict["va_key_local" if app.config["CTS_LOCAL"] else "va_key"],
-    consumer_secret = keys_dict["va_secret_local" if app.config["CTS_LOCAL"] else "va_secret"],
-    request_token_params={
-        'scope': 'openid offline_access profile email launch/patient veteran_status.read patient/Observation.read patient/Patient.read patient/Condition.read', "state": "12345"},
-    request_token_url=None,
-    access_token_url="https://dev-api.va.gov/oauth2/token/",
-    authorize_url="https://dev-api.va.gov/oauth2/authorization/",
-    access_token_method='POST'
-)
-"""
 
 def save_access_code(filename, mrn, token):
 # creates a new file and gives permissions to write in it
@@ -113,13 +84,11 @@ def showtrials():
 
 @app.route('/cms/authenticate')
 def cmsauthenticate():
-    # return cms.authorize(callback=f'http://{callback_urlbase}/cmsredirect')
     app.logger.info("Authenticting via CMS...")
     return oauth.cms.authorize_redirect(f'http://{callback_urlbase}/cmsredirect')
 
 @app.route('/va/authenticate')
 def vaauthenticate():
-    # return va.authorize(callback=f'http://{callback_urlbase}/varedirect')
     app.logger.info("Authenticating via VA...")
     return oauth.va.authorize_redirect(f'http://{callback_urlbase}/varedirect')
 
