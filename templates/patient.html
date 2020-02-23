@@ -119,7 +119,6 @@
         </div>
     </div>
 
-<div>
     <div class="vads-l-row vads-u-padding-x--3">
       <div class="vads-l-col--3 vads-u-padding-x--3">
         {%- for source in ["va", "cms"] %}
@@ -142,7 +141,7 @@
                 "Gender":session[source+"_gender"],
                 "Zipcode":session[source+"_zipcode"]}.items() %}
                 <tr>
-                  <td class="vads-u-display--flex vads-u-justify-content--space-between">
+                  <td class="vads-u-display--flex vads-u-justify-content--space-between vads-u-flex-wrap--wrap">
                     <div class="vads-u-flex--auto"><strong>{{label}}</strong></div>
                     <div class="vads-u-flex--auto">{{value}}</div>
                   </td>
@@ -158,5 +157,4 @@
         </main>
       </div>
     </div>
-</div>
 {% endblock %}
