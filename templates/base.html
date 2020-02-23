@@ -1,4 +1,4 @@
-{% extends "bootstrap/base.html" %}
+{% extends "vads.html" %}
 {% block styles %}
     {{super()}}
     <link rel="stylesheet" href="{{ url_for('static', filename='formation.min.css')}}">
@@ -6,9 +6,6 @@
     <link rel="canonical" href="https://design.va.gov/design/index">
     <script src="https://design.va.gov/assets/javascripts/polyfills/array.from.js"></script>
 {%- endblock %}
-{% block body_attribs %}
-style="display: flex;flex-direction: column;min-height: 100vh;"
-{% endblock body_attribs %}
 
 {% block scripts %}
     {{ super() }}

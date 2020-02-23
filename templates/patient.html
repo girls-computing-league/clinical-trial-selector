@@ -120,40 +120,42 @@
     </div>
 
 <div>
-    <div class="vads-l-row">
-      <div class="vads-l-col--3">
-          <ul class="site-sidenav-list">
-                    <li class="list-group-item text-muted">
-                        <span>VA Patient Info</span>
-                        {%- if not session["va_patient"] %}
-                            <!-- a class="btn-sm btn-primary float-right" href="/va/authenticate">Login</a -->
-                        <a href="/va/authenticate" class="usa-button">Login</a>
-                        {% endif %}
-                    </li>
-                    <li class="list-group-item text-left"><strong>Name</strong><p class=".vads-u-text-align--right">{{ session["va_name"]}}</p></li>
-                    <li class="list-group-item text-left"><strong>ID</strong><p class=".vads-u-text-align--right">{{ session["va_patient"]}}</p></li>
-                    <li class="list-group-item text-left"><strong>DOB</strong><p class=".vads-u-text-align--right">{{ session["va_birthdate"]}}</p></li>
-                    <li class="list-group-item text-left"><strong>Gender</strong><p class=".vads-u-text-align--right">{{ session["va_gender"]}}</p></li>
-                    <li class="list-group-item text-left"><strong>Zip Code</strong><p class=".vads-u-text-align--right">{{ session["va_zipcode"]}}</p></li>
-                      </ul>
-
-                <ul class="site-sidenav-list">
-                    <li class="list-group-item text-muted">
-                        <span>CMS Patient Info</span>
-
-                        {%- if not session["cms_patient"] %}
-                            <!-- a class="btn-sm btn-primary float-right" href="/cms/authenticate">Login</a -->
-                        <a href="/cms/authenticate" class="usa-button">Login</a>
-                        {% endif %}
-                    </li>
-                    <li class="list-group-item text-left"><strong>Name</strong><p class=".vads-u-text-align--right">{{ session["cms_name"]}}</li>
-                    <li class="list-group-item text-left"><strong>ID</strong><p class=".vads-u-text-align--right"> {{ session["cms_patient"]}}</li>
-                    <li class="list-group-item text-left"><strong>DOB</strong><p class=".vads-u-text-align--right"> {{ session["cms_birthdate"]}}</li>
-                    <li class="list-group-item text-left"><strong>Gender</strong><p class=".vads-u-text-align--right"> {{ session["cms_gender"]}}</li>
-                </ul>
+    <div class="vads-l-row vads-u-padding-x--3">
+      <div class="vads-l-col--3 vads-u-padding-x--3">
+        {%- for source in ["va", "cms"] %}
+         <table>
+            <thead>
+              <tr>
+                <th class="vads-u-display--flex vads-u-justify-content--space-between">
+                  <div class="vads-u-flex--auto">{{ source.upper() }} Patient Info</div>
+                  {%- if not session[source+"_patient"] %}
+                    <div class="vads-u-flex--auto"><a href="/{{source}}/authenticate" class="vads-u-margin--0 usa-button">Login</a></div>
+                  {% endif %}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {%- for label, value in {
+                "Name":session[source+"_name"], 
+                "ID":session[source+"_patient"], 
+                "DOB":session[source+"_birthdate"], 
+                "Gender":session[source+"_gender"],
+                "Zipcode":session[source+"_zipcode"]}.items() %}
+                <tr>
+                  <td class="vads-u-display--flex vads-u-justify-content--space-between">
+                    <div class="vads-u-flex--auto"><strong>{{label}}</strong></div>
+                    <div class="vads-u-flex--auto">{{value}}</div>
+                  </td>
+                </tr>
+              {%- endfor %}
+            </tbody>
+         </table>
+        {%- endfor %}
       </div>
       <div class="vads-l-col--8">
+        <main>
           {% block pt_main %}{% endblock %}
+        </main>
       </div>
     </div>
 </div>
