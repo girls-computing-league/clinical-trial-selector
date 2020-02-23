@@ -1,38 +1,46 @@
 {% extends "base.html" %}
 
-{%- set trailId = request.args.get('id', '0') %}
+{%- set trialID = request.args.get('id', '0') %}
 {%- set trailns = namespace(trial=none) %}
 {%- for tr in session["trials"] %}
-    {%- if tr.id == trailId %}
-        {%- set trailns.trial = tr %}
-    {% endif %}
+  {%- if tr.id == trialID %}
+    {%- set trailns.trial = tr %}
+  {% endif %}
 {% endfor %}
 
 {% block content %}
   {{ super() }}
 
-{%- if trailId != '0' %}
-    <header class="site-header" role="banner">
-
-      <div class="site-l-wrapper">
-        <div class="site-header__masthead">
+  <header class="site-header" role="banner">
+    <div class="site-l-wrapper">
+      <div class="site-header__masthead">
+        <div class="site-header__logo" id="extended-logo">
+          <em class="site-header__logo-text">
+            <a class="site-header__logo-link" title="Clinical Trials Selector" href="/">
+              <strong class="vads-u-display--block small-screen:vads-u-display--inline">
+                Clinical Trials Selector
+              </strong>
+              {%- if trialID != '0' %}
+                | Browse Trial # {{trialID}}
+              {%- endif %}
+            </a>
+          </em>
+        </div>
+        {%- if trialID != '0' %}
           <div class="site-header__logo" id="extended-logo">
-            <em class="site-header__logo-text">
-              <a class="site-header__logo-link" title="Clinical Trials Broweser" href="#"><strong class="vads-u-display--block small-screen:vads-u-display--inline">Browse Trial # {{trailId}}</strong> </a>
-            </em>
+            <a href="/" class="usa-button vads-u-margin--1">All Trials</a>
           </div>
-            <div class="site-header__logo" id="extended-logo">
-                <a href="/" class="usa-button vads-u-margin--1">All Trials</a>
-            </div>
-          <div class="site-header__utility-links">
-
-            <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a>
-              <a href="/logout" class="usa-button vads-u-margin--1">Logout</a>
-          </div>
+        {%- endif %}
+        <div class="site-header__utility-links">
+          <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a>
+          <a href="/logout" class="usa-button vads-u-margin--1">Logout</a>
         </div>
       </div>
-    </header>
-    <div class="site-top-nav-wrapper site-l-wrapper sticky">
+    </div>
+  </header>
+
+  {%- if trialID != '0' %}    
+    <div><div class="site-top-nav-wrapper site-l-wrapper sticky">
       <nav class="site-header__nav">
         <ul class="site-header__nav-list">
           <li class="site-header__nav-item">
@@ -50,29 +58,12 @@
         </ul>
       </nav>
     </div>
-{% else %}
-    <header class="site-header" role="banner">
-
-      <div class="site-l-wrapper">
-        <div class="site-header__masthead">
-          <div class="site-header__logo" id="extended-logo">
-            <em class="site-header__logo-text">
-              <a class="site-header__logo-link" title="Clinical Trials Selector homepage" href="/"><strong class="vads-u-display--block small-screen:vads-u-display--inline">Clinical Trials Selector</strong> </a>
-            </em>
-          </div>
-          <div class="site-header__utility-links">
-
-            <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a>
-              <a href="/logout" class="usa-button vads-u-margin--1">Logout</a>
-          </div>
-        </div>
-      </div>
-    </header>
-    <div class="site-top-nav-wrapper site-l-wrapper sticky">
+  {% else %}
+    <div><div class="site-top-nav-wrapper site-l-wrapper sticky">
       <nav class="site-header__nav">
         <ul class="site-header__nav-list">
           <li class="site-header__nav-item">
-            <a class="site-header__nav-item__link " href="#trials" data-toggle="tab">Trials</a>
+            <a class="site-header__nav-item__link current " href="#trials" data-toggle="tab">Trials</a>
           </li>
             {%- if session["excluded"] %}
             <li class="site-header__nav-item">
@@ -96,32 +87,10 @@
         </ul>
       </nav>
     </div>
-{% endif %}
+  {% endif %}
 
-
-    <div class="container bootstrap snippet">
-        <div class="row">
-            <div class="col-sm-9">
-                <h1>{% block header %}{% endblock %}</h1>
-            </div>
-            <div class="col">
-                <span class="float-left">
-                    <!-- a class="btn btn-primary" href="/infected_patients">Matcher for Doctors</a -->
-                    <!-- a class="usa-button" href="/infected_patients">Matcher for Doctors</a -->
-                </span>
-            </div>
-			{% block extra_button %}{% endblock%}
-            <div class="col">
-						<span class="float-right">
-
-                            <!-- a class="usa-button" href="/logout">Logout</a -->
-                    </span>
-            </div>
-        </div>
-    </div>
-
-    <div class="vads-l-row vads-u-padding-x--3">
-      <div class="vads-l-col--3 vads-u-padding-x--3">
+    <div class="site-content vads-u-margin-bottom--9 vads-l-row vads-u-padding-x--3">
+      <div class="site-content__nav vads-l-col--3 vads-u-padding-x--3">
         {%- for source in ["va", "cms"] %}
          <table>
             <thead>
@@ -152,10 +121,10 @@
          </table>
         {%- endfor %}
       </div>
-      <div class="vads-l-col--8">
+      <div class="site-content__content vads-l-col--8">
         <main>
           {% block pt_main %}{% endblock %}
         </main>
       </div>
-    </div>
+    </div></div>
 {% endblock %}
