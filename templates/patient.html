@@ -9,6 +9,7 @@
 {% endfor %}
 
 {% block content %}
+  {{ super() }}
 
 {%- if trailId != '0' %}
     <header class="site-header" role="banner">

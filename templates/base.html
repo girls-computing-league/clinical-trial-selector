@@ -31,38 +31,36 @@
                 socket.disconnect()
             });
     </script>
-    <br>
 
-    <footer class="site-footer vads-u-padding-y--2" role="contentinfo">
-      <div class="site-l-wrapper">
-        <div class="medium-screen:vads-u-display--flex medium-screen:vads-u-justify-content--space-between vads-u-align-items--center">
-          <div>
-            Clinical Trial Selector (CTS) – © 2020 Girls Computing League. All Rights Reserved.
-          </div>
+{%- endblock %}
+
+{%- block footer %}
+
+  <footer class="site-footer vads-u-padding-y--2" role="contentinfo">
+    <div class="site-l-wrapper">
+      <div class="medium-screen:vads-u-display--flex medium-screen:vads-u-justify-content--space-between vads-u-align-items--center">
+        <div>
+          Clinical Trial Selector (CTS) – © 2020 Girls Computing League. All Rights Reserved.
+        </div>
         <div class="col-md-4" style="margin-left: 5%;float: right;text-align:right; color:#428bca">
             <a target="_blank" href="/generalprivacypolicy.html">General Privacy Policy</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a target="_blank" href="/generaltermsofuse.html">General Terms of Use</a>
         </div>
-        <br>
-        <br>
     </div>
-{% endblock %}
-
-{% block navbar %}
+  </footer>
 
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-        {% for message in get_flashed_messages() %}
-        <br>
-            <div class="alert alert-warning text-center">
-                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>{{message}}</strong>
-            </div>
-        {% endfor %}
-    </div>
+
+  {{ super() }}
+  <div class="container">
+      {% for message in get_flashed_messages() %}
+      <br>
+          <div class="alert alert-warning text-center">
+              <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+              <strong>{{message}}</strong>
+          </div>
+      {% endfor %}
+  </div>
 		
-    <div class="container">
-    {% block inf_pt_main %}{% endblock %}
-    </div>
 {% endblock %}
