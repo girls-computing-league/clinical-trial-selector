@@ -16,7 +16,6 @@ from flask_socketio import SocketIO, disconnect
 from flask import Flask, session, redirect, render_template, request, flash, make_response
 from flask_session import Session
 from authlib.integrations.flask_client import OAuth
-from flask_bootstrap import Bootstrap
 import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
@@ -48,7 +47,6 @@ app.logger.info("Flask starting")
 app.logger.debug("Debug level logging")
 
 Session(app)
-Bootstrap(app)
 oauth = OAuth(app)
 oauth.register("va")
 oauth.register("cms")
