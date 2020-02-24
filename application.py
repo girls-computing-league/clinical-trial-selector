@@ -78,7 +78,7 @@ def authentications():
 
 @app.route('/')
 def showtrials():
-    return render_template('welcome.html', form=FilterForm(request.form))
+    return render_template('welcome.html', form=FilterForm(request.form), trials_selection="current")
 
 @app.route('/cms/authenticate')
 def cmsauthenticate():
@@ -174,6 +174,25 @@ def getInfo():
 
     return redirect("/")
 
+@app.route('/trials')
+def show_all_trials():
+    return render_template('welcome.html', form=FilterForm(request.form), trials_selection="current")
+
+@app.route('/excluded')
+def show_excluded():
+    return render_template('welcome.html', form=FilterForm(request.form), excluded_selection="current")
+
+@app.route('/conditions')
+def show_conditions():
+    return render_template('welcome.html', form=FilterForm(request.form), conditions_selection="current")
+
+@app.route('/matches')
+def show_matches():
+    return render_template('welcome.html', form=FilterForm(request.form), matches_selection="current")
+
+@app.route('/nomatches')
+def show_nomatches():
+    return render_template('welcome.html', form=FilterForm(request.form), nomatches_selection="current")
 
 @app.route('/download_trials')
 def download_trails():
