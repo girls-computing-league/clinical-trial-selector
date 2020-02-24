@@ -1,13 +1,12 @@
-{% extends "base.html" %}
+{% extends "patient.html" %}
+{% from "_form_helpers.html" import  progress_bar, render_input %}
 
-{% from "_form_helpers.html" import render_field, progress_bar %}
+{% block pt_main %}
 
-
-{% block inf_pt_main %}
     <hr>
-    <div class="container bootstrap snippet">
+    <div class="container">
         <div class="row">
-            <div class="col-sm-9">
+            <div class="col-sm-8">
                 <h1>Filter patients by NCI trial id</h1>
             </div>
             <div class="col">
