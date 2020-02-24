@@ -330,7 +330,19 @@ def display_infected_patients():
 
 @app.route('/trial')
 def trial():
-    return render_template('trial.html')
+    return render_template('trial.html', trial_selection="current")
+
+@app.route('/measures')
+def measures():
+    return render_template('trial.html', measures_selection="current")
+
+@app.route('/diseases')
+def diseases():
+    return render_template('trial.html', diseases_selection="current")
+
+@app.route('/locations')
+def locations():
+    return render_template('trial.html', locations_selection="current")
 
 @app.route('/logout')
 def logout():

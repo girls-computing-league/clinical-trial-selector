@@ -45,16 +45,16 @@
         <nav class="site-header__nav">
           <ul class="site-header__nav-list">
             <li class="site-header__nav-item">
-              <a class="site-header__nav-item__link " href="#info" data-toggle="tab">Info</a>
+              <a class="site-header__nav-item__link {{ trial_selection }}" href="/trial?id={{trialID}}" data-toggle="tab">Info</a>
             </li>
               <li class="site-header__nav-item">
-                  <a class="site-header__nav-item__link " href="#measures" data-toggle="tab">Outcome Measures</a>
+                  <a class="site-header__nav-item__link {{ measures_selection }}" href="/measures?id={{trialID}}" data-toggle="tab">Outcome Measures</a>
               </li>
             <li class="site-header__nav-item">
-              <a class="site-header__nav-item__link " href="#diseases" data-toggle="tab">Diseases</a>
+              <a class="site-header__nav-item__link {{ diseases_selection }}" href="/diseases?id={{trialID}}" data-toggle="tab">Diseases</a>
             </li>
             <li class="site-header__nav-item">
-              <a class="site-header__nav-item__link " href="#locations" data-toggle="tab">Locations</a>
+              <a class="site-header__nav-item__link {{ locations_selection }}" href="/locations?id={{trialID}}" data-toggle="tab">Locations</a>
             </li>
           </ul>
         </nav>
