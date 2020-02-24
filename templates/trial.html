@@ -26,10 +26,12 @@
 
 {% block pt_main %}
 
-    <ul class="nav nav-tabs nav-stacked">
     <div class="tab-content">
+      {%- if trial_selection %}
         <div class="vads-u-padding--0" id="info">
-            <br>
+          <strong>
+            Information about trial #{{trialID}}:
+          </strong>
             {{ section("title", "Brief Title", ns.trial.title) }}
             {{ section("pi", "Principal Investigator", ns.trial.pi) }}
             {{ section("official", "Official Title", ns.trial.official) }}
@@ -39,8 +41,13 @@
             {{ section("summary", "Summary", ns.trial.summary) }}
             {{ section("description", "Detailed Description", ns.trial.description) }}
         </div><!--/tab-pane-->
-         <div class="tab-pane" id="measures">
-            <table class="custom-table">
+      {%- elif measures_selection %}
+
+         <div class="vads-u-padding--0" id="measures">
+          <strong>
+            Outcome measures for trial #{{trialID}}:
+          </strong>
+              <table class="vads-u-margin--0">
                 <thead>
                     <tr>
                         <th>Description</th>
@@ -70,8 +77,13 @@
             </table>
         
         </div><!--/tab-pane-->
-        <div class="tab-pane" id="diseases">
-                <table class="custom-table">
+      {%- elif diseases_selection %}
+        <div class="vads-u-padding--0" id="diseases">
+          <strong>
+            Relevant diseases for trial #{{trialID}}:
+          </strong>
+  
+                <table class="vads-u-margin--0">
                         <thead>
                             <tr>
                                 <th>NCIT Code</th>
@@ -95,8 +107,13 @@
                     </table>
         
         </div><!--/tab-pane-->
-        <div class="tab-pane" id="locations">
-                <table class="custom-table">
+      {%- elif locations_selection %}
+        <div class="vads-u-padding--0" id="locations">
+          <strong>
+            Locations for trial #{{trialID}}:
+          </strong>
+  
+                <table class="vads-u-margin--0">
                         <thead>
                             <tr>
                                 <th>Address</th>
@@ -110,10 +127,10 @@
                             <tbody class="usa-accordion">
                                 <tr>
                                     <td colspan="4" class="page-header">
-                                        <button class="usa-accordion-button" aria-expanded="false" aria-controls="{{site["org_postal_code"]}}{{ loop.index0 }}"> {{site["org_name"]}} </button>
+                                        <button class="usa-accordion-button" aria-expanded="false" aria-controls="{{site['org_postal_code']}}{{ loop.index0 }}"> {{site["org_name"]}} </button>
                                    </td>
                                 </tr>
-                                        <tr id="{{site["org_postal_code"]}}{{ loop.index0 }}" class="usa-accordion-content">
+                                        <tr id="{{site['org_postal_code']}}{{ loop.index0 }}" class="usa-accordion-content">
                                             <td> {{ site["org_address_line_1"] }}<br>
                                                 {%- if site["org_address_line_2"] %}
                                                     {{ site["org_address_line_2"]}}<br>
@@ -128,7 +145,7 @@
                     </table>
         
         </div><!--/tab-pane-->
+      {%- endif %}
     </div><!--/tab-content-->
-    </ul>
 
 {% endblock %}
