@@ -369,5 +369,6 @@ def consumerpolicynotice():
 
 if __name__ == '__main__':
     context = ssl.SSLContext()
-    context.load_cert_chain('cert/cert.pem', keyfile='cert/key.pem')
+    context.load_cert_chain('cert/fullchain.pem', keyfile='cert/privkey.pem')
     socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, ssl_context=context)
+    #socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False)
