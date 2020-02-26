@@ -83,12 +83,12 @@ def showtrials():
 @app.route('/cms/authenticate')
 def cmsauthenticate():
     app.logger.info("Authenticting via CMS...")
-    return oauth.cms.authorize_redirect(f'http://{callback_urlbase}/cmsredirect')
+    return oauth.cms.authorize_redirect(f'{callback_urlbase}/cmsredirect')
 
 @app.route('/va/authenticate')
 def vaauthenticate():
     app.logger.info("Authenticating via VA...")
-    return oauth.va.authorize_redirect(f'http://{callback_urlbase}/varedirect')
+    return oauth.va.authorize_redirect(f'{callback_urlbase}/varedirect')
 
 @app.route('/cmsredirect')
 def cmsredirect():
@@ -370,4 +370,4 @@ def consumerpolicynotice():
 if __name__ == '__main__':
     context = ssl.SSLContext()
     context.load_cert_chain('cert/cert.pem', keyfile='cert/key.pem')
-    socketio.run(app, host="0.0.0.0", port = 443, debug=False, ssl_context=context)
+    socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, ssl_context=context)
