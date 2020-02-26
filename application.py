@@ -11,7 +11,7 @@ import io
 import json
 import argparse
 import logging, sys
-
+import ssl
 from flask_socketio import SocketIO, disconnect
 from flask import Flask, session, redirect, render_template, request, flash, make_response
 from flask_session import Session
@@ -368,4 +368,6 @@ def consumerpolicynotice():
     return render_template("generaltermsofuse.html")
 
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port = app.config["CTS_PORT"], debug=False)
+    context = ssl.SSLContext()
+    context.load_cert_chain('cert/cert.pem', keyfile='cert/key.pem')
+    socketio.run(app, host="0.0.0.0", port = 443, debug=False, ssl_context=context)

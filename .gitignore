@@ -1,6 +1,7 @@
 /client_secrets*.json
 credentials.json
 hack-env/
+cert/
 .idea
 .vscode/settings.json
 *.ipynb
