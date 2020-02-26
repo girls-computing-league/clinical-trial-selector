@@ -368,7 +368,9 @@ def consumerpolicynotice():
     return render_template("generaltermsofuse.html")
 
 if __name__ == '__main__':
-    context = ssl.SSLContext()
-    context.load_cert_chain('cert/fullchain.pem', keyfile='cert/privkey.pem')
-    socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, ssl_context=context)
-    #socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False)
+    if app.env=="production":
+        context = ssl.SSLContext()
+        context.load_cert_chain('cert/fullchain.pem', keyfile='cert/privkey.pem')
+        socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, ssl_context= context)
+    else:
+        socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False)
