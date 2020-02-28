@@ -7,7 +7,7 @@ cert/
 *.ipynb
 accesscodes
 allrun.py
-
+private
 
 flask_session
 .DS_Store

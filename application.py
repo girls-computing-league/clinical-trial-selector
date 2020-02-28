@@ -52,8 +52,6 @@ oauth.register("va")
 oauth.register("cms")
 socketio = SocketIO(app)
 
-keys_fp = open("keys.json", "r")
-keys_dict = json.load(keys_fp)
 event_name = 'update_progress'
 
 callback_urlbase = app.config["CTS_CALLBACK_URLBASE"]
