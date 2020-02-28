@@ -8,6 +8,7 @@ cert/
 accesscodes
 allrun.py
 private
+secrets/*
 
 flask_session
 .DS_Store
@@ -118,3 +119,5 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+.gitsecret/keys/random_seed
+!*.secret
