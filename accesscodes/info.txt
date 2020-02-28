@@ -1,1 +1,0 @@
-This is directory where patient names access codes will be saved, by subject
