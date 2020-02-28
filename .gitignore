@@ -2,7 +2,7 @@
 credentials.json
 hack-env/
 cert/
-.idea
+.idea/
 .vscode/settings.json
 *.ipynb
 accesscodes/*.json
@@ -11,10 +11,12 @@ accesscodes/cms/*.json
 allrun.py
 
 # Pycharm
-.idea
+.idea/*
 
 flask_session
 .DS_Store
+CMS_VA
+CMS_VA/John_Doe/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
