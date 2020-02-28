@@ -104,7 +104,7 @@
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="vads-u-line-height--1">
               {%- for label, value in {
                 "Name":session[source+"_name"], 
                 "ID":session[source+"_patient"], 
@@ -112,7 +112,7 @@
                 "Gender":session[source+"_gender"],
                 "Zipcode":session[source+"_zipcode"]}.items() %}
                 <tr>
-                  <td class="vads-u-display--flex vads-u-justify-content--space-between vads-u-flex-wrap--wrap">
+                  <td class="vads-u-display--flex vads-u-justify-content--space-between vads-u-flex-wrap--wrap vads-u-padding-y--1p5">
                     <div class="vads-u-flex--auto"><strong>{{label}}</strong></div>
                     <div class="vads-u-flex--auto">{{value}}</div>
                   </td>
