@@ -2,7 +2,7 @@
 credentials.json
 hack-env/
 cert/
-.idea/
+.idea
 .vscode/settings.json
 *.ipynb
 accesscodes/*.json
@@ -10,8 +10,6 @@ accesscodes/va/*.json
 accesscodes/cms/*.json
 allrun.py
 
-# Pycharm
-.idea/*
 
 flask_session
 .DS_Store
