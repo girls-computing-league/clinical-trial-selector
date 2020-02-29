@@ -31,7 +31,6 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
 
 app = Flask(__name__)
-app.secret_key = "***REMOVED***"
 app.config.from_pyfile("config/default.cfg")
 app.config.from_pyfile("secrets/default_keys.cfg")
 if args.get("local", app.env) == "development":
