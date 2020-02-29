@@ -20,12 +20,6 @@ TRIALS_URL = "https://clinicaltrialsapi.cancer.gov/v1/clinical-trials"
 OBSERVATION_URL = BASE_URL + 'Observation'
 
 trial_filter_cnt = 0
-server = '108.31.54.198'
-database = 'CTA'
-username = 'ctauser'
-password = 'sql'
-connection_details = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + \
-                     username + ';PWD=' + password
 
 LOINC_CODES = {
     '718-7': 'hemoglobin',

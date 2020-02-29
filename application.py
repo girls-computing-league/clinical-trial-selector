@@ -33,10 +33,13 @@ if __name__ == "__main__":
 app = Flask(__name__)
 app.secret_key = "***REMOVED***"
 app.config.from_pyfile("config/default.cfg")
+app.config.from_pyfile("secrets/default_keys.cfg")
 if args.get("local", app.env) == "development":
     app.config.from_pyfile("config/local.cfg")
+    app.config.from_pyfile("secrets/local_keys.cfg")
 else:
     app.config.from_pyfile("config/aws.cfg")
+    app.config.from_pyfile("secrets/aws_keys.cfg")
 log_level = args.get("log", app.config["CTS_LOGLEVEL"])
 
 logging.getLogger().setLevel(log_level)
@@ -55,18 +58,6 @@ socketio = SocketIO(app)
 event_name = 'update_progress'
 
 callback_urlbase = app.config["CTS_CALLBACK_URLBASE"]
-
-
-def save_access_code(filename, mrn, token):
-# creates a new file and gives permissions to write in it
-# creates a dictionary with the medical record number and the token to enter into the file
-# enters information in dictionary into file in json format
-# saves and closes file
-    fp = open(filename, 'w')
-    acc = {"patient": mrn, "access_code": token}
-    json.dump(acc, fp)
-    fp.close()
-    return
 
 def authentications():
     auts = []
@@ -105,7 +96,7 @@ def cmsredirect():
     combined.CMSPatient = pat
     combined.loaded = False
     session['combined_patient'] = combined
-    return redirect('/cms/authenticated')
+    return redirect('/')
 
 @app.route('/varedirect')
 def varedirect():
@@ -125,23 +116,7 @@ def varedirect():
     combined.VAPatient = pat
     combined.loaded = False
     session['combined_patient'] = combined
-    return redirect('/va/authenticated')
-
-@app.route('/cms/authenticated')
-def cmsauthenticated():
-    token = session.get('cms_access_token')
-    mrn = session.get('cms_patient')
-    filename = 'accesscodes/cms/' + mrn + '.json'
-    save_access_code(filename, mrn, token)
-    return redirect("/")
-
-@app.route('/va/authenticated')
-def vaauthenticated():
-    token = session.get('va_access_token')
-    mrn = session.get('va_patient')
-    filename = 'accesscodes/va/' + mrn + '.json'
-    save_access_code(filename, mrn, token)
-    return redirect("/")
+    return redirect('/')
 
 @app.route('/getInfo')
 def getInfo():
@@ -268,8 +243,8 @@ def doctor_login():
     # TODO use this to enable authentication with client_id, client_secret tokens
     # get client id and client secret by authentication by redirecting to doctor authentication page
     # below are the dev tokens we got from https://sandbox.bcda.cms.gov/user_guide.html#authentication-and-authorization
-    doc_client_id = '***REMOVED***c'
-    doc_client_secret = '***REMOVED***'
+    doc_client_id = app.config["DOC_CLIENT_ID"]
+    doc_client_secret = app.config["DOC_CLIENT_SECRET"]
     session['bcda_doc_token'] = get_authenticate_bcda_api_token(client_id=doc_client_id,
                                                                 client_secret=doc_client_secret)
     return redirect("/infected_patients")

@@ -8,6 +8,7 @@ import requests as req
 from datetime import date
 from distances import distance
 from zipcode import Zipcode
+from flask import current_app as app
 
 import json
 
@@ -17,7 +18,7 @@ class Patient:
         self.sub = sub
         self.mrn = pat_token["mrn"]
         self.token = pat_token["token"]
-        self.auth = umls.Authentication("***REMOVED***")
+        self.auth = umls.Authentication(app.config["UMLS_API_KEY"])
         self.tgt = self.auth.gettgt()
 
     def load_demographics(self):

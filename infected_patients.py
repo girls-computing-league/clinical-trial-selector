@@ -15,6 +15,7 @@ from jsonpath_rw_ext import parse
 from base64 import b64encode
 from typing import Dict, List
 from umls import Authentication
+from flask import current_app as app
 
 GCM_NONCE_SIZE = 12
 GCM_TAG_SIZE = 16
@@ -49,7 +50,7 @@ def decrypt_cipher(ct: 'File', key: str):
     )
 
 
-def decrypt(ek: str, filepath: str,  pk: str = 'ATO_private.pem'):
+def decrypt(ek: str, filepath: str,  pk: str = 'secrets/ATO_private.pem'):
     encrypted_key = binascii.unhexlify(ek)
     with open(pk, 'r') as fh:
         private_key = RSA.importKey(fh.read())
@@ -173,7 +174,7 @@ def get_nci_thesaurus_concept_ids(code: str):
 
 
 def get_diseases_icd_codes(code: str):
-    auth = Authentication("***REMOVED***")
+    auth = Authentication(app.config["UMLS_API_KEY"])
     icd_codes = []
     nci_thesaurus_concept_ids = get_nci_thesaurus_concept_ids(code)
     logging.info(f'Getting Icd codes for NCT id {code} with disease codes {nci_thesaurus_concept_ids}')
