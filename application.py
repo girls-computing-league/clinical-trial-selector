@@ -15,6 +15,7 @@ import ssl
 from flask_socketio import SocketIO, disconnect
 from flask import Flask, session, redirect, render_template, request, flash, make_response
 from flask_session import Session
+from flask_talisman import Talisman
 from authlib.integrations.flask_client import OAuth
 import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
@@ -341,6 +342,7 @@ def consumerpolicynotice():
 
 if __name__ == '__main__':
     if app.env=="production":
+        Talisman(app)
         context = ssl.SSLContext()
         context.load_cert_chain('cert/fullchain.pem', keyfile='cert/privkey.pem')
         socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, ssl_context= context)
