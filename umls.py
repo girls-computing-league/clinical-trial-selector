@@ -3,6 +3,7 @@ import requests
 #from pyquery import PyQuery as pq
 import lxml.html as lh
 from lxml.html import fromstring
+from flask import current_app as app
 
 uri="https://utslogin.nlm.nih.gov"
 #option 1 - username/pw authentication at /cas/v1/tickets
@@ -23,6 +24,7 @@ class Authentication:
         params = {'apikey': self.apikey}
         h = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain", "User-Agent":"python" }
         r = requests.post(uri+auth_endpoint, data=params, headers=h)
+        app.logger.debug(f"UMLS tgt response: {r.text}, code: {r.status_code}")
         response = fromstring(r.text)
         # extract the entire URL needed from the HTML form (action attribute) returned - looks similar to
         # https://utslogin.nlm.nih.gov/cas/v1/tickets/TGT-36471-aYqNLN2rFIJPXKzxwdTNC5ZT7z3B3cTAKfSc5ndHQcUxeaDOLN-cas

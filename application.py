@@ -102,6 +102,7 @@ def cmsredirect():
 def varedirect():
     app.logger.info("Redirected from VA authentication")
     resp = oauth.va.authorize_access_token()
+    app.logger.debug(f"Response: {resp}")
     combined = session.get("combined_patient", hack.CombinedPatient())
     session['va_access_token'] = resp['access_token']
     session['va_patient'] = resp['patient']
