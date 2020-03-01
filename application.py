@@ -40,7 +40,7 @@ if args.get("local", app.env) == "development":
 else:
     app.config.from_pyfile("config/aws.cfg")
     app.config.from_pyfile("secrets/aws_keys.cfg")
-log_level = args.get("log", app.config["CTS_LOGLEVEL"])
+log_level = args.get("log", app.config["CTS_LOGLEVEL"]).upper()
 
 logging.getLogger().setLevel(log_level)
 logging.info("Clinical Trial Selector starting...")
@@ -341,7 +341,7 @@ def consumerpolicynotice():
     return render_template("generaltermsofuse.html")
 
 if __name__ == '__main__':
-    if app.env=="production":
+    if args.get("local", app.env) != "development":
         csp = {
             'default-src': [
                 '\'self\'',
