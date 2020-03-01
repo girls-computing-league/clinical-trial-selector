@@ -349,7 +349,7 @@ if __name__ == '__main__':
                 '*.va.gov',
                 '*.googleapis.com',
                 '*.cloudflare.com',
-                'unsafe-inline'
+                "'unsafe-inline'"
             ]
         }
         Talisman(app, content_security_policy = csp)
