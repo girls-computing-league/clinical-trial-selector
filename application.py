@@ -355,7 +355,7 @@ if __name__ == '__main__':
         Talisman(app, content_security_policy = csp)
         context = ssl.SSLContext()
         context.load_cert_chain('cert/fullchain.pem', keyfile='cert/privkey.pem')
-        # socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, ssl_context= context)
-        socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, certfile='cert/fullchain.pem', keyfile='cert/privkey.pem')
+        socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, ssl_context= context)
+        # socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, certfile='cert/fullchain.pem', keyfile='cert/privkey.pem')
     else:
         socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False)
