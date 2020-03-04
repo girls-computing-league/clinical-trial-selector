@@ -344,7 +344,7 @@ def consumerpolicynotice():
 if __name__ == '__main__':
     if args.get("local", app.env) != "development":
         csp = {
-            'source-src': [
+            'script-src': [
                 '\'self\'',
                 '*.va.gov',
                 '*.googleapis.com',
