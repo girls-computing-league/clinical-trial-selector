@@ -1,7 +1,5 @@
 var socket = io();
 
-$("a[href=\"/getInfo\"]").click(openSocket)
-
 function openSocket() {
     document.getElementById("progress").style.display = "block";
     socket.on('update_progress', function(message) {
@@ -14,3 +12,6 @@ function openSocket() {
 socket.on('disconnect', function(message) {
     socket.disconnect()
 });
+
+$("a.cts-launch-progress-bar").click(openSocket)
+$("form.cts-launch-progress-bar").submit(openSocket)

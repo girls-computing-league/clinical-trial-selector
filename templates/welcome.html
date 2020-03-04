@@ -6,7 +6,7 @@
   {% if session["Laboratory_Results"] and trials_selection %}
     <div class="feature vads-u-margin-top--0" id="LaboratoryObservations">
       <div><strong>Laboratory Results:</strong></div>
-      <form method=post onsubmit="openSocket()" action="/filter_by_lab_results">
+      <form method=post class="cts-launch-progress-bar" action="/filter_by_lab_results">
             <table class="vads-u-margin--0">
               <thead>
                 <tr>
@@ -83,7 +83,7 @@
                 {%- endfor %}
             </table>
       {% else %}
-        <a class="usa-button" href="/getInfo" onclick="openSocket()" >Find Clinical Trials</a>
+        <a class="usa-button cts-launch-progress-bar" href="/getInfo">Find Clinical Trials</a>
             {{progress_bar()}}
       {% endif %}
     </div>
