@@ -21,6 +21,8 @@ import hacktheworld as hack
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
                                EXPORT_URL, submit_get_patients_job, get_infected_patients_info)
+from flask_wtf import FlaskForm, CSRFProtect
+from flask_wtf.csrf import CSRFError
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -53,6 +55,7 @@ Session(app)
 oauth = OAuth(app)
 oauth.register("va")
 oauth.register("cms")
+csrf = CSRFProtect(app)
 socketio = SocketIO(app)
 
 event_name = 'update_progress'
@@ -67,17 +70,12 @@ def authentications():
 
 @app.route('/')
 def showtrials():
-    return render_template('welcome.html', form=FilterForm(request.form), trials_selection="current")
+    return render_template('welcome.html', form=FilterForm(), trials_selection="current")
 
-@app.route('/cms/authenticate')
-def cmsauthenticate():
-    app.logger.info("Authenticting via CMS...")
-    return oauth.cms.authorize_redirect(f'{callback_urlbase}/cmsredirect')
-
-@app.route('/va/authenticate')
-def vaauthenticate():
-    app.logger.info("Authenticating via VA...")
-    return oauth.va.authorize_redirect(f'{callback_urlbase}/varedirect')
+@app.route("/authenticate/<source>", methods=["POST"])
+def authenticate(source):
+    app.logger.info(f"Authenticating via {source.upper()}...")
+    return getattr(oauth, source).authorize_redirect(f'{callback_urlbase}/{source}redirect')
 
 @app.route('/cmsredirect')
 def cmsredirect():
@@ -150,23 +148,23 @@ def getInfo():
 
 @app.route('/trials')
 def show_all_trials():
-    return render_template('welcome.html', form=FilterForm(request.form), trials_selection="current")
+    return render_template('welcome.html', form=FilterForm(), trials_selection="current")
 
 @app.route('/excluded')
 def show_excluded():
-    return render_template('welcome.html', form=FilterForm(request.form), excluded_selection="current")
+    return render_template('welcome.html', form=FilterForm(), excluded_selection="current")
 
 @app.route('/conditions')
 def show_conditions():
-    return render_template('welcome.html', form=FilterForm(request.form), conditions_selection="current")
+    return render_template('welcome.html', form=FilterForm(), conditions_selection="current")
 
 @app.route('/matches')
 def show_matches():
-    return render_template('welcome.html', form=FilterForm(request.form), matches_selection="current")
+    return render_template('welcome.html', form=FilterForm(), matches_selection="current")
 
 @app.route('/nomatches')
 def show_nomatches():
-    return render_template('welcome.html', form=FilterForm(request.form), nomatches_selection="current")
+    return render_template('welcome.html', form=FilterForm(), nomatches_selection="current")
 
 @app.route('/download_trials')
 def download_trails():
@@ -191,7 +189,7 @@ def download_trails():
     return output
 
 
-class FilterForm(Form):
+class FilterForm(FlaskForm):
     hemoglobin = StringField('hemoglobin ', [validators.Length(max=25)])
     leukocytes = StringField('leukocytes ', [validators.Length(max=25)])
     platelets = StringField('platelets ', [validators.Length(max=25)])
@@ -205,11 +203,12 @@ def filter_by_lab_results():
     Filter2 -> Filters results based on inclusion condition and value from the Observation API.
     """
 
-    form = FilterForm(request.form)
+    form = FilterForm()
 
-    if request.method == 'POST':
-        form.validate()
-        lab_results = {key: (value.split()[0], value.split()[1]) for key, value in form.data.items()}
+    if form.validate_on_submit():
+        for key, value in form.data.items():
+            if key != "csrf_token":
+                lab_results = {key: (value.split()[0], value.split()[1])}
     else:
         lab_results = session['Laboratory_Results']
 
@@ -234,7 +233,7 @@ def filter_by_lab_results():
     return redirect('/')
 
 
-class InfectedPatientsForm(Form):
+class InfectedPatientsForm(FlaskForm):
     trial_nci_id = StringField('NCI Trial ID ', [validators.Length(max=25)])
 
 
@@ -260,7 +259,7 @@ def doctor_logout():
 
 @app.route('/infected_patients', methods=['GET', 'POST'])
 def infected_patients():
-    form = InfectedPatientsForm(request.form)
+    form = InfectedPatientsForm()
     bcda_doc_token = session.get('bcda_doc_token', None)
 
     if not request.method == 'POST' or not form.validate():
@@ -318,18 +317,10 @@ def diseases():
 def locations():
     return render_template('trial.html', locations_selection="current")
 
-@app.route('/logout')
+@app.route('/logout', methods=["POST"])
 def logout():
     session.clear()
     return redirect("/")
-
-# @cms.tokengetter
-# def get_cms_token(token=None):
-#     return session.get('cms_access_token')
-
-# @va.tokengetter
-# def get_va_token(token=None):
-#     return session.get('va_access_token')
 
 @app.route('/generalprivacypolicy.html')
 def privacy_policy():

@@ -33,7 +33,10 @@
         {%- endif %}
         <div class="site-header__utility-links">
           <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a>
-          <a href="/logout" class="usa-button vads-u-margin--1">Logout</a>
+          <form action="{{ url_for('logout') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button class="usa-button vads-u-margin--0" type="submit">Logout</button>
+          </form>
         </div>
       </div>
     </div>
@@ -99,7 +102,10 @@
                 <th class="vads-u-display--flex vads-u-justify-content--space-between">
                   <div class="vads-u-flex--auto">{{ source.upper() }} Patient Info</div>
                   {%- if not session[source+"_patient"] %}
-                    <div class="vads-u-flex--auto"><a href="/{{source}}/authenticate" class="vads-u-margin--0 usa-button">Login</a></div>
+                    <form action="{{ url_for('authenticate',source=source) }}" method="POST" class="vads-u-flex-auto">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                      <button class="usa-button vads-u-margin--0" type="submit">Login</button>
+                    </form>
                   {% endif %}
                 </th>
               </tr>
