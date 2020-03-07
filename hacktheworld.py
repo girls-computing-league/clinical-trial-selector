@@ -23,7 +23,7 @@ class Patient:
 
     def load_demographics(self):
         self.gender, self.birthdate, self.name, self.zipcode, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
-        logging.info("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
+        logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def calculate_age(self):
         today = date.today()
@@ -54,10 +54,10 @@ class Patient:
         trials_json = pt.find_trials(self.codes_ncit, gender=self.gender, age=self.age)
         for trialset in trials_json:
             code_ncit = trialset["code_ncit"]
-            logging.info("Trials for NCIT code {}:".format(code_ncit))
+            logging.debug("Trials for NCIT code {}:".format(code_ncit))
             for trial_json in trialset["trialset"]["trials"]:
                 trial = Trial(trial_json, code_ncit)
-                logging.info("{} - {}".format(trial.id, trial.title))
+                logging.debug("{} - {}".format(trial.id, trial.title))
                 self.trials.append(trial)
         return
 
@@ -134,8 +134,8 @@ class CMSPatient(Patient):
         name = fhir["name"][0]
         self.name = "{} {}".format(name["given"][0], name["family"])
         self.PatientJSON = res.text
-        logging.info("FHIR: {}".format(self.PatientJSON))
-        logging.info("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
+        logging.debug("FHIR: {}".format(self.PatientJSON))
+        logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def load_codes(self):
         self.codes_ncit = []

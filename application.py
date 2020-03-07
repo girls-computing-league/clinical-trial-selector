@@ -12,7 +12,7 @@ import json
 import argparse
 import logging, sys
 import ssl
-from flask_socketio import SocketIO, disconnect
+from flask_socketio import SocketIO, join_room
 from flask import Flask, session, redirect, render_template, request, flash, make_response
 from flask_session import Session
 from flask_talisman import Talisman
@@ -31,6 +31,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-l", "--local", help="Run application from localhost", action="store_const", const="development", default=argparse.SUPPRESS)
     parser.add_argument("--log", help="Log level", default=argparse.SUPPRESS)
+    parser.add_argument("-r", "--reload", help="Reload automatically after changes", action="store_true")
     args = vars(parser.parse_args())
 
 app = Flask(__name__)
@@ -94,6 +95,7 @@ def cmsredirect():
     combined.CMSPatient = pat
     combined.loaded = False
     session['combined_patient'] = combined
+    session['socket_room'] = session.sid
     return redirect('/')
 
 @app.route('/varedirect')
@@ -115,18 +117,19 @@ def varedirect():
     combined.VAPatient = pat
     combined.loaded = False
     session['combined_patient'] = combined
+    session['socket_room'] = session.sid
     return redirect('/')
 
 @app.route('/getInfo', methods=['POST'])
 def getInfo():
-    print("GETTING INFO NOW")
+    app.logger.info("GETTING INFO NOW")
     combined = session.get("combined_patient", hack.CombinedPatient())
     auts = authentications()
-    socketio.emit(event_name, {"data": 15}, broadcast=False)
+    socketio.emit(event_name, {"data": 15}, room=session.sid)
     if (not auts):
         return redirect("/")
     combined.load_data()
-    socketio.emit(event_name, {"data": 50}, broadcast=False)
+    socketio.emit(event_name, {"data": 50}, room=session.sid)
     
     patient_id = session.get('va_patient')
     token = session.get('va_access_token')
@@ -136,13 +139,13 @@ def getInfo():
     session['numTrials'] = combined.numTrials
     session['index'] = 0
     session["combined_patient"] = combined
-    socketio.emit(event_name, {"data": 70}, broadcast=False)
+    socketio.emit(event_name, {"data": 70}, room=session.sid)
 
     if patient_id is not None and token is not None:
         session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
         print("FROM SESSION", session['Laboratory_Results'])
-    socketio.emit(event_name, {"data": 95}, broadcast=False)
-    socketio.emit('disconnect', {"data": 100}, broadcast=False)
+    socketio.emit(event_name, {"data": 95}, room=session.sid)
+    socketio.emit('disconnect', {"data": 100}, room=session.sid)
 
     return redirect("/")
 
@@ -214,11 +217,11 @@ def filter_by_lab_results():
 
     combined_patient = session['combined_patient']
     trials_by_ncit = combined_patient.trials_by_ncit
-    socketio.emit(event_name, {"data": 20}, broadcast=False)
+    socketio.emit(event_name, {"data": 20}, room=session.sid)
 
     filter_trails_by_inclusion_criteria, excluded_trails_by_inclusion_criteria = \
         filter_by_inclusion_criteria(trials_by_ncit, lab_results)
-    socketio.emit(event_name, {"data": 65}, broadcast=False)
+    socketio.emit(event_name, {"data": 65}, room=session.sid)
 
     session['combined_patient'].trials_by_ncit = filter_trails_by_inclusion_criteria
     session['combined_patient'].numTrials = sum([len(x['trials']) for x in filter_trails_by_inclusion_criteria])
@@ -228,8 +231,8 @@ def filter_by_lab_results():
     session['combined_patient'].filtered = True
     session['excluded_num_trials'] = sum([len(x['trials']) for x in excluded_trails_by_inclusion_criteria])
     session['excluded_num_conditions_with_trials'] = len(excluded_trails_by_inclusion_criteria)
-    socketio.emit(event_name, {"data": 95}, broadcast=False)
-    socketio.emit('disconnect', {"data": 100}, broadcast=False)
+    socketio.emit(event_name, {"data": 95}, room=session.sid)
+    socketio.emit('disconnect', {"data": 100}, room=session.sid)
     return redirect('/')
 
 
@@ -271,7 +274,7 @@ def infected_patients():
 
     event_name = 'update_progress'
     nci_trial_id = form.trial_nci_id.data or 'NCT02750826'
-    socketio.emit(event_name, {"data": 5}, broadcast=False)
+    socketio.emit(event_name, {"data": 5}, room=session.sid)
     try:
         futures = {}
         progress = 15
@@ -283,13 +286,13 @@ def infected_patients():
             result = {}
             for future in as_completed(futures):
                 result[futures[future]] = future.result()
-                socketio.emit(event_name, {"data": progress}, broadcast=False)
+                socketio.emit(event_name, {"data": progress}, room=session.sid)
                 progress += 25
         patients = get_infected_patients(**result)
         session['infected_patients'] = patients
-        socketio.emit(event_name, {"data": 100}, broadcast=False)
+        socketio.emit(event_name, {"data": 100}, room=session.sid)
 
-        socketio.emit('disconnect', {"data": 100}, broadcast=False)
+        socketio.emit('disconnect', {"data": 100}, room=session.sid)
     except Exception as exc:
         print(exc)
         flash(f'Failed to process NCT ID: {nci_trial_id}')
@@ -332,6 +335,11 @@ def consumerpolicynotice():
     session.clear()
     return render_template("generaltermsofuse.html")
 
+@socketio.on("connect")
+def connect_socket():
+    app.logger.info(f"Socket connected, socket id: {request.sid}, socket room: {session['socket_room']}")
+    join_room(session['socket_room'])
+
 if __name__ == '__main__':
     if args.get("local", app.env) != "development":
         csp = {
@@ -348,4 +356,4 @@ if __name__ == '__main__':
         socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, ssl_context= context)
         # socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, certfile='cert/fullchain.pem', keyfile='cert/privkey.pem')
     else:
-        socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], use_reloader=True, debug=False)
+        socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], use_reloader=args.get("reload"), debug=False)

@@ -290,8 +290,6 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
         else:
             trial.filter_condition.append(('No Inclusion Criteria Found', True))
             filtered_trials.append(trial)
-    logging.info(f"Filtered count: ")
-    #trial_filter_cnt += 1
     return filtered_trials, excluded_trials
 
 
