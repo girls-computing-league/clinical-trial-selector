@@ -85,13 +85,13 @@ class Patient:
         params = {"targetSource": "NCI", "ticket": tik}
         res = req.get(f'https://uts-ws.nlm.nih.gov/rest/crosswalk/current/source/{codeset}/{code_orig}', params=params)
         if (res.status_code != 200):
-            logging.info("{} CODE {} ({}) --> NO MATCH ({})".format(codeset, code_orig, condition, res.status_code))
+            logging.debug("{} CODE {} ({}) --> NO MATCH ({})".format(codeset, code_orig, condition, res.status_code))
             return no_match
         for result in res.json()["result"]:
             if not (result["ui"] in ["TCGA", "OMFAQ", "MPN-SAF"]): 
                 name_ncit = result["name"]
                 code_ncit = result["ui"]
-                logging.info("{} CODE {} ({})---> NCIT CODE {} ({})".format(codeset, code_orig, condition, code_ncit, name_ncit))
+                logging.debug("{} CODE {} ({})---> NCIT CODE {} ({})".format(codeset, code_orig, condition, code_ncit, name_ncit))
                 logging.debug("{} CODE {} JSON: {}".format(codeset, code_orig, res.json()))
                 return {"ncit": code_ncit, "ncit_desc": name_ncit}
         return no_match
