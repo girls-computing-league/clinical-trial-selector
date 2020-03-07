@@ -57,7 +57,7 @@ oauth = OAuth(app)
 oauth.register("va")
 oauth.register("cms")
 csrf = CSRFProtect(app)
-socketio = SocketIO(app)
+socketio = SocketIO(app, manage_session=False)
 
 event_name = 'update_progress'
 
@@ -95,7 +95,6 @@ def cmsredirect():
     combined.CMSPatient = pat
     combined.loaded = False
     session['combined_patient'] = combined
-    session['socket_room'] = session.sid
     return redirect('/')
 
 @app.route('/varedirect')
@@ -117,7 +116,6 @@ def varedirect():
     combined.VAPatient = pat
     combined.loaded = False
     session['combined_patient'] = combined
-    session['socket_room'] = session.sid
     return redirect('/')
 
 @app.route('/getInfo', methods=['POST'])
@@ -337,8 +335,8 @@ def consumerpolicynotice():
 
 @socketio.on("connect")
 def connect_socket():
-    app.logger.info(f"Socket connected, socket id: {request.sid}, socket room: {session['socket_room']}")
-    join_room(session['socket_room'])
+    app.logger.info(f"Socket connected, socket id: {request.sid}, socket room: {session.sid}")
+    join_room(session.sid)
 
 if __name__ == '__main__':
     if args.get("local", app.env) != "development":
