@@ -84,7 +84,12 @@
                 {%- endfor %}
             </table>
       {% else %}
-        <a class="usa-button cts-launch-progress-bar" href="/getInfo">Find Clinical Trials</a>
+        <form action="{{ url_for('getInfo') }}" method="POST" class="cts-launch-progress-bar">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <button class="usa-button" type="submit">Find Clinical Trials</button>
+        </form>
+
+        <!-- <a class="usa-button cts-launch-progress-bar" href="/getInfo">Find Clinical Trials</a> -->
             {{progress_bar()}}
       {% endif %}
     </div>

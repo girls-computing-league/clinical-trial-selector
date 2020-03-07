@@ -117,7 +117,7 @@ def varedirect():
     session['combined_patient'] = combined
     return redirect('/')
 
-@app.route('/getInfo')
+@app.route('/getInfo', methods=['POST'])
 def getInfo():
     print("GETTING INFO NOW")
     combined = session.get("combined_patient", hack.CombinedPatient())
@@ -340,7 +340,6 @@ if __name__ == '__main__':
                 '*.va.gov',
                 '*.googleapis.com',
                 '*.cloudflare.com'
-                # "'unsafe-inline'"
             ]
         }
         Talisman(app, content_security_policy = csp)
@@ -349,4 +348,4 @@ if __name__ == '__main__':
         socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, ssl_context= context)
         # socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False, certfile='cert/fullchain.pem', keyfile='cert/privkey.pem')
     else:
-        socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], debug=False)
+        socketio.run(app, host="0.0.0.0", port = app.config['CTS_PORT'], use_reloader=True, debug=False)
