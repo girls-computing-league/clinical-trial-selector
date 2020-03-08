@@ -8,6 +8,7 @@ from jsonpath_rw_ext import parse
 from typing import Dict, List, Any, Tuple, Union
 import concurrent.futures as futures
 from gevent import Greenlet, spawn, iwait
+from pprint import pformat
 
 client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
 
@@ -33,6 +34,9 @@ TABLE_NAME_BY_CELL_TYPE = {
     'platelets': 'Dataset1_Platelets_Trials_First',
 }
 
+match_type = 'hemoglobin|platelets|leukocytes'
+lab_pattern = re.compile(f'(\[?({match_type})\]?\s?[\>\=\<]+\s?\d+[\.\,]?\d*\s?\w+\/?\s?\w+(\^\d*)?)')
+lab_simple = re.compile(f'({match_type})')
 
 def rchop(thestring, ending):
   if thestring.endswith(ending):
@@ -268,7 +272,7 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
     filtered_trials = []
     excluded_trials = []
     for trial in trials:
-        conditions = find_conditions(trial.trial_json)
+        conditions = find_conditions(trial)
         trial.filter_condition = []
         if conditions:
             include_trail = True
@@ -296,18 +300,27 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
 def find_conditions(trial: Dict) -> Dict:
     match_type = 'hemoglobin|platelets|leukocytes'
     cell_types = ['hemoglobin', 'platelets', 'leukocytes']
-    parser = parse(f'$.eligibility.unstructured[?inclusion_indicator=true].description')
-    unstructured_descriptions = parser.find(trial)
-    description = ' '.join([match.value.replace('\r\n', ' ').lower() for match in unstructured_descriptions
-                            if any(cell_type in match.value.lower() for cell_type in cell_types)])
-    if description:
-        pattern = re.compile(f'(\[?({match_type})\]?\s?[\>\=\<]+\s?\d+[\.\,]?\d*\s?\w+\/?\s?\w+(\^\d*)?)')
-        matches = pattern.findall(description)
+    # parser = parse(f'$.eligibility.unstructured[?inclusion_indicator=true].description')
+    unstructured_inclusions = trial.inclusions
+    filtered_inclusions = [inclusion.replace('\r\n', ' ').lower() for inclusion in trial.inclusions
+                            if any(cell_type in inclusion.lower() for cell_type in cell_types)]
+    joined_description = ' and '.join(filtered_inclusions)
+    if joined_description:
+        # lab_pattern = re.compile(f'(\[?({match_type})\]?\s?[\>\=\<]+\s?\d+[\.\,]?\d*\s?\w+\/?\s?\w+(\^\d*)?)')
+        matches = lab_pattern.findall(joined_description)
         if matches:
             conditions = {match[1]: str(match[0]) for match in matches}
-            return conditions if len(conditions) == 3 else get_mapping_with_aws_comprehend(unstructured_descriptions)
+            simple_matches = len(lab_simple.findall(joined_description))
+            if len(conditions) == simple_matches:
+                return conditions 
+            else:
+                mapping = get_mapping_with_aws_comprehend(filtered_inclusions)
+                if len(mapping) > len(conditions):
+                    return mapping
+                else:
+                    return conditions
         else:
-            entity_mapping = get_mapping_with_aws_comprehend(unstructured_descriptions)
+            entity_mapping = get_mapping_with_aws_comprehend(filtered_inclusions)
             return entity_mapping
     else:
         return {}
@@ -325,9 +338,9 @@ def split_description(description, limit):
 def get_mapping_with_aws_comprehend(descriptions: List) -> Dict:
     def get_description():
         data = ''
-        limit = 19999
+        limit = 19990
         for match in descriptions:
-            description = match.value.replace('\r\n', ' ').lower().replace(',', '')
+            description = match.replace('\r\n', ' ').lower().replace(',', '')
             if len(description) > limit:
                 for split in split_description(description, limit):
                     yield split
@@ -335,20 +348,27 @@ def get_mapping_with_aws_comprehend(descriptions: List) -> Dict:
                 yield data
                 data = description
             else:
-                data += description
+                data += description + " and "
         yield data
 
     conditions = {}
     cell_types = ['hemoglobin', 'platelets', 'leukocytes']
     for description in get_description():
         try:
-            entities = client.detect_entities(Text=description)['Entities']
+            entities = client.detect_entities_v2(Text=description)['Entities']
+            logging.debug(f"Description text send to AWS: {description}")
+            logging.debug("Entities returned:")
             for entity in entities:
+                logging.debug(f"Entity text: {entity['Text']} ({entity['Category']}/{entity['Type']})")
                 entity_type = entity['Text']
-                if any(cell_type == entity_type.lower() for cell_type in cell_types) and entity.get('Attributes'):
+                if any(cell_type == entity_type.lower() for cell_type in cell_types) \
+                    and entity.get('Attributes') \
+                    and entity['Attributes'][0]['Type'] == "TEST_VALUE":
                     conditions[entity_type] = entity_type + entity['Attributes'][0]['Text']
+                    logging.debug(f"Entity attribute text: {entity['Attributes'][0]['Text']}")
+                    logging.debug(f"Entity attribute type: {entity['Attributes'][0]['Type']}")
         except Exception as exc:
-            print(f'Failed to retrieve aws comprehend entities: {str(exc)}')
+            logging.warn(f'Failed to retrieve aws comprehend entities: {str(exc)}')
     return conditions
 
 

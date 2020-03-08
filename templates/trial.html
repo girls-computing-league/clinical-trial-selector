@@ -17,7 +17,9 @@
       {{section_header}}
     </button>
     <div id="{{section_name}}" class="usa-accordion-content">
-         {{section_content}}
+        {%- for line in (section_content|string).splitlines() %}
+         <p>{{line}}</p>
+        {%- endfor %}
     </div>
   </li>
 </ul>
@@ -40,6 +42,11 @@
             {% endif %}
             {{ section("summary", "Summary", ns.trial.summary) }}
             {{ section("description", "Detailed Description", ns.trial.description) }}
+            {%- for criterion in ns.trial.eligibility %}
+              {{ section("eligibility"+loop.index|string, 
+                "Eligibility criterion #{} ({})".format(loop.index, "Inclusion" if criterion.inclusion_indicator else "Exclusion"), 
+                criterion.description) }}
+            {%- endfor %}
         </div><!--/tab-pane-->
       {%- elif measures_selection %}
 
