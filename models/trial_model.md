@@ -1,5 +1,12 @@
+---
+markdown:
+  image_dir: /assets
+  path: output.md
+  ignore_from_front_matter: true
+  absolute_image_path: false
+---
 ```plantuml
-@startuml trial_model
+@startuml trialmodel
     class CombinedPatient {
         /included_trials: Trial [*]
         /excluded_trials: Trial [*]
@@ -50,3 +57,4 @@
     TestFilter --> "test" LabTest
     test_set *-- "~* tests" LabTest
 @enduml
+```
