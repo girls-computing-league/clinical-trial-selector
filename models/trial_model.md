@@ -38,11 +38,13 @@ markdown:
         possible_loincs: string [1..*]
         possible_units: string [1..*]
     }
-    class test_set <<module>>{
+    class test_set <<module>> {
+        alias_test_map: <<dict>> string->LabTest
+        loinc_test_map: <<dict>> string->LabTest
         alias_regex: regex
         criteria_regex: regex
-        test_from_alias(string)
-        test_from_loinc(string)
+        create_maps()
+        create_regex()
     }
     class TestResult {
         date: dateTime
@@ -55,6 +57,5 @@ markdown:
     Trial *-- "~* filters" TestFilter 
     Trial *-- "~* criteria" Criterion 
     TestFilter --> "test" LabTest
-    test_set *-- "~* tests" LabTest
-@enduml
-```
+    test_set *-- "~* name_test_map" LabTest : <<dict>>
+@enduml```
