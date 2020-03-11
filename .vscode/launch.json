@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python: CTS",
             "type": "python",
             "request": "launch",
@@ -25,7 +32,10 @@
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "0"
             },
-            "args": ["--log", "DEBUG"],
+            "args": [
+                "--log",
+                "DEBUG"
+            ],
             "gevent": true,
             "jinja": true
         }

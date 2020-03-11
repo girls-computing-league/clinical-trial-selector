@@ -38,9 +38,10 @@ markdown:
         possible_loincs: string [1..*]
         possible_units: string [1..*]
     }
-    class labtests <<module>> {
-        alias_test_map: <<dict>> string->LabTest
-        loinc_test_map: <<dict>> string->LabTest
+    class labs <<static>> {
+        by_name: <<dict>> str->LabTest
+        by_alias: <<dict>> str->LabTest
+        by_loinc: <<dict>> str->LabTest
         alias_regex: regex
         criteria_regex: regex
         create_maps()
@@ -57,6 +58,6 @@ markdown:
     Trial *-- "~* filters" TestFilter 
     Trial *-- "~* criteria" Criterion 
     TestFilter --> "test" LabTest
-    labtests *-- "~* name_test_map" LabTest : <<dict>>
+    labs *-- "~* tests" LabTest 
 @enduml
 ```
