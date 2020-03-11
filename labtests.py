@@ -24,6 +24,7 @@ class labs:
     by_alias = {}
     by_loinc = {}
     alias_regex = {}
+    criteria_regex = {}
 
     @classmethod
     def create_maps(cls):
@@ -35,6 +36,12 @@ class labs:
                 cls.by_alias[alias] = test
             for loinc in test.loincs:
                 cls.by_loinc[loinc] = test
-        cls.alias_regex = re.compile(f"({'|'.join(all_aliases)})")
+        alias_pattern  = f"({'|'.join(all_aliases)})"
+        cls.alias_regex = re.compile(alias_pattern, re.IGNORECASE)
+        abbreviation_pattern = "(?:\(\w+\))?"
+        compare_pattern = "(<|<=|=|>=|>)"
+        number_pattern = "(\d+(?:,\d{3})*(?:.\d*)?)"
+        combined_pattern = "\s*".join([alias_pattern, abbreviation_pattern, compare_pattern, number_pattern])
+        cls.criteria_regex = re.compile(combined_pattern, re.IGNORECASE)
     
 labs.create_maps()
