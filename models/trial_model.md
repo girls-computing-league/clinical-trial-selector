@@ -42,7 +42,7 @@ markdown:
         alias_test_map: <<dict>> string->LabTest
         loinc_test_map: <<dict>> string->LabTest
         alias_regex: regex
-        criteria_regex: regexgit status
+        criteria_regex: regex
         create_maps()
         create_regex()
     }
@@ -58,4 +58,5 @@ markdown:
     Trial *-- "~* criteria" Criterion 
     TestFilter --> "test" LabTest
     labtests *-- "~* name_test_map" LabTest : <<dict>>
-@enduml```
+@enduml
+```
