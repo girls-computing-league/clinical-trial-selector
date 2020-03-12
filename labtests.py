@@ -46,7 +46,7 @@ class labs:
         compare_pattern = "(<|<=|=|>=|>|≥)"
         number_pattern = "(\d+(?:,\d{3})*(?:.\d*)?)"
         combined_pattern = "\s*".join([alias_pattern, abbreviation_pattern, compare_pattern, number_pattern])
-        cls.criteria_regex = re.compile(combined_pattern, re.IGNORECASE)
+        cls.criteria_regex = re.compile(f"({combined_pattern})", re.IGNORECASE)
     
 labs.create_maps()
 labs.create_regex()
