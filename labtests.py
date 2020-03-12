@@ -32,15 +32,15 @@ class labs:
     def create_maps(cls):
         for test in cls.tests:
             cls.by_name[test.name] = test
-            _all_aliases.extend(test.aliases)
+            cls._all_aliases.extend(test.aliases)
             for alias in test.aliases:
                 cls.by_alias[alias] = test
             for loinc in test.loincs:
                 cls.by_loinc[loinc] = test
 
     @classmethod
-    def create_regext(cls):
-        alias_pattern  = f"({'|'.join(_all_aliases)})"
+    def create_regex(cls):
+        alias_pattern  = f"({'|'.join(cls._all_aliases)})"
         cls.alias_regex = re.compile(alias_pattern, re.IGNORECASE)
         abbreviation_pattern = "(?:\(\w+\))?"
         compare_pattern = "(<|<=|=|>=|>|≥)"
