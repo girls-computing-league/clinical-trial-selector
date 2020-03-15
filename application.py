@@ -50,6 +50,7 @@ log_level = args.get("log", app.config["CTS_LOGLEVEL"]).upper()
 
 logging.getLogger().setLevel(log_level)
 logging.info("Clinical Trial Selector starting...")
+logging.warning(f"app.env = {app.env}")
 
 app.logger.setLevel(log_level)
 app.logger.info("Flask starting")
