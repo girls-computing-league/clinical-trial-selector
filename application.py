@@ -40,6 +40,9 @@ app.config.from_pyfile("secrets/default_keys.cfg")
 if args.get("local", app.env) == "development":
     app.config.from_pyfile("config/local.cfg")
     app.config.from_pyfile("secrets/local_keys.cfg")
+elif app.env == "test":
+    app.config.from_pyfile("config/test_aws.cfg")
+    app.config.from_pyfile("secrets/test_aws_keys.cfg")
 else:
     app.config.from_pyfile("config/aws.cfg")
     app.config.from_pyfile("secrets/aws_keys.cfg")
@@ -78,42 +81,29 @@ def authenticate(source):
     app.logger.info(f"Authenticating via {source.upper()}...")
     return getattr(oauth, source).authorize_redirect(f'{callback_urlbase}/{source}redirect')
 
-@app.route('/cmsredirect')
-def cmsredirect():
-    app.logger.info("Redirected from CMS authentication")
-    resp = oauth.cms.authorize_access_token()
-    combined = session.get("combined_patient", hack.CombinedPatient())
-    session['cms_access_token'] = resp['access_token']
-    session['cms_patient'] = resp['patient']
-    session.pop("trials", None)
-    pat_token = {"mrn": resp["patient"], "token": resp["access_token"]}
-    pat = hack.CMSPatient(resp['patient'], pat_token)
-    pat.load_demographics()
-    session['cms_gender'] = pat.gender
-    session['cms_birthdate'] = pat.birthdate
-    session['cms_name'] = pat.name
-    combined.CMSPatient = pat
-    combined.loaded = False
-    session['combined_patient'] = combined
-    return redirect('/')
-
-@app.route('/varedirect')
-def varedirect():
-    app.logger.info("Redirected from VA authentication")
-    resp = oauth.va.authorize_access_token()
+@app.route('/<source>redirect')
+def oauth_redirect(source):
+    app.logger.info(f"Redirected from {source.upper()} authentication")
+    resp = getattr(oauth,source).authorize_access_token()
     app.logger.debug(f"Response: {resp}")
     combined = session.get("combined_patient", hack.CombinedPatient())
-    session['va_access_token'] = resp['access_token']
-    session['va_patient'] = resp['patient']
+    session[f'{source}_access_token'] = resp['access_token']
+    session[f'{source}_patient'] = resp['patient']
     session.pop("trials", None)
     pat_token = {"mrn": resp["patient"], "token": resp["access_token"]}
-    pat = hack.Patient(resp['patient'], pat_token)
+    if source == 'va':
+        pat = hack.Patient(resp['patient'], pat_token)
+    else:
+        pat = hack.CMSPatient(resp['patient'], pat_token)
     pat.load_demographics()
-    session['va_gender'] = pat.gender
-    session['va_birthdate'] = pat.birthdate
-    session['va_name'] = pat.name
-    session['va_zipcode'] = pat.zipcode
-    combined.VAPatient = pat
+    session[f'{source}_gender'] = pat.gender
+    session[f'{source}_birthdate'] = pat.birthdate
+    session[f'{source}_name'] = pat.name
+    if source == 'va':
+        session[f'va_zipcode'] = pat.zipcode
+        combined.VAPatient = pat
+    else:
+        combined.CMSPatient = pat
     combined.loaded = False
     session['combined_patient'] = combined
     return redirect('/')
@@ -141,7 +131,7 @@ def getInfo():
 
     if patient_id is not None and token is not None:
         session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
-        print("FROM SESSION", session['Laboratory_Results'])
+        app.logger.debug("FROM SESSION", session['Laboratory_Results'])
     socketio.emit(event_name, {"data": 95}, room=session.sid)
     socketio.emit('disconnect', {"data": 100}, room=session.sid)
 
