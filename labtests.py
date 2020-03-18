@@ -14,7 +14,7 @@ class labs:
         LabTest("hemoglobin", 
             aliases=["hgb"], 
             loincs=["718-7"], 
-            units=["mg/dl"]),
+            units=["g/dL"]),
         LabTest("platelets", 
             aliases=["plt", "platelet count"], 
             loincs=["777-3"], 

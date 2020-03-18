@@ -27,6 +27,7 @@ markdown:
         description: text
     }
     class TestFilter {
+        test_name: string
         comparison: function
         threshold: float
         filter_string: string
@@ -48,16 +49,15 @@ markdown:
         create_regex()
     }
     class TestResult {
+        test_name: string
         date: dateTime
         value: float
     }
 
     CombinedPatient *-- "~* trials" Trial
     CombinedPatient *-- "~* results" TestResult
-    TestResult --> "test" LabTest
     Trial *-- "~* filters" TestFilter 
     Trial *-- "~* criteria" Criterion 
-    TestFilter --> "test" LabTest
     labs *-- "~* tests" LabTest 
 @enduml
 ```

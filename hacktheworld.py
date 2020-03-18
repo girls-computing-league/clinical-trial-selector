@@ -1,6 +1,4 @@
 import patient as pt
-import importlib
-importlib.reload(pt)
 import logging
 import sys
 import umls
@@ -98,6 +96,9 @@ class Patient:
     
     def snomed2ncit(self, code_snomed):
         return self.code2ncit(code_snomed, self.codes_snomed, "SNOMEDCT_US")
+
+    def load_test_results(self):
+        pass
     
 class CMSPatient(Patient):
 

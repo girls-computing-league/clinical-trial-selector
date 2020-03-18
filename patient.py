@@ -9,6 +9,7 @@ from typing import Dict, List, Any, Tuple, Union
 import concurrent.futures as futures
 from gevent import Greenlet, spawn, iwait
 from pprint import pformat
+from apis import VaApi
 
 client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
 
@@ -161,6 +162,7 @@ def get_lab_observations_by_patient(patient_id, token):
     lab_results = {}
     while len(lab_results) != 3 and current_url is not None:
         observations = get_api(token, url=current_url)
+        logging.debug(f"Total observations = {observations.get('total')}")
 
         # extract values from observations.
         for entry in observations.get('entry'):
