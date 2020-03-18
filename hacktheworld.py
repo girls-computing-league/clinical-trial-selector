@@ -130,12 +130,12 @@ class CMSPatient(Patient):
         headers = {"Authorization": "Bearer {}".format(self.token)}
         res = req.get(url, headers=headers)
         fhir = res.json()
+        self.PatientJSON = res.text
+        logging.debug("FHIR: {}".format(self.PatientJSON))
         self.gender = fhir["gender"]
         self.birthdate = fhir["birthDate"]
         name = fhir["name"][0]
         self.name = "{} {}".format(name["given"][0], name["family"])
-        self.PatientJSON = res.text
-        logging.debug("FHIR: {}".format(self.PatientJSON))
         logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def load_codes(self):
