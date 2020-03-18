@@ -15,7 +15,10 @@ class Api(ABC):
 
 class VaApi(Api):
 
-    base_url = app.config["VA_API_HEALTH_BASE_URL"]
+    def __init__(self, id, token):
+        
+        base_url = app.config["VA_API_HEALTH_BASE_URL"]
+        pass
 
     def get_lab_results(self) -> Iterable[dict]:
         for resource in self._get_fhir_bundle("Observation"):
