@@ -1,6 +1,7 @@
+from typing import Iterator
 from apis import Api
 
-def get_bundle(api: Api, endpoint, params=None, count=100) -> Iterable[dict]:
+def get_bundle(api: Api, endpoint, params=None, count=100) -> Iterator[dict]:
     url = f"{api.base_url}{endpoint}?patient={api.id}&_count={count}"
     while url is not None:
         bundle = api.get(url, params)
@@ -14,6 +15,6 @@ def get_bundle(api: Api, endpoint, params=None, count=100) -> Iterable[dict]:
                 url = link.get('url')
                 break
 
-def get_lab_results(api: Api) -> Iterable[dict]:
+def get_lab_results(api: Api) -> Iterator[dict]:
     for resource in get_bundle(api, "Observation"):
         pass

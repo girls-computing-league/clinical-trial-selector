@@ -1,3 +1,4 @@
+from typing import Iterator
 from flask import current_app as app
 import requests as req
 from abc import ABC, abstractmethod
@@ -20,7 +21,7 @@ class VaApi(Api):
         base_url = app.config["VA_API_HEALTH_BASE_URL"]
         pass
 
-    def get_lab_results(self) -> Iterable[dict]:
+    def get_lab_results(self) -> Iterator[dict]:
         for resource in self._get_fhir_bundle("Observation"):
             yield resource
 
