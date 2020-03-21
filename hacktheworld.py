@@ -3,21 +3,25 @@ import logging
 import sys
 import umls
 import requests as req
+from typing import Dict
 from datetime import date
 from distances import distance
 from zipcode import Zipcode
 from flask import current_app as app
+from apis import VaApi
+from fhir import Observation
 
 import json
 
 class Patient:
-    def __init__(self, sub, pat_token):
+    def __init__(self, sub: str, pat_token: Dict[str, str]):
         #logging.getLogger().setLevel(logging.DEBUG)
         self.sub = sub
         self.mrn = pat_token["mrn"]
         self.token = pat_token["token"]
         self.auth = umls.Authentication(app.config["UMLS_API_KEY"])
         self.tgt = self.auth.gettgt()
+        self.api: VaApi = VaApi(self.mrn, self.token)
 
     def load_demographics(self):
         self.gender, self.birthdate, self.name, self.zipcode, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
@@ -33,9 +37,9 @@ class Patient:
 
     def load_codes(self):
         # self.codes, self.names = pt.find_all_codes(self.conditions)
-        self.codes_ncit = []
-        self.matches = []
-        self.codes_without_matches = []
+        self.codes_ncit: list = []
+        self.matches: list = []
+        self.codes_without_matches: list = []
         for code_snomed in self.codes_snomed:
             code_ncit = self.snomed2ncit(code_snomed)
             orig_desc = self.conditions[self.codes_snomed.index(code_snomed)]
@@ -47,7 +51,7 @@ class Patient:
 
     def find_trials(self):
         logging.info("Searching for trials...")
-        self.trials = []
+        self.trials: list = []
         #trials_json = pt.find_trials(self.codes)
         trials_json = pt.find_trials(self.codes_ncit, gender=self.gender, age=self.age)
         for trialset in trials_json:
@@ -97,21 +101,23 @@ class Patient:
     def snomed2ncit(self, code_snomed):
         return self.code2ncit(code_snomed, self.codes_snomed, "SNOMEDCT_US")
 
-    def load_test_results(self):
-        pass
+    def load_test_results(self) -> None:
+        obs: Observation
+        for obs in self.api.get_lab_results():
+            app.logger.debug(f"LOINC CODE = {obs.loinc}")
     
 class CMSPatient(Patient):
 
     def load_conditions(self):
-        self.codes_icd9 = []
+        self.codes_icd9: list = []
         url = "https://sandbox.bluebutton.cms.gov/v1/fhir/ExplanationOfBenefit"
         params = {"patient": self.mrn, "_count":"50"}
         headers = {"Authorization": "Bearer {}".format(self.token)}
         res = req.get(url, params=params, headers=headers)
         fhir = res.json()
         logging.debug("CONDITIONS JSON: {}".format(json.dumps(fhir)))
-        codes = []
-        names = []
+        codes: list = []
+        names: list = []
         for entry in fhir["entry"]:
             diags = entry["resource"]["diagnosis"]
             for diag in diags:
@@ -157,7 +163,7 @@ class CMSPatient(Patient):
 
 class PatientLoader:
     def __init__(self):
-        self.patients = []
+        self.patients: list = []
 
         # Load VA Patients
         va_tokens = pt.load_patients("va")
@@ -192,12 +198,12 @@ class Trial:
         self.sites = trial_json['sites']
         self.population = trial_json['study_population_description']
         self.diseases = trial_json['diseases']
-        self.filter_condition = []
+        self.filter_condition: list = []
 
 
 class CombinedPatient:
     def __init__(self):
-        self.VAPatient = None
+        self.VAPatient: Patient = None
         self.CMSPatient = None
         self.loaded = False
         self.clear_collections()
@@ -206,12 +212,12 @@ class CombinedPatient:
         self.filtered = False
     
     def clear_collections(self):
-        self.trials = []
-        self.ncit_codes = []
-        self.trials_by_ncit = []
-        self.ncit_without_trials = []
-        self.matches = []
-        self.codes_without_matches = []
+        self.trials: list = []
+        self.ncit_codes: list = []
+        self.trials_by_ncit: list = []
+        self.ncit_without_trials: list = []
+        self.matches: list = []
+        self.codes_without_matches: list = []
 
     def calculate_distances(self):
         db = Zipcode()

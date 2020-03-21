@@ -14,7 +14,7 @@ import logging, sys
 import ssl
 from flask_socketio import SocketIO, join_room
 from flask import Flask, session, redirect, render_template, request, flash, make_response
-from flask_session import Session
+from flask_session import Session 
 from flask_talisman import Talisman
 from authlib.integrations.flask_client import OAuth
 import hacktheworld as hack
@@ -26,7 +26,7 @@ from flask_wtf.csrf import CSRFError
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-args = {}
+args: dict = {}
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-l", "--local", help="Run application from localhost", action="store_const", const="development", default=argparse.SUPPRESS)
@@ -112,7 +112,7 @@ def oauth_redirect(source):
 @app.route('/getInfo', methods=['POST'])
 def getInfo():
     app.logger.info("GETTING INFO NOW")
-    combined = session.get("combined_patient", hack.CombinedPatient())
+    combined: hack.CombinedPatient = session.get("combined_patient", hack.CombinedPatient())
     auts = authentications()
     socketio.emit(event_name, {"data": 15}, room=session.sid)
     if (not auts):
@@ -133,6 +133,7 @@ def getInfo():
     if patient_id is not None and token is not None:
         session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
         app.logger.debug("FROM SESSION", session['Laboratory_Results'])
+        combined.VAPatient.load_test_results()
     socketio.emit(event_name, {"data": 95}, room=session.sid)
     socketio.emit('disconnect', {"data": 100}, room=session.sid)
 

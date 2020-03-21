@@ -1,20 +1,29 @@
-from typing import Iterator
-from apis import Api
+from typing import Tuple, Optional, Dict, Any, Union
+from dateutil.parser import parse
+from datetime import datetime
 
-def get_bundle(api: Api, endpoint, params=None, count=100) -> Iterator[dict]:
-    url = f"{api.base_url}{endpoint}?patient={api.id}&_count={count}"
-    while url is not None:
-        bundle = api.get(url, params)
-        for entry in bundle.get('entry', []):
-            resource = entry.get('resource')
-            if resource is not None:
-                yield resource
-        url = None
-        for link in bundle.get('link', []):
-            if link.get('relation') == 'next':
-                url = link.get('url')
-                break
+class Observation:
+    
+    def __init__(self, resource : Dict[str, Any]):
+        self._resource = resource
+        self.loinc = self._extract_loinc()
+        value, unit = self._extract_value()
+        self.value = value
+        self.unit = unit
+        self.datetime = self._extract_datetime()
 
-def get_lab_results(api: Api) -> Iterator[dict]:
-    for resource in get_bundle(api, "Observation"):
-        pass
+    def _extract_loinc(self) -> Optional[str]:
+        for coding in self._resource.get('code',{}).get('coding',[]):
+            if coding.get('system') == "http://loinc.org":
+                return coding.get('code')
+        return None
+
+    def _extract_value(self) -> Tuple[Optional[float], Optional[str]]:
+        value_quantity: Dict[str, Any] = self._resource.get('valueQuantity', {})
+        return value_quantity.get('value'), value_quantity.get('code')
+
+    def _extract_datetime(self) -> Optional[datetime]:
+        iso = self._resource.get('effectiveDateTime')
+        if not iso:
+            return None
+        return parse(iso)

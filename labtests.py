@@ -20,13 +20,13 @@ class labs:
             loincs=["777-3"], 
             units=["cells/microliter"])
     ]
-    by_name = {}
-    by_alias = {}
-    by_loinc = {}
-    alias_regex = {}
-    criteria_regex = {}
+    by_name: dict = {}
+    by_alias: dict = {}
+    by_loinc: dict = {}
+    alias_regex: dict = {}
+    criteria_regex: dict = {}
 
-    _all_aliases = []
+    _all_aliases: list = []
 
     @classmethod
     def create_maps(cls):

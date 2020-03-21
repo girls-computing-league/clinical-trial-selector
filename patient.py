@@ -5,7 +5,7 @@ import logging
 import re
 import boto3, botocore
 from jsonpath_rw_ext import parse
-from typing import Dict, List, Any, Tuple, Union
+from typing import Dict, List, Any, Tuple, Union, Optional
 import concurrent.futures as futures
 from gevent import Greenlet, spawn, iwait
 from pprint import pformat
@@ -86,8 +86,8 @@ def conditions_list(patients, index):
 def load_conditions(mrn, token):
     more_pages = True
     url = CONDITIONS_URL+mrn
-    conditions = []
-    codes_snomed = []
+    conditions: list = []
+    codes_snomed: list = []
     while more_pages:
         api_res = get_api(token, url)
         logging.debug("Conditions JSON: {}".format(json.dumps(api_res)))
@@ -146,8 +146,8 @@ def find_trials(ncit_codes, gender="unknown", age=0):
 
 
 def find_all_codes(disease_list):
-    codes = []
-    names = []
+    codes: list = []
+    names: list = []
     for disease in disease_list:
         codelist, nameslist = find_codes(disease)
         codes += codelist
@@ -157,9 +157,9 @@ def find_all_codes(disease_list):
 
 def get_lab_observations_by_patient(patient_id, token):
     # loinc_codes = ','.join(list(LOINC_CODES.keys()))
-    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=100'
+    current_url: Optional[str] = OBSERVATION_URL + f'?patient={patient_id}&_count=100'
 
-    lab_results = {}
+    lab_results: dict = {}
     while len(lab_results) != 3 and current_url is not None:
         observations = get_api(token, url=current_url)
         logging.debug(f"Total observations = {observations.get('total')}")
@@ -191,16 +191,16 @@ def get_lab_observations_by_patient(patient_id, token):
 
 
 def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
-                                 lab_results: Dict[str, Union[str, 'Trial']])\
-        -> Tuple[List[Dict[str, Union[str, 'Trial']]], List[Dict[str, Union[str, 'Trial']]]]:
+                                 lab_results: Dict[str, Any])\
+        -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     :param trials_by_ncit: List[dict]
     :param lab_results: dict
     :return: (List[dict], List[dict])
     """
     max_trials_in_future = 10
-    filtered_trials_by_ncit = []
-    excluded_trials_by_ncit = []
+    filtered_trials_by_ncit: list = []
+    excluded_trials_by_ncit: list = []
     trial_filter_cnt = 0
     # with futures.ThreadPoolExecutor(max_workers=75) as executor:
     tasks = {}
@@ -225,9 +225,9 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
         #     executor.submit(filter_trials_from_description, trial['trials'], lab_results): trial['ncit']
         #     for trial in trials_by_ncit
         # }
-        filtered = {}
-        excluded = {}
-        ncit_codes = {}
+        filtered: dict = {}
+        excluded: dict = {}
+        ncit_codes: dict = {}
         filtered_trials_by_ncit = []
         excluded_trials_by_ncit = []
         # for future in futures.as_completed(tasks):
@@ -264,7 +264,7 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
     return filtered_trials_by_ncit, excluded_trials_by_ncit
 
 
-def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> Tuple[List['Trial'], List['Trial']]:
+def filter_trials_from_description(trials: List, lab_results: Dict) -> Tuple[list, list]:
     """
     :param trials: List[obj(Trail)]
     :param comparision_val: str
@@ -299,7 +299,7 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
     return filtered_trials, excluded_trials
 
 
-def find_conditions(trial: Dict) -> Dict:
+def find_conditions(trial: Any) -> Dict:
     match_type = 'hemoglobin|platelets|leukocytes'
     cell_types = ['hemoglobin', 'platelets', 'leukocytes']
     # parser = parse(f'$.eligibility.unstructured[?inclusion_indicator=true].description')
@@ -388,9 +388,9 @@ def convert_expressions(lab_value: str, condition: str):
     pattern = re.compile('(\s?[\>\=\<]+\s?\d+[\,\.]?\d*)')
     # if type(condition) is List:
     #     condition = condition[0]
-    condition = pattern.findall(condition)
-    if len(condition) == 0:
+    condition_reg = pattern.findall(condition)
+    if len(condition_reg) == 0:
         return "0", ""
-    condition = condition[0].replace(',', '')
+    condition = condition_reg[0].replace(',', '')
     lab_value = lab_value[0]
     return lab_value, condition
