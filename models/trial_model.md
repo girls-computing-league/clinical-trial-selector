@@ -10,12 +10,13 @@ markdown:
     class CombinedPatient {
         /included_trials: Trial [*]
         /excluded_trials: Trial [*]
+        latest_results: Dict[str,TestResult]
         filtered: bool
         filter_trials()
     }
     class Trial {
-        inclusion_criteria: Criterion [*]
-        exlusion_criteria: Criterion [*]
+        inclusions: Criterion [*]
+        exlusions: Criterion [*]
         filter_applied: bool
         excluded: bool
         filter_trial(TestResult [*])
@@ -23,7 +24,7 @@ markdown:
         apply_filters(TestResult [*])
     }
     class Criterion <<dict>> {
-        is_inclusion: bool
+        inclusion_indicator: bool
         description: text
     }
     class TestFilter {
@@ -59,7 +60,7 @@ markdown:
     CombinedPatient *-- "~* trials" Trial
     CombinedPatient *-- "~* results" TestResult
     Trial *-- "~* filters" TestFilter 
-    Trial *-- "~* criteria" Criterion 
+    Trial *-- "~* eligibility" Criterion 
     labs *-- "~* tests" LabTest 
 @enduml
 ```

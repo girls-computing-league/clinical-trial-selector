@@ -3,7 +3,8 @@ import logging
 import sys
 import umls
 import requests as req
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
+from mypy_extensions import TypedDict 
 from datetime import date
 from distances import distance
 from zipcode import Zipcode
@@ -12,7 +13,6 @@ from apis import VaApi
 from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
-
 import json
 
 class Patient:
@@ -202,15 +202,18 @@ class Trial:
         self.official = trial_json['official_title']
         self.summary = trial_json['brief_summary']
         self.description = trial_json['detail_description']
-        self.eligibility = trial_json['eligibility']['unstructured']
-        self.inclusions = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
-        self.exclusions = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
+        self.eligibility: Dict[str, Union[bool, str]] = trial_json['eligibility']['unstructured']
+        self.inclusions: Dict[str, Union[bool, str]] = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
+        self.exclusions: Dict[str, Union[bool, str]] = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
         self.measures = trial_json['outcome_measures']
         self.pi = trial_json['principal_investigator']
         self.sites = trial_json['sites']
         self.population = trial_json['study_population_description']
         self.diseases = trial_json['diseases']
         self.filter_condition: list = []
+
+    def determine_filters(self) -> None:
+        pass
 
 
 class CombinedPatient:
