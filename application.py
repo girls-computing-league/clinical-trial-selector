@@ -134,6 +134,8 @@ def getInfo():
         session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
         app.logger.debug("FROM SESSION", session['Laboratory_Results'])
         combined.VAPatient.load_test_results()
+        combined.results = combined.VAPatient.results
+        combined.latest_results = combined.VAPatient.latest_results
     socketio.emit(event_name, {"data": 95}, room=session.sid)
     socketio.emit('disconnect', {"data": 100}, room=session.sid)
 

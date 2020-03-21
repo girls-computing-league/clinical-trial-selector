@@ -16,10 +16,14 @@ class labs:
             aliases=["hgb"], 
             loincs=["718-7"], 
             units=["g/dL"]),
+        LabTest("leukocytes",
+            aliases = ["white blood count", "WBC"],
+            loincs = ["6690-2"],
+            units=["10*3/uL"]),
         LabTest("platelets", 
             aliases=["plt", "platelet count"], 
-            loincs=["777-3"], 
-            units=["cells/microliter"])
+            loincs=["777-3"],
+            units=["cells/microliter", "10*3/uL"])
     ]
     by_name: dict = {}
     by_alias: dict = {}

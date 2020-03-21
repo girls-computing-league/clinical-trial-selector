@@ -3,29 +3,29 @@
 
 {% block pt_main %}
 
-  {% if session["Laboratory_Results"] and trials_selection %}
+  {% if trials_selection and session["combined_patient"] and session["combined_patient"].latest_results.values() | length > 0  %}
+    {%- set results = session["combined_patient"].latest_results %}
     <div class="feature vads-u-margin-top--0" id="LaboratoryObservations">
-      <div><strong>Laboratory Results:</strong></div>
+      <div><strong>Latest Laboratory Results:</strong></div>
       <form method=post class="cts-launch-progress-bar" action="/filter_by_lab_results">
         {{ form.hidden_tag() }}
         <table class="vads-u-margin--0">
           <thead>
             <tr>
-              <th>Hemoglobin</th>
-              <th>Leukocytes</th>
-              <th>Platelets</th>
+              {% for cell_type in results.keys() %}
+                <th>{{ cell_type }}</th>
+                <th>Units</th>
+              {%- endfor %}
             </tr>
           </thead>
           <tbody>
             <tr>
-              {% for cell_type in ['hemoglobin', 'leukocytes','platelets'] %}
-                {% if session["Laboratory_Results"][cell_type] %}
+              {% for cell_type, result in results.items() %}
+                {% if result %}
                     <td class="page-header">
-                    {{ render_input(cell_type,
-                                    session["Laboratory_Results"][cell_type][0]|float|round(2)|string + ' ' + session["Laboratory_Results"][cell_type][1]
-                                    )
-                    }}
+                      {{ render_input(cell_type,result.value|float|round(2)|string) }}
                     </td>
+                    <td>{{ result.unit }}</td>
                 {% else %}
                     <td class="page-header"> NA </td>
                 {%- endif %}

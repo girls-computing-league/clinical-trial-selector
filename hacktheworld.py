@@ -25,6 +25,7 @@ class Patient:
         self.tgt = self.auth.gettgt()
         self.api = VaApi(self.mrn, self.token)
         self.results: List[TestResult] = []
+        self.latest_results: Dict[str, TestResult] = {}
 
     def load_demographics(self):
         self.gender, self.birthdate, self.name, self.zipcode, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
@@ -110,8 +111,12 @@ class Patient:
             app.logger.debug(f"LOINC CODE = {obs.loinc}")
             result: Optional[TestResult] = TestResult.from_observation(obs)
             if result is not None:
-                app.logger.debug(f"Result appended: {result.test_name} {result.value} {result.unit} on {result.datetime}")
+                app.logger.debug(f"Result added: {result.test_name} {result.value} {result.unit} on {result.datetime}")
                 self.results.append(result)
+                # Determine if result is the latest
+                existing_result = self.latest_results.get(result.test_name)
+                if existing_result is None or existing_result.datetime < result.datetime:
+                    self.latest_results[result.test_name] = result
 
 class CMSPatient(Patient):
 
@@ -219,12 +224,14 @@ class CombinedPatient:
         self.filtered = False
     
     def clear_collections(self):
-        self.trials: list = []
+        self.trials: List[Trial] = []
         self.ncit_codes: list = []
         self.trials_by_ncit: list = []
         self.ncit_without_trials: list = []
         self.matches: list = []
         self.codes_without_matches: list = []
+        self.results: List[TestResult] = []
+        self.latest_results: Dict[str, TestResult] = {}
 
     def calculate_distances(self):
         db = Zipcode()
@@ -249,6 +256,7 @@ class CombinedPatient:
         if self.VAPatient is not None:
             self.append_patient_data(self.VAPatient)
             self.calculate_distances()
+            self.results = self.VAPatient.results
         for code in self.ncit_codes:
             trials = []
             for trial in self.trials:
