@@ -4,7 +4,7 @@ import requests as req
 from abc import ABCMeta, abstractmethod
 import fhir
 
-class Api(metaclass = ABCMeta):
+class Api():
     
     url_config: str
 
@@ -38,7 +38,7 @@ class VaApi(FhirApi):
 
     url_config = "VA_API_HEALTH_BASE_URL"
 
-    def get_lab_results(self) -> Iterable[fhir.Observation]:
+    def get_observations(self) -> Iterable[fhir.Observation]:
         for resource in self.get_fhir_bundle("Observation"):
             yield fhir.Observation(resource)
 

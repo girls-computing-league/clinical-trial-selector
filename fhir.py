@@ -12,11 +12,11 @@ class Observation:
         self.unit = unit
         self.datetime = self._extract_datetime()
 
-    def _extract_loinc(self) -> Optional[str]:
+    def _extract_loinc(self) -> str:
         for coding in self._resource.get('code',{}).get('coding',[]):
             if coding.get('system') == "http://loinc.org":
                 return coding.get('code')
-        return None
+        return ""
 
     def _extract_value(self) -> Tuple[Optional[float], Optional[str]]:
         value_quantity: Dict[str, Any] = self._resource.get('valueQuantity', {})

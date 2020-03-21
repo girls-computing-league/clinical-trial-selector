@@ -19,7 +19,7 @@ markdown:
         filter_applied: bool
         excluded: bool
         filter_trial(TestResult [*])
-        determine_filters(TestSet)
+        determine_filters(LabTest [*])
         apply_filters(TestResult [*])
     }
     class Criterion <<dict>> {
@@ -52,6 +52,8 @@ markdown:
         test_name: string
         date: dateTime
         value: float
+        unit: str
+        {static} from_observation(Observation): TestResult
     }
 
     CombinedPatient *-- "~* trials" Trial

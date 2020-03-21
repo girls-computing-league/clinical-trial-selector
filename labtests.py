@@ -1,16 +1,17 @@
 import re
+from typing import Dict, List, Set
 
 class LabTest:
 
-    def __init__(self, name: str, aliases=[], loincs=[], units=[]):
+    def __init__(self, name: str, aliases: List[str] = [], loincs: List[str] = [], units: List[str] = []):
         self.name = name
-        self.aliases = set(aliases)
+        self.aliases: Set[str] = set(aliases)
         self.aliases.add(name)
-        self.loincs = set(loincs)
-        self.units = set(units)
+        self.loincs: Set[str] = set(loincs)
+        self.units: Set[str] = set(units)
 
 class labs:
-    tests = [
+    tests: List[LabTest] = [
         LabTest("hemoglobin", 
             aliases=["hgb"], 
             loincs=["718-7"], 
@@ -22,14 +23,14 @@ class labs:
     ]
     by_name: dict = {}
     by_alias: dict = {}
-    by_loinc: dict = {}
+    by_loinc: Dict[str, LabTest] = {}
     alias_regex: dict = {}
     criteria_regex: dict = {}
 
     _all_aliases: list = []
 
     @classmethod
-    def create_maps(cls):
+    def create_maps(cls) -> None:
         for test in cls.tests:
             cls.by_name[test.name] = test
             cls._all_aliases.extend(test.aliases)

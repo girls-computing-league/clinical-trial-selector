@@ -3,13 +3,15 @@ import logging
 import sys
 import umls
 import requests as req
-from typing import Dict
+from typing import Dict, List, Optional
 from datetime import date
 from distances import distance
 from zipcode import Zipcode
 from flask import current_app as app
 from apis import VaApi
 from fhir import Observation
+from labtests import labs, LabTest
+from datetime import datetime
 
 import json
 
@@ -21,7 +23,8 @@ class Patient:
         self.token = pat_token["token"]
         self.auth = umls.Authentication(app.config["UMLS_API_KEY"])
         self.tgt = self.auth.gettgt()
-        self.api: VaApi = VaApi(self.mrn, self.token)
+        self.api = VaApi(self.mrn, self.token)
+        self.results: List[TestResult] = []
 
     def load_demographics(self):
         self.gender, self.birthdate, self.name, self.zipcode, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
@@ -102,10 +105,14 @@ class Patient:
         return self.code2ncit(code_snomed, self.codes_snomed, "SNOMEDCT_US")
 
     def load_test_results(self) -> None:
-        obs: Observation
-        for obs in self.api.get_lab_results():
+        self.results = []
+        for obs in self.api.get_observations():
             app.logger.debug(f"LOINC CODE = {obs.loinc}")
-    
+            result: Optional[TestResult] = TestResult.from_observation(obs)
+            if result is not None:
+                app.logger.debug(f"Result appended: {result.test_name} {result.value} {result.unit} on {result.datetime}")
+                self.results.append(result)
+
 class CMSPatient(Patient):
 
     def load_conditions(self):
@@ -265,3 +272,21 @@ class CombinedPatient:
                 self.ncit_codes.append(code)
         self.matches += patient.matches
         self.codes_without_matches += patient.codes_without_matches
+
+class TestResult:
+
+    def __init__(self, test_name: str, datetime: datetime, value: float, unit: str):
+        self.test_name = test_name
+        self.datetime = datetime
+        self.value = value
+        self.unit = unit
+
+    @classmethod
+    def from_observation(cls, obs: Observation) -> Optional['TestResult']:
+        # Returns None if observation is not the result of a test we are tracking
+        test: Optional[LabTest] = labs.by_loinc.get(obs.loinc)
+        if test is not None and obs.datetime is not None and obs.value is not None and obs.unit is not None:
+            return cls(test.name, obs.datetime, obs.value, obs.unit)
+        else:
+            return None
+
