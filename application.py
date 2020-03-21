@@ -25,6 +25,7 @@ from flask_wtf import FlaskForm, CSRFProtect
 from flask_wtf.csrf import CSRFError
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from labtests import labs
 
 args: dict = {}
 if __name__ == "__main__":
@@ -75,7 +76,7 @@ def authentications():
 
 @app.route('/')
 def showtrials():
-    return render_template('welcome.html', form=FilterForm(), trials_selection="current")
+    return render_template('welcome.html', form=FilterForm(), trials_selection="current", labs = labs)
 
 @app.route("/authenticate/<source>", methods=["POST"])
 def authenticate(source):

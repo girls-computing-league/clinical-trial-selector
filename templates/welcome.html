@@ -12,18 +12,19 @@
         <table class="vads-u-margin--0">
           <thead>
             <tr>
-              {% for cell_type in results.keys() %}
-                <th>{{ cell_type }}</th>
+              {% for test in labs.tests %}
+                <th>{{ test.name | title }}</th>
                 <th>Units</th>
               {%- endfor %}
             </tr>
           </thead>
           <tbody>
             <tr>
-              {% for cell_type, result in results.items() %}
-                {% if result %}
+              {% for test in labs.tests %}
+                {% if results[test.name] %}
+                    {%- set result = results[test.name] %}
                     <td class="page-header">
-                      {{ render_input(cell_type,result.value|float|round(2)|string) }}
+                      {{ render_input(test.name,result.value|float|round(2)|string) }}
                     </td>
                     <td>{{ result.unit }}</td>
                 {% else %}
