@@ -18,7 +18,6 @@ from flask_session import Session
 from flask_talisman import Talisman
 from authlib.integrations.flask_client import OAuth
 import hacktheworld as hack
-from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
                                EXPORT_URL, submit_get_patients_job, get_infected_patients_info)
 from flask_wtf import FlaskForm, CSRFProtect
@@ -36,8 +35,6 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
 
 app = Flask(__name__)
-app.config.from_pyfile("config/default.cfg")
-app.config.from_pyfile("secrets/default_keys.cfg")
 if args.get("local", app.env) == "development":
     app.config.from_pyfile("config/local.cfg")
     app.config.from_pyfile("secrets/local_keys.cfg")
@@ -48,6 +45,10 @@ else:
     app.config.from_pyfile("config/aws.cfg")
     app.config.from_pyfile("secrets/aws_keys.cfg")
 log_level = args.get("log", app.config["CTS_LOGLEVEL"]).upper()
+app.config.from_pyfile("config/default.cfg")
+app.config.from_pyfile("secrets/default_keys.cfg")
+
+from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 
 logging.getLogger().setLevel(log_level)
 logging.info("Clinical Trial Selector starting...")

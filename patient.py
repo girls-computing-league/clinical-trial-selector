@@ -10,16 +10,18 @@ import concurrent.futures as futures
 from gevent import Greenlet, spawn, iwait
 from pprint import pformat
 from apis import VaApi
+from flask import current_app as app
 
 client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
 
-# BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
-BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
-DEMOGRAPHICS_URL = BASE_URL + "Patient/"
-CONDITIONS_URL = BASE_URL + "Condition?_count=50&patient="
-DISEASES_URL = "https://clinicaltrialsapi.cancer.gov/v1/diseases"
-TRIALS_URL = "https://clinicaltrialsapi.cancer.gov/v1/clinical-trials"
-OBSERVATION_URL = BASE_URL + 'Observation'
+# # BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
+# BASE_URL = app.config["VA_API_BASE_URL"] + "services/fhir/v0/argonaut/data-query/"
+# #BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
+# DEMOGRAPHICS_URL = BASE_URL + "Patient/"
+# CONDITIONS_URL = BASE_URL + "Condition?_count=50&patient="
+# DISEASES_URL = "https://clinicaltrialsapi.cancer.gov/v1/diseases"
+# TRIALS_URL = "https://clinicaltrialsapi.cancer.gov/v1/clinical-trials"
+# OBSERVATION_URL = BASE_URL + 'Observation'
 
 trial_filter_cnt = 0
 
@@ -49,7 +51,7 @@ def filepaths_gen(direct="va"):
     return(acc_dir.glob("*.json"))
 
 def load_demographics(mrn, token):
-    url = DEMOGRAPHICS_URL + mrn
+    url = app.config['VA_DEMOGRAPHICS_URL'] + mrn
     api_res = get_api(token, url)
     logging.debug("Patient JSON: " + json.dumps(api_res))
     return api_res["gender"], api_res["birthDate"], api_res["name"][0]["text"], api_res["address"][0]["postalCode"], json.dumps(api_res)
@@ -85,7 +87,7 @@ def conditions_list(patients, index):
 
 def load_conditions(mrn, token):
     more_pages = True
-    url = CONDITIONS_URL+mrn
+    url = app.config['VA_CONDITIONS_URL']+mrn
     conditions: list = []
     codes_snomed: list = []
     while more_pages:
@@ -111,7 +113,7 @@ def load_conditions(mrn, token):
         return conditions, codes_snomed
 
 def find_codes(disease):
-    res = req.get(DISEASES_URL, params={"name": disease})
+    res = req.get(app.config['DISEASES_URL'], params={"name": disease})
     codes_api = res.json()
     codes = []
     names = []
@@ -135,7 +137,7 @@ def find_trials(ncit_codes, gender="unknown", age=0):
             if (age != 0):
                 params["eligibility.structured.max_age_in_years_gte"] = age
                 params["eligibility.structured.min_age_in_years_lte"] = age
-            res = req.get(TRIALS_URL, params=params)
+            res = req.get(app.config['TRIALS_URL'], params=params)
             res_dict = res.json()
             trialset = {"code_ncit": ncit, "trialset": res_dict}
             total = res_dict["total"]
@@ -157,7 +159,7 @@ def find_all_codes(disease_list):
 
 def get_lab_observations_by_patient(patient_id, token):
     # loinc_codes = ','.join(list(LOINC_CODES.keys()))
-    current_url: Optional[str] = OBSERVATION_URL + f'?patient={patient_id}&_count=100'
+    current_url: Optional[str] = app.config['VA_OBSERVATION_URL'] + f'?patient={patient_id}&_count=100'
 
     lab_results: dict = {}
     while len(lab_results) != 3 and current_url is not None:
