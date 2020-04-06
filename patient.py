@@ -338,40 +338,41 @@ def split_description(description, limit):
 
 
 def get_mapping_with_aws_comprehend(descriptions: List) -> Dict:
-    def get_description():
-        data = ''
-        limit = 19990
-        for match in descriptions:
-            description = match.replace('\r\n', ' ').lower().replace(',', '')
-            if len(description) > limit:
-                for split in split_description(description, limit):
-                    yield split
-            elif len(data) + len(description) > limit:
-                yield data
-                data = description
-            else:
-                data += description + " and "
-        yield data
+    return {}
+    # def get_description():
+    #     data = ''
+    #     limit = 19990
+    #     for match in descriptions:
+    #         description = match.replace('\r\n', ' ').lower().replace(',', '')
+    #         if len(description) > limit:
+    #             for split in split_description(description, limit):
+    #                 yield split
+    #         elif len(data) + len(description) > limit:
+    #             yield data
+    #             data = description
+    #         else:
+    #             data += description + " and "
+    #     yield data
 
-    conditions = {}
-    cell_types = ['hemoglobin', 'platelets', 'leukocytes']
-    for description in get_description():
-        try:
-            entities = client.detect_entities_v2(Text=description)['Entities']
-            logging.debug(f"Description text send to AWS: {description}")
-            logging.debug("Entities returned:")
-            for entity in entities:
-                logging.debug(f"Entity text: {entity['Text']} ({entity['Category']}/{entity['Type']})")
-                entity_type = entity['Text']
-                if any(cell_type == entity_type.lower() for cell_type in cell_types) \
-                    and entity.get('Attributes') \
-                    and entity['Attributes'][0]['Type'] == "TEST_VALUE":
-                    conditions[entity_type] = entity_type + entity['Attributes'][0]['Text']
-                    logging.debug(f"Entity attribute text: {entity['Attributes'][0]['Text']}")
-                    logging.debug(f"Entity attribute type: {entity['Attributes'][0]['Type']}")
-        except Exception as exc:
-            logging.warn(f'Failed to retrieve aws comprehend entities: {str(exc)}')
-    return conditions
+    # conditions = {}
+    # cell_types = ['hemoglobin', 'platelets', 'leukocytes']
+    # for description in get_description():
+    #     try:
+    #         entities = client.detect_entities_v2(Text=description)['Entities']
+    #         logging.debug(f"Description text send to AWS: {description}")
+    #         logging.debug("Entities returned:")
+    #         for entity in entities:
+    #             logging.debug(f"Entity text: {entity['Text']} ({entity['Category']}/{entity['Type']})")
+    #             entity_type = entity['Text']
+    #             if any(cell_type == entity_type.lower() for cell_type in cell_types) \
+    #                 and entity.get('Attributes') \
+    #                 and entity['Attributes'][0]['Type'] == "TEST_VALUE":
+    #                 conditions[entity_type] = entity_type + entity['Attributes'][0]['Text']
+    #                 logging.debug(f"Entity attribute text: {entity['Attributes'][0]['Text']}")
+    #                 logging.debug(f"Entity attribute type: {entity['Attributes'][0]['Type']}")
+    #     except Exception as exc:
+    #         logging.warn(f'Failed to retrieve aws comprehend entities: {str(exc)}')
+    # return conditions
 
 
 # TODO conversion
@@ -392,5 +393,5 @@ def convert_expressions(lab_value: str, condition: str):
     if len(condition_reg) == 0:
         return "0", ""
     condition = condition_reg[0].replace(',', '')
-    lab_value = lab_value[0]
+#    lab_value = lab_value[0]
     return lab_value, condition

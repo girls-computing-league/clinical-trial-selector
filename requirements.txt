@@ -35,6 +35,7 @@ jsonpath-rw==1.4.0
 jsonpath-rw-ext==1.2.2
 lxml==4.3.4
 MarkupSafe==1.1.1
+mypy_extensions==0.4.3
 ndjson==0.2.0
 parso==0.5.1
 pbr==5.4.2

@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Pattern
 
 class LabTest:
 
@@ -15,21 +15,26 @@ class labs:
         LabTest("hemoglobin", 
             aliases=["hgb"], 
             loincs=["718-7"], 
-            units=["g/dL"]),
+            units=["g/dl", "gm/dl", "g/l", "mmol/l", "g/ul", "mg/dl", "gram/deciliter", "gr/dl"]),
         LabTest("leukocytes",
-            aliases = ["white blood count", "WBC"],
+            aliases = ["white blood", 
+                "wbc", 
+                "white blood cells", 
+                "white blood cell",
+                "white blood cell count",
+                "white blood count"],
             loincs = ["6690-2"],
-            units=["10*3/uL"]),
+            units=["10*3/uL", "/mcL", "/mm^3", "/ul", "cells/mm^3", "/mm(3)", "cells/uL", "/μl", "/ μl", "k/mcL", "x 10^9/l", "x 10^6 cells/ml"]),
         LabTest("platelets", 
-            aliases=["plt", "platelet count"], 
+            aliases=["plt", "platelet", "platelet count"], 
             loincs=["777-3"],
-            units=["cells/microliter", "10*3/uL"])
+            units=["cells/microliter", "10*3/uL", "/mcL", "/mm^3", "/ul", "cells/mm^3", "/mm(3)", "cells/uL", "/μl", "/ μl", "K/mcL", "x 10^9/l", "x 10^6 cells/ml", "/microliter", "x 109/L", "platelet/mm^3", "k/ul", "/mm3", "cell/ul", "/microl", "x 10E3/µL", "/mm³", "per mm^3"])
     ]
     by_name: dict = {}
     by_alias: dict = {}
     by_loinc: Dict[str, LabTest] = {}
-    alias_regex: dict = {}
-    criteria_regex: dict = {}
+    alias_regex: Pattern
+    criteria_regex: Pattern
 
     _all_aliases: list = []
 
@@ -48,9 +53,11 @@ class labs:
         alias_pattern  = f"({'|'.join(cls._all_aliases)})"
         cls.alias_regex = re.compile(alias_pattern, re.IGNORECASE)
         abbreviation_pattern = "(?:\(\w+\))?"
-        compare_pattern = "(<|<=|=|>=|>|≥)"
-        number_pattern = "(\d+(?:,\d{3})*(?:.\d*)?)"
-        combined_pattern = "\s*".join([alias_pattern, abbreviation_pattern, compare_pattern, number_pattern])
+        equality_pattern = "(?:\:|of|is|must be|value|level|level of|count|counts)?"
+        compare_pattern = "(<|<=|=<|=|>=|=>|>|≥|greater than|less than|greater than or equal to|above|more than|less than|more than or equal to|less than or equal to)"
+        number_pattern = "(\d+(?:,\d{3})*(?:.\d+)?)"
+        unit_pattern = "(\S+\s+\S+\s+\S+)"
+        combined_pattern = "\s*".join([alias_pattern, abbreviation_pattern, equality_pattern, compare_pattern, number_pattern, unit_pattern])
         cls.criteria_regex = re.compile(f"({combined_pattern})", re.IGNORECASE)
     
 labs.create_maps()

@@ -137,6 +137,8 @@ def getInfo():
         combined.VAPatient.load_test_results()
         combined.results = combined.VAPatient.results
         combined.latest_results = combined.VAPatient.latest_results
+        # for trial in combined.trials:
+        #     trial.determine_filters()
     socketio.emit(event_name, {"data": 95}, room=session.sid)
     socketio.emit('disconnect', {"data": 100}, room=session.sid)
 
@@ -144,7 +146,7 @@ def getInfo():
 
 @app.route('/trials')
 def show_all_trials():
-    return render_template('welcome.html', form=FilterForm(), trials_selection="current")
+    return render_template('welcome.html', form=FilterForm(), trials_selection="current", labs=labs)
 
 @app.route('/excluded')
 def show_excluded():
@@ -204,7 +206,8 @@ def filter_by_lab_results():
     if form.validate_on_submit():
         for key, value in form.data.items():
             if key != "csrf_token":
-                lab_results = {key: (value.split()[0], value.split()[1])}
+                # lab_results = {key: (value.split()[0], value.split()[1])}
+                lab_results = {key: value}
     else:
         lab_results = session['Laboratory_Results']
 

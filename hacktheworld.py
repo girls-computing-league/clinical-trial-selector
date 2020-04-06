@@ -3,7 +3,7 @@ import logging
 import sys
 import umls
 import requests as req
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Iterable, Match, Set
 from mypy_extensions import TypedDict 
 from datetime import date
 from distances import distance
@@ -14,6 +14,7 @@ from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
 import json
+import re
 
 class Patient:
     def __init__(self, sub: str, pat_token: Dict[str, str]):
@@ -193,6 +194,10 @@ class PatientLoader:
         for patient in self.patients:
             patient.load_all()
 
+class Criterion(TypedDict): 
+    inclusion_indicator: bool
+    description: str
+
 class Trial:
     def __init__(self, trial_json, code_ncit):
         self.trial_json = trial_json
@@ -202,9 +207,9 @@ class Trial:
         self.official = trial_json['official_title']
         self.summary = trial_json['brief_summary']
         self.description = trial_json['detail_description']
-        self.eligibility: Dict[str, Union[bool, str]] = trial_json['eligibility']['unstructured']
-        self.inclusions: Dict[str, Union[bool, str]] = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
-        self.exclusions: Dict[str, Union[bool, str]] = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
+        self.eligibility: List[Criterion] = trial_json['eligibility']['unstructured']
+        self.inclusions: List[str] = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
+        self.exclusions: List[str] = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
         self.measures = trial_json['outcome_measures']
         self.pi = trial_json['principal_investigator']
         self.sites = trial_json['sites']
@@ -213,8 +218,18 @@ class Trial:
         self.filter_condition: list = []
 
     def determine_filters(self) -> None:
-        pass
-
+        s: Set[str] = set()
+        for text in self.inclusions:
+            alias_match = labs.alias_regex.findall(text)
+            if alias_match:
+                criteria_match = labs.criteria_regex.findall(text)
+                if criteria_match:
+                    for group in criteria_match:
+                        if labs.by_alias[group[1].lower()].name == "platelets":
+                            s.add(group[4])
+        for unit in s:
+            app.logger.debug(f"leukocytes unit: {unit}")
+                    
 
 class CombinedPatient:
     def __init__(self):

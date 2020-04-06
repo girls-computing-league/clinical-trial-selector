@@ -15,8 +15,8 @@ markdown:
         filter_trials()
     }
     class Trial {
-        inclusions: Criterion [*]
-        exlusions: Criterion [*]
+        inclusions: text [*]
+        exlusions: text [*]
         filter_applied: bool
         excluded: bool
         filter_trial(TestResult [*])
