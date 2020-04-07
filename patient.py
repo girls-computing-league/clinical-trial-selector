@@ -51,7 +51,7 @@ def filepaths_gen(direct="va"):
     return(acc_dir.glob("*.json"))
 
 def load_demographics(mrn, token):
-    url = app.config['VA_DEMOGRAPHICS_URL'] + mrn[0:10]
+    url = app.config['VA_DEMOGRAPHICS_URL'] + mrn
     api_res = get_api(token, url)
     logging.debug("Patient JSON: " + json.dumps(api_res))
     return api_res["gender"], api_res["birthDate"], api_res["name"][0]["text"], api_res["address"][0]["postalCode"], json.dumps(api_res)
