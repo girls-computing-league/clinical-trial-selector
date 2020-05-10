@@ -1,5 +1,5 @@
 # hackworld-poc
-Proof of Concept for Clinical Trials Selector
+Proof of Concept for Clinical Trial Selector
 
 ## Instructions to run the App locally
 

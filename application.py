@@ -1,5 +1,5 @@
 """
-Clinical Trials Selector
+Clinical Trial Selector
 """ 
 # Monkey patch needed for proper websocket behavior
 # Must be first line before any other imports
@@ -77,7 +77,13 @@ def authentications():
 
 @app.route('/')
 def showtrials():
+    if not session.get("combined_patient", None):
+        return welcome()
     return render_template('welcome.html', form=FilterForm(), trials_selection="current", labs = labs)
+
+@app.route('/welcome')
+def welcome():
+    return render_template('welcome.html', welcome_selection="current")
 
 @app.route("/authenticate/<source>", methods=["POST"])
 def authenticate(source):
@@ -328,7 +334,7 @@ def privacy_policy():
     return render_template("generalprivacypolicy.html")
 
 @app.route('/generaltermsofuse.html')
-def consumerpolicynotice():
+def terms_use():
     session.clear()
     return render_template("generaltermsofuse.html")
 
