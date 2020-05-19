@@ -5,20 +5,23 @@ import logging
 import re
 import boto3, botocore
 from jsonpath_rw_ext import parse
-from typing import Dict, List, Any, Tuple, Union
+from typing import Dict, List, Any, Tuple, Union, Optional
 import concurrent.futures as futures
 from gevent import Greenlet, spawn, iwait
 from pprint import pformat
+from apis import VaApi
+from flask import current_app as app
 
 client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
 
-# BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
-BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
-DEMOGRAPHICS_URL = BASE_URL + "Patient/"
-CONDITIONS_URL = BASE_URL + "Condition?_count=50&patient="
-DISEASES_URL = "https://clinicaltrialsapi.cancer.gov/v1/diseases"
-TRIALS_URL = "https://clinicaltrialsapi.cancer.gov/v1/clinical-trials"
-OBSERVATION_URL = BASE_URL + 'Observation'
+# # BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
+# BASE_URL = app.config["VA_API_BASE_URL"] + "services/fhir/v0/argonaut/data-query/"
+# #BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
+# DEMOGRAPHICS_URL = BASE_URL + "Patient/"
+# CONDITIONS_URL = BASE_URL + "Condition?_count=50&patient="
+# DISEASES_URL = "https://clinicaltrialsapi.cancer.gov/v1/diseases"
+# TRIALS_URL = "https://clinicaltrialsapi.cancer.gov/v1/clinical-trials"
+# OBSERVATION_URL = BASE_URL + 'Observation'
 
 trial_filter_cnt = 0
 
@@ -48,7 +51,7 @@ def filepaths_gen(direct="va"):
     return(acc_dir.glob("*.json"))
 
 def load_demographics(mrn, token):
-    url = DEMOGRAPHICS_URL + mrn
+    url = app.config['VA_DEMOGRAPHICS_URL'] + mrn
     api_res = get_api(token, url)
     logging.debug("Patient JSON: " + json.dumps(api_res))
     return api_res["gender"], api_res["birthDate"], api_res["name"][0]["text"], api_res["address"][0]["postalCode"], json.dumps(api_res)
@@ -84,9 +87,9 @@ def conditions_list(patients, index):
 
 def load_conditions(mrn, token):
     more_pages = True
-    url = CONDITIONS_URL+mrn
-    conditions = []
-    codes_snomed = []
+    url = app.config['VA_CONDITIONS_URL']+mrn
+    conditions: list = []
+    codes_snomed: list = []
     while more_pages:
         api_res = get_api(token, url)
         logging.debug("Conditions JSON: {}".format(json.dumps(api_res)))
@@ -110,7 +113,7 @@ def load_conditions(mrn, token):
         return conditions, codes_snomed
 
 def find_codes(disease):
-    res = req.get(DISEASES_URL, params={"name": disease})
+    res = req.get(app.config['DISEASES_URL'], params={"name": disease})
     codes_api = res.json()
     codes = []
     names = []
@@ -134,7 +137,7 @@ def find_trials(ncit_codes, gender="unknown", age=0):
             if (age != 0):
                 params["eligibility.structured.max_age_in_years_gte"] = age
                 params["eligibility.structured.min_age_in_years_lte"] = age
-            res = req.get(TRIALS_URL, params=params)
+            res = req.get(app.config['TRIALS_URL'], params=params)
             res_dict = res.json()
             trialset = {"code_ncit": ncit, "trialset": res_dict}
             total = res_dict["total"]
@@ -145,8 +148,8 @@ def find_trials(ncit_codes, gender="unknown", age=0):
 
 
 def find_all_codes(disease_list):
-    codes = []
-    names = []
+    codes: list = []
+    names: list = []
     for disease in disease_list:
         codelist, nameslist = find_codes(disease)
         codes += codelist
@@ -156,11 +159,12 @@ def find_all_codes(disease_list):
 
 def get_lab_observations_by_patient(patient_id, token):
     # loinc_codes = ','.join(list(LOINC_CODES.keys()))
-    current_url = OBSERVATION_URL + f'?patient={patient_id}&_count=100'
+    current_url: Optional[str] = app.config['VA_OBSERVATION_URL'] + f'?patient={patient_id}&_count=100'
 
-    lab_results = {}
+    lab_results: dict = {}
     while len(lab_results) != 3 and current_url is not None:
         observations = get_api(token, url=current_url)
+        logging.debug(f"Total observations = {observations.get('total')}")
 
         # extract values from observations.
         for entry in observations.get('entry'):
@@ -189,16 +193,16 @@ def get_lab_observations_by_patient(patient_id, token):
 
 
 def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
-                                 lab_results: Dict[str, Union[str, 'Trial']])\
-        -> Tuple[List[Dict[str, Union[str, 'Trial']]], List[Dict[str, Union[str, 'Trial']]]]:
+                                 lab_results: Dict[str, Any])\
+        -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     :param trials_by_ncit: List[dict]
     :param lab_results: dict
     :return: (List[dict], List[dict])
     """
     max_trials_in_future = 10
-    filtered_trials_by_ncit = []
-    excluded_trials_by_ncit = []
+    filtered_trials_by_ncit: list = []
+    excluded_trials_by_ncit: list = []
     trial_filter_cnt = 0
     # with futures.ThreadPoolExecutor(max_workers=75) as executor:
     tasks = {}
@@ -223,9 +227,9 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
         #     executor.submit(filter_trials_from_description, trial['trials'], lab_results): trial['ncit']
         #     for trial in trials_by_ncit
         # }
-        filtered = {}
-        excluded = {}
-        ncit_codes = {}
+        filtered: dict = {}
+        excluded: dict = {}
+        ncit_codes: dict = {}
         filtered_trials_by_ncit = []
         excluded_trials_by_ncit = []
         # for future in futures.as_completed(tasks):
@@ -262,7 +266,7 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
     return filtered_trials_by_ncit, excluded_trials_by_ncit
 
 
-def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> Tuple[List['Trial'], List['Trial']]:
+def filter_trials_from_description(trials: List, lab_results: Dict) -> Tuple[list, list]:
     """
     :param trials: List[obj(Trail)]
     :param comparision_val: str
@@ -297,7 +301,7 @@ def filter_trials_from_description(trials: List['Trial'], lab_results: Dict) -> 
     return filtered_trials, excluded_trials
 
 
-def find_conditions(trial: Dict) -> Dict:
+def find_conditions(trial: Any) -> Dict:
     match_type = 'hemoglobin|platelets|leukocytes'
     cell_types = ['hemoglobin', 'platelets', 'leukocytes']
     # parser = parse(f'$.eligibility.unstructured[?inclusion_indicator=true].description')
@@ -336,40 +340,41 @@ def split_description(description, limit):
 
 
 def get_mapping_with_aws_comprehend(descriptions: List) -> Dict:
-    def get_description():
-        data = ''
-        limit = 19990
-        for match in descriptions:
-            description = match.replace('\r\n', ' ').lower().replace(',', '')
-            if len(description) > limit:
-                for split in split_description(description, limit):
-                    yield split
-            elif len(data) + len(description) > limit:
-                yield data
-                data = description
-            else:
-                data += description + " and "
-        yield data
+    return {}
+    # def get_description():
+    #     data = ''
+    #     limit = 19990
+    #     for match in descriptions:
+    #         description = match.replace('\r\n', ' ').lower().replace(',', '')
+    #         if len(description) > limit:
+    #             for split in split_description(description, limit):
+    #                 yield split
+    #         elif len(data) + len(description) > limit:
+    #             yield data
+    #             data = description
+    #         else:
+    #             data += description + " and "
+    #     yield data
 
-    conditions = {}
-    cell_types = ['hemoglobin', 'platelets', 'leukocytes']
-    for description in get_description():
-        try:
-            entities = client.detect_entities_v2(Text=description)['Entities']
-            logging.debug(f"Description text send to AWS: {description}")
-            logging.debug("Entities returned:")
-            for entity in entities:
-                logging.debug(f"Entity text: {entity['Text']} ({entity['Category']}/{entity['Type']})")
-                entity_type = entity['Text']
-                if any(cell_type == entity_type.lower() for cell_type in cell_types) \
-                    and entity.get('Attributes') \
-                    and entity['Attributes'][0]['Type'] == "TEST_VALUE":
-                    conditions[entity_type] = entity_type + entity['Attributes'][0]['Text']
-                    logging.debug(f"Entity attribute text: {entity['Attributes'][0]['Text']}")
-                    logging.debug(f"Entity attribute type: {entity['Attributes'][0]['Type']}")
-        except Exception as exc:
-            logging.warn(f'Failed to retrieve aws comprehend entities: {str(exc)}')
-    return conditions
+    # conditions = {}
+    # cell_types = ['hemoglobin', 'platelets', 'leukocytes']
+    # for description in get_description():
+    #     try:
+    #         entities = client.detect_entities_v2(Text=description)['Entities']
+    #         logging.debug(f"Description text send to AWS: {description}")
+    #         logging.debug("Entities returned:")
+    #         for entity in entities:
+    #             logging.debug(f"Entity text: {entity['Text']} ({entity['Category']}/{entity['Type']})")
+    #             entity_type = entity['Text']
+    #             if any(cell_type == entity_type.lower() for cell_type in cell_types) \
+    #                 and entity.get('Attributes') \
+    #                 and entity['Attributes'][0]['Type'] == "TEST_VALUE":
+    #                 conditions[entity_type] = entity_type + entity['Attributes'][0]['Text']
+    #                 logging.debug(f"Entity attribute text: {entity['Attributes'][0]['Text']}")
+    #                 logging.debug(f"Entity attribute type: {entity['Attributes'][0]['Type']}")
+    #     except Exception as exc:
+    #         logging.warn(f'Failed to retrieve aws comprehend entities: {str(exc)}')
+    # return conditions
 
 
 # TODO conversion
@@ -386,9 +391,9 @@ def convert_expressions(lab_value: str, condition: str):
     pattern = re.compile('(\s?[\>\=\<]+\s?\d+[\,\.]?\d*)')
     # if type(condition) is List:
     #     condition = condition[0]
-    condition = pattern.findall(condition)
-    if len(condition) == 0:
+    condition_reg = pattern.findall(condition)
+    if len(condition_reg) == 0:
         return "0", ""
-    condition = condition[0].replace(',', '')
-    lab_value = lab_value[0]
+    condition = condition_reg[0].replace(',', '')
+#    lab_value = lab_value[0]
     return lab_value, condition

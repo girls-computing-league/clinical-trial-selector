@@ -1,6 +1,6 @@
 """
-Clinical Trials Selector
-"""
+Clinical Trial Selector
+""" 
 # Monkey patch needed for proper websocket behavior
 # Must be first line before any other imports
 from gevent import monkey
@@ -14,19 +14,19 @@ import logging, sys
 import ssl
 from flask_socketio import SocketIO, join_room
 from flask import Flask, session, redirect, render_template, request, flash, make_response
-from flask_session import Session
+from flask_session import Session 
 from flask_talisman import Talisman
 from authlib.integrations.flask_client import OAuth
 import hacktheworld as hack
-from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
                                EXPORT_URL, submit_get_patients_job, get_infected_patients_info)
 from flask_wtf import FlaskForm, CSRFProtect
 from flask_wtf.csrf import CSRFError
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from labtests import labs
 
-args = {}
+args: dict = {}
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-l", "--local", help="Run application from localhost", action="store_const", const="development", default=argparse.SUPPRESS)
@@ -35,8 +35,6 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
 
 app = Flask(__name__)
-app.config.from_pyfile("config/default.cfg")
-app.config.from_pyfile("secrets/default_keys.cfg")
 if args.get("local", app.env) == "development":
     app.config.from_pyfile("config/local.cfg")
     app.config.from_pyfile("secrets/local_keys.cfg")
@@ -47,6 +45,10 @@ else:
     app.config.from_pyfile("config/aws.cfg")
     app.config.from_pyfile("secrets/aws_keys.cfg")
 log_level = args.get("log", app.config["CTS_LOGLEVEL"]).upper()
+app.config.from_pyfile("config/default.cfg")
+app.config.from_pyfile("secrets/default_keys.cfg")
+
+from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 
 logging.getLogger().setLevel(log_level)
 logging.info("Clinical Trial Selector starting...")
@@ -75,7 +77,13 @@ def authentications():
 
 @app.route('/')
 def showtrials():
-    return render_template('welcome.html', form=FilterForm(), trials_selection="current")
+    if not session.get("combined_patient", None):
+        return welcome()
+    return render_template('welcome.html', form=FilterForm(), trials_selection="current", labs = labs)
+
+@app.route('/welcome')
+def welcome():
+    return render_template('welcome.html', welcome_selection="current")
 
 @app.route("/authenticate/<source>", methods=["POST"])
 def authenticate(source):
@@ -112,7 +120,7 @@ def oauth_redirect(source):
 @app.route('/getInfo', methods=['POST'])
 def getInfo():
     app.logger.info("GETTING INFO NOW")
-    combined = session.get("combined_patient", hack.CombinedPatient())
+    combined: hack.CombinedPatient = session.get("combined_patient", hack.CombinedPatient())
     auts = authentications()
     socketio.emit(event_name, {"data": 15}, room=session.sid)
     if (not auts):
@@ -133,6 +141,11 @@ def getInfo():
     if patient_id is not None and token is not None:
         session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
         app.logger.debug("FROM SESSION", session['Laboratory_Results'])
+        combined.VAPatient.load_test_results()
+        combined.results = combined.VAPatient.results
+        combined.latest_results = combined.VAPatient.latest_results
+        # for trial in combined.trials:
+        #     trial.determine_filters()
     socketio.emit(event_name, {"data": 95}, room=session.sid)
     socketio.emit('disconnect', {"data": 100}, room=session.sid)
 
@@ -140,7 +153,7 @@ def getInfo():
 
 @app.route('/trials')
 def show_all_trials():
-    return render_template('welcome.html', form=FilterForm(), trials_selection="current")
+    return render_template('welcome.html', form=FilterForm(), trials_selection="current", labs=labs)
 
 @app.route('/excluded')
 def show_excluded():
@@ -200,7 +213,8 @@ def filter_by_lab_results():
     if form.validate_on_submit():
         for key, value in form.data.items():
             if key != "csrf_token":
-                lab_results = {key: (value.split()[0], value.split()[1])}
+                # lab_results = {key: (value.split()[0], value.split()[1])}
+                lab_results = {key: value}
     else:
         lab_results = session['Laboratory_Results']
 
@@ -320,7 +334,7 @@ def privacy_policy():
     return render_template("generalprivacypolicy.html")
 
 @app.route('/generaltermsofuse.html')
-def consumerpolicynotice():
+def terms_use():
     session.clear()
     return render_template("generaltermsofuse.html")
 

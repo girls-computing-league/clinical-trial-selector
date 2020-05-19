@@ -13,7 +13,7 @@ from Crypto.Hash import SHA256
 from requests import request
 from jsonpath_rw_ext import parse
 from base64 import b64encode
-from typing import Dict, List
+from typing import Dict, List, Any
 from umls import Authentication
 from flask import current_app as app
 
@@ -40,9 +40,9 @@ def get_authenticate_bcda_api_token(client_id: str, client_secret: str):
     return bearer_token
 
 
-def decrypt_cipher(ct: 'File', key: str):
+def decrypt_cipher(ct: Any, key: Any):
     nonce = ct.read(GCM_NONCE_SIZE)
-    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce, mac_len=GCM_TAG_SIZE)
+    cipher: Any = AES.new(key, AES.MODE_GCM, nonce=nonce, mac_len=GCM_TAG_SIZE)
     ciphertext = ct.read()
     return cipher.decrypt_and_verify(
         ciphertext[:-GCM_TAG_SIZE],
@@ -56,13 +56,12 @@ def decrypt(ek: str, filepath: str,  pk: str = 'secrets/ATO_private.pem'):
         private_key = RSA.importKey(fh.read())
     fh.close()
     base = os.path.basename(filepath)
-    cipher = PKCS1_OAEP.new(key=private_key, hashAlgo=SHA256, label=base.encode('utf-8'))
+    cipher = PKCS1_OAEP.new(key=private_key, hashAlgo = SHA256, label=base.encode('utf-8')) # type: ignore
     decrypted_key = cipher.decrypt(encrypted_key)
 
-    with open(filepath, 'rb') as fh:
-        result = decrypt_cipher(fh, decrypted_key).decode("utf-8")
+    with open(filepath, 'rb') as fh2:
+        result = decrypt_cipher(fh2, decrypted_key).decode("utf-8")
     return result
-
 
 def submit_get_patients_job(url: str, token: str) -> List:
     submit_header = {
@@ -122,8 +121,8 @@ def get_patients(body: Dict, token: str) -> List:
 def get_infected_patients(codes: List, patients: List[Dict], patient_info: Dict):
     # codes = ['4011']  # TODO use this to get more patients
 
-    infected_patients = {}
-    diagnosis = {}
+    infected_patients: dict = {}
+    diagnosis: dict = {}
     try:
         for patient in patients:
             patient_id = patient['patient']['reference'].split('/-')[-1]
@@ -175,7 +174,7 @@ def get_nci_thesaurus_concept_ids(code: str):
 
 def get_diseases_icd_codes(code: str):
     auth = Authentication(app.config["UMLS_API_KEY"])
-    icd_codes = []
+    icd_codes: list = []
     nci_thesaurus_concept_ids = get_nci_thesaurus_concept_ids(code)
     logging.info(f'Getting Icd codes for NCT id {code} with disease codes {nci_thesaurus_concept_ids}')
     with ThreadPoolExecutor(max_workers=8) as executor:

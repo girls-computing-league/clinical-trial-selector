@@ -16,9 +16,9 @@
       <div class="site-header__masthead">
         <div class="site-header__logo" id="extended-logo">
           <em class="site-header__logo-text">
-            <a class="site-header__logo-link" title="Clinical Trials Selector" href="/">
+            <a class="site-header__logo-link" title="Clinical Trial Selector" href="/">
               <strong class="vads-u-display--block small-screen:vads-u-display--inline">
-                Clinical Trials Selector
+                Clinical Trial Selector
               </strong>
               {%- if trialID != '0' %}
                 | Browse Trial # {{trialID}}
@@ -32,7 +32,7 @@
           </div>
         {%- endif %}
         <div class="site-header__utility-links">
-          <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a>
+          <!-- <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a> -->
           <form action="{{ url_for('logout') }}" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <button class="usa-button vads-u-margin--0" type="submit">Logout</button>
@@ -67,6 +67,9 @@
         <nav class="site-header__nav">
           <ul class="site-header__nav-list">
             <li class="site-header__nav-item">
+              <a class="site-header__nav-item__link {{ welcome_selection }}" href="/welcome" data-toggle="tab">Welcome</a>
+            </li>
+            <li class="site-header__nav-item">
               <a class="site-header__nav-item__link {{ trials_selection }}" href="/trials" data-toggle="tab">Trials</a>
             </li>
             {%- if session["excluded"] %}
@@ -95,7 +98,8 @@
 
     <div class="site-content vads-u-margin-bottom--9 vads-l-row vads-u-padding-x--3">
       <div class="site-content__nav vads-l-col--3 vads-u-padding-x--3">
-        {%- for source in ["va", "cms"] %}
+
+        {%- for source in (["va"] if config["ENV"] == "prod" else ["va", "cms"]) %}
          <table>
             <thead>
               <tr>

@@ -3,29 +3,30 @@
 
 {% block pt_main %}
 
-  {% if session["Laboratory_Results"] and trials_selection %}
+  {% if trials_selection and session["combined_patient"] and session["combined_patient"].latest_results.values() | length > 0  %}
+    {%- set results = session["combined_patient"].latest_results %}
     <div class="feature vads-u-margin-top--0" id="LaboratoryObservations">
-      <div><strong>Laboratory Results:</strong></div>
+      <div><strong>Latest Laboratory Results:</strong></div>
       <form method=post class="cts-launch-progress-bar" action="/filter_by_lab_results">
         {{ form.hidden_tag() }}
         <table class="vads-u-margin--0">
           <thead>
             <tr>
-              <th>Hemoglobin</th>
-              <th>Leukocytes</th>
-              <th>Platelets</th>
+              {% for test in labs.tests %}
+                <th>{{ test.name | title }}</th>
+                <th>Units</th>
+              {%- endfor %}
             </tr>
           </thead>
           <tbody>
             <tr>
-              {% for cell_type in ['hemoglobin', 'leukocytes','platelets'] %}
-                {% if session["Laboratory_Results"][cell_type] %}
+              {% for test in labs.tests %}
+                {% if results[test.name] %}
+                    {%- set result = results[test.name] %}
                     <td class="page-header">
-                    {{ render_input(cell_type,
-                                    session["Laboratory_Results"][cell_type][0]|float|round(2)|string + ' ' + session["Laboratory_Results"][cell_type][1]
-                                    )
-                    }}
+                      {{ render_input(test.name,result.value|float|round(2)|string) }}
                     </td>
+                    <td>{{ result.unit }}</td>
                 {% else %}
                     <td class="page-header"> NA </td>
                 {%- endif %}
@@ -40,7 +41,103 @@
   {%- endif %}
 
   <div class="tab-content">
-  {%- if trials_selection %}
+  {%- if welcome_selection %}
+    <div class="tab-pane active" id="welcome">
+      <h1>Welcome to the Clinical Trial Selector</h1>
+      <p class="va-introtext">This Clinical Trial Selector tool can help you find trials you may be eligible for based on your medical conditions.
+      </p>
+      <p class="va-introtext">
+        After logging in to either the VA or CMS portals, the tool will securely use information in your records
+        to search for eligible trials. 
+      </p>
+      <div class="usa-alert usa-alert-warning">
+        <div class="usa-alert-body">
+          <h3 class="usa-alert-heading">Our <a target="_blank" href="{{ url_for('privacy_policy')}}">privacy policy</a> has changed!</h3>
+          <p>
+            Changes include:
+            <ul>
+              <li>How we announce changes to our policy</li>
+            </ul>
+          </p>
+          <p>For further details please read the full document <a target="_blank" href="{{ url_for('privacy_policy')}}">here</a>.</p>
+        </div>
+      </div>      
+      <h2>Who can use this tool?</h2>
+      <p>
+        The Clinical Trial Selector is available to:
+        <ul>
+          <li>Veterans who have obtained care at VA medical facilities</li>
+          <li>Medicare beneficiaries <strong>[COMING SOON!!!]</strong></li>
+        </ul>
+      </p>
+      <h2>What do I need to sign on and use the tool?</h2>
+      <p>
+        Veterans need one of <strong>these free accounts</strong>:
+        <ul>
+          <li>An Advanced or Premium <strong>My HealtheVet</strong> account, <strong>or</strong>:</li>
+          <li>A Premium <strong>DS Logon account</strong> (used for eBenefits and milConnect), <strong>or</strong>:</li>
+          <li>A verified <strong>ID.me</strong> account that you can create here </li>
+        </ul>
+        Medicare beneficiaries <strong>[COMING SOON!!!]</strong> need:
+        <ul><li>A <strong>Medicare.gov</strong> free account</li></ul>
+      </p>
+      <h2>Do I have to enter all my information in order to find eligible trials?</h2>
+      <p>
+        No. After you log into your account and explicitly provide permission,
+        the tool automatically retrieves the necessary data in order to generate a list of
+        eligible trials for which you may be eligible based on the information in your records.
+      </p>
+      <h2>What information from my records is used to search for trials?</h2>
+      <p>
+        We retrieve the following information from your records:
+        <ul>
+          <li>A list of medical conditions (diagnoses)</li>
+          <li>Results of specific laboratory tests</li>
+          <li>Your age and gender</li>
+        </ul>
+      </p>
+      <h2>Can I enroll in trials through this tool?</h2>
+      <p>
+        The Clinical Trial Selector provides a list of <strong>possible</strong> trials
+        that you <strong>may</strong> be eligible for.
+        You may not actually be eligible to be enrolled in some of the trials returned by
+        the tool, due to a variety of factors. The tool is meant to provide an initial list
+        for consideration between you and your doctor.
+      </p>
+      <p>
+        <strong>
+          Please consult with your doctor directly regarding any trials or information
+          you may be provided in this tool.  This tool is not meant to provide medical advice.
+        </strong>
+      </p>
+      <h2>Do you store or share my medical information?</h2>
+      <p>
+        We do <strong>not</strong> store any of your information.
+        The data we obtain from your records with your permission is used only once, without any 
+        identifying characteristics such as name or id numbers.  The tool connects to a database of
+        clinical trials maintainted by the U.S. National Cancer Institute, and we only provide
+        a list of conditions, age, and gender, without identifying the patient, to obtain a list of
+        possible trials. 
+      </p>
+      <p>
+        After you logoff or finish using the tool, nothing is kept on our servers.
+        Whenever you wish to return and perform another search you must log on again using your
+        VA and/or Medicare account.
+      </p>
+      <h2>I do not wish to share my information. Can I use this tool?</h2>
+      <p>
+        When you log with your VA and/or CMS account, you will be asked for permission to share your
+        data with the Clinical Trial Selector . If you choose not to allow for your data to be shared,
+        or only share your medical information (but not your age and gender)
+        we will not have the information necessary to perform a trial search and thus you will not be
+        able to use the tool. 
+      </p>
+      <p>
+        For more information on how we use your information, please read our
+        <a target="_blank" href="{{ url_for('privacy_policy') }}">privacy policy</a>.
+      </p>
+    </div>
+  {%- elif trials_selection %}
     <div class="tab-pane active" id="trials">
       {%- if session["combined_patient"] and session["combined_patient"].loaded %}
         <strong>
@@ -221,5 +318,5 @@
         </table>
     </div>
   {%- endif %}
-    </div>
+  </div>
 {% endblock %}

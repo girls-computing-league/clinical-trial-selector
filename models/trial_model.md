@@ -10,23 +10,25 @@ markdown:
     class CombinedPatient {
         /included_trials: Trial [*]
         /excluded_trials: Trial [*]
+        latest_results: Dict[str,TestResult]
         filtered: bool
         filter_trials()
     }
     class Trial {
-        inclusion_criteria: Criterion [*]
-        exlusion_criteria: Criterion [*]
+        inclusions: text [*]
+        exlusions: text [*]
         filter_applied: bool
         excluded: bool
         filter_trial(TestResult [*])
-        determine_filters(TestSet)
+        determine_filters(LabTest [*])
         apply_filters(TestResult [*])
     }
     class Criterion <<dict>> {
-        is_inclusion: bool
+        inclusion_indicator: bool
         description: text
     }
     class TestFilter {
+        test_name: string
         comparison: function
         threshold: float
         filter_string: string
@@ -48,16 +50,17 @@ markdown:
         create_regex()
     }
     class TestResult {
+        test_name: string
         date: dateTime
         value: float
+        unit: str
+        {static} from_observation(Observation): TestResult
     }
 
     CombinedPatient *-- "~* trials" Trial
     CombinedPatient *-- "~* results" TestResult
-    TestResult --> "test" LabTest
     Trial *-- "~* filters" TestFilter 
-    Trial *-- "~* criteria" Criterion 
-    TestFilter --> "test" LabTest
+    Trial *-- "~* eligibility" Criterion 
     labs *-- "~* tests" LabTest 
 @enduml
 ```

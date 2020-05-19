@@ -1,25 +1,32 @@
 import patient as pt
-import importlib
-importlib.reload(pt)
 import logging
 import sys
 import umls
 import requests as req
+from typing import Dict, List, Optional, Union, Iterable, Match, Set
+from mypy_extensions import TypedDict 
 from datetime import date
 from distances import distance
 from zipcode import Zipcode
 from flask import current_app as app
-
+from apis import VaApi
+from fhir import Observation
+from labtests import labs, LabTest
+from datetime import datetime
 import json
+import re
 
 class Patient:
-    def __init__(self, sub, pat_token):
+    def __init__(self, sub: str, pat_token: Dict[str, str]):
         #logging.getLogger().setLevel(logging.DEBUG)
         self.sub = sub
         self.mrn = pat_token["mrn"]
         self.token = pat_token["token"]
         self.auth = umls.Authentication(app.config["UMLS_API_KEY"])
         self.tgt = self.auth.gettgt()
+        self.api = VaApi(self.mrn, self.token)
+        self.results: List[TestResult] = []
+        self.latest_results: Dict[str, TestResult] = {}
 
     def load_demographics(self):
         self.gender, self.birthdate, self.name, self.zipcode, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
@@ -35,9 +42,9 @@ class Patient:
 
     def load_codes(self):
         # self.codes, self.names = pt.find_all_codes(self.conditions)
-        self.codes_ncit = []
-        self.matches = []
-        self.codes_without_matches = []
+        self.codes_ncit: list = []
+        self.matches: list = []
+        self.codes_without_matches: list = []
         for code_snomed in self.codes_snomed:
             code_ncit = self.snomed2ncit(code_snomed)
             orig_desc = self.conditions[self.codes_snomed.index(code_snomed)]
@@ -49,7 +56,7 @@ class Patient:
 
     def find_trials(self):
         logging.info("Searching for trials...")
-        self.trials = []
+        self.trials: list = []
         #trials_json = pt.find_trials(self.codes)
         trials_json = pt.find_trials(self.codes_ncit, gender=self.gender, age=self.age)
         for trialset in trials_json:
@@ -98,19 +105,32 @@ class Patient:
     
     def snomed2ncit(self, code_snomed):
         return self.code2ncit(code_snomed, self.codes_snomed, "SNOMEDCT_US")
-    
+
+    def load_test_results(self) -> None:
+        self.results = []
+        for obs in self.api.get_observations():
+            app.logger.debug(f"LOINC CODE = {obs.loinc}")
+            result: Optional[TestResult] = TestResult.from_observation(obs)
+            if result is not None:
+                app.logger.debug(f"Result added: {result.test_name} {result.value} {result.unit} on {result.datetime}")
+                self.results.append(result)
+                # Determine if result is the latest
+                existing_result = self.latest_results.get(result.test_name)
+                if existing_result is None or existing_result.datetime < result.datetime:
+                    self.latest_results[result.test_name] = result
+
 class CMSPatient(Patient):
 
     def load_conditions(self):
-        self.codes_icd9 = []
+        self.codes_icd9: list = []
         url = "https://sandbox.bluebutton.cms.gov/v1/fhir/ExplanationOfBenefit"
         params = {"patient": self.mrn, "_count":"50"}
         headers = {"Authorization": "Bearer {}".format(self.token)}
         res = req.get(url, params=params, headers=headers)
         fhir = res.json()
         logging.debug("CONDITIONS JSON: {}".format(json.dumps(fhir)))
-        codes = []
-        names = []
+        codes: list = []
+        names: list = []
         for entry in fhir["entry"]:
             diags = entry["resource"]["diagnosis"]
             for diag in diags:
@@ -156,7 +176,7 @@ class CMSPatient(Patient):
 
 class PatientLoader:
     def __init__(self):
-        self.patients = []
+        self.patients: list = []
 
         # Load VA Patients
         va_tokens = pt.load_patients("va")
@@ -174,6 +194,10 @@ class PatientLoader:
         for patient in self.patients:
             patient.load_all()
 
+class Criterion(TypedDict): 
+    inclusion_indicator: bool
+    description: str
+
 class Trial:
     def __init__(self, trial_json, code_ncit):
         self.trial_json = trial_json
@@ -183,20 +207,33 @@ class Trial:
         self.official = trial_json['official_title']
         self.summary = trial_json['brief_summary']
         self.description = trial_json['detail_description']
-        self.eligibility = trial_json['eligibility']['unstructured']
-        self.inclusions = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
-        self.exclusions = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
+        self.eligibility: List[Criterion] = trial_json['eligibility']['unstructured']
+        self.inclusions: List[str] = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
+        self.exclusions: List[str] = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
         self.measures = trial_json['outcome_measures']
         self.pi = trial_json['principal_investigator']
         self.sites = trial_json['sites']
         self.population = trial_json['study_population_description']
         self.diseases = trial_json['diseases']
-        self.filter_condition = []
+        self.filter_condition: list = []
 
+    def determine_filters(self) -> None:
+        s: Set[str] = set()
+        for text in self.inclusions:
+            alias_match = labs.alias_regex.findall(text)
+            if alias_match:
+                criteria_match = labs.criteria_regex.findall(text)
+                if criteria_match:
+                    for group in criteria_match:
+                        if labs.by_alias[group[1].lower()].name == "platelets":
+                            s.add(group[4])
+        for unit in s:
+            app.logger.debug(f"leukocytes unit: {unit}")
+                    
 
 class CombinedPatient:
     def __init__(self):
-        self.VAPatient = None
+        self.VAPatient: Patient = None
         self.CMSPatient = None
         self.loaded = False
         self.clear_collections()
@@ -205,12 +242,14 @@ class CombinedPatient:
         self.filtered = False
     
     def clear_collections(self):
-        self.trials = []
-        self.ncit_codes = []
-        self.trials_by_ncit = []
-        self.ncit_without_trials = []
-        self.matches = []
-        self.codes_without_matches = []
+        self.trials: List[Trial] = []
+        self.ncit_codes: list = []
+        self.trials_by_ncit: list = []
+        self.ncit_without_trials: list = []
+        self.matches: list = []
+        self.codes_without_matches: list = []
+        self.results: List[TestResult] = []
+        self.latest_results: Dict[str, TestResult] = {}
 
     def calculate_distances(self):
         db = Zipcode()
@@ -235,6 +274,7 @@ class CombinedPatient:
         if self.VAPatient is not None:
             self.append_patient_data(self.VAPatient)
             self.calculate_distances()
+            self.results = self.VAPatient.results
         for code in self.ncit_codes:
             trials = []
             for trial in self.trials:
@@ -258,3 +298,21 @@ class CombinedPatient:
                 self.ncit_codes.append(code)
         self.matches += patient.matches
         self.codes_without_matches += patient.codes_without_matches
+
+class TestResult:
+
+    def __init__(self, test_name: str, datetime: datetime, value: float, unit: str):
+        self.test_name = test_name
+        self.datetime = datetime
+        self.value = value
+        self.unit = unit
+
+    @classmethod
+    def from_observation(cls, obs: Observation) -> Optional['TestResult']:
+        # Returns None if observation is not the result of a test we are tracking
+        test: Optional[LabTest] = labs.by_loinc.get(obs.loinc)
+        if test is not None and obs.datetime is not None and obs.value is not None and obs.unit is not None:
+            return cls(test.name, obs.datetime, obs.value, obs.unit)
+        else:
+            return None
+
