@@ -17,11 +17,10 @@ import json
 import re
 
 class Patient:
-    def __init__(self, sub: str, pat_token: Dict[str, str]):
+    def __init__(self, mrn: str, token: str):
         #logging.getLogger().setLevel(logging.DEBUG)
-        self.sub = sub
-        self.mrn = pat_token["mrn"]
-        self.token = pat_token["token"]
+        self.mrn = mrn 
+        self.token = token
         self.auth = umls.Authentication(app.config["UMLS_API_KEY"])
         self.tgt = self.auth.gettgt()
         self.api = VaApi(self.mrn, self.token)
@@ -173,27 +172,6 @@ class CMSPatient(Patient):
     def icd2ncit(self, code_icd9):
         return self.code2ncit(code_icd9, self.codes_icd9, "ICD9CM")
 
-
-class PatientLoader:
-    def __init__(self):
-        self.patients: list = []
-
-        # Load VA Patients
-        va_tokens = pt.load_patients("va")
-        for pat_token in va_tokens:
-            self.patients.append(Patient(pat_token, va_tokens[pat_token]))
-
-        # Load CMS Patients
-        cms_tokens = pt.load_patients("cms")
-        for pat_token in cms_tokens:
-            self.patients.append(CMSPatient(pat_token, cms_tokens[pat_token]))
-
-        self.pat_tokens = {va_tokens, cms_tokens}
-
-    def load_all_patients(self):
-        for patient in self.patients:
-            patient.load_all()
-
 class Criterion(TypedDict): 
     inclusion_indicator: bool
     description: str
@@ -240,6 +218,9 @@ class CombinedPatient:
         self.numTrials = 0
         self.num_conditions_with_trials = 0
         self.filtered = False
+        self.from_source: Dict = {}
+        self.from_source["va"] = self.VAPatient
+        self.from_source["cms"] = self.CMSPatient
     
     def clear_collections(self):
         self.trials: List[Trial] = []

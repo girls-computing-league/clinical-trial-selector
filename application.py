@@ -96,14 +96,15 @@ def oauth_redirect(source):
     resp = getattr(oauth,source).authorize_access_token()
     app.logger.debug(f"Response: {resp}")
     combined = session.get("combined_patient", hack.CombinedPatient())
-    session[f'{source}_access_token'] = resp['access_token']
-    session[f'{source}_patient'] = resp['patient']
+    mrn = resp['patient']
+    token = resp['access_token']
+    session[f'{source}_access_token'] = token
+    session[f'{source}_patient'] = mrn
     session.pop("trials", None)
-    pat_token = {"mrn": resp["patient"], "token": resp["access_token"]}
     if source == 'va':
-        pat = hack.Patient(resp['patient'], pat_token)
+        pat = hack.Patient(mrn, token)
     else:
-        pat = hack.CMSPatient(resp['patient'], pat_token)
+        pat = hack.CMSPatient(mrn, token)
     pat.load_demographics()
     session[f'{source}_gender'] = pat.gender
     session[f'{source}_birthdate'] = pat.birthdate
@@ -111,8 +112,10 @@ def oauth_redirect(source):
     if source == 'va':
         session[f'va_zipcode'] = pat.zipcode
         combined.VAPatient = pat
+        combined.from_source["va"] = combined.VAPatient
     else:
         combined.CMSPatient = pat
+        combined.from_source["cms"] = combined.CMSPatient
     combined.loaded = False
     session['combined_patient'] = combined
     return redirect('/')

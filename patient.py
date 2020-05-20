@@ -56,13 +56,6 @@ def load_demographics(mrn, token):
     logging.debug("Patient JSON: " + json.dumps(api_res))
     return api_res["gender"], api_res["birthDate"], api_res["name"][0]["text"], api_res["address"][0]["postalCode"], json.dumps(api_res)
 
-def load_patients(direct="va"):
-    patients = {}
-    for file in filepaths_gen(direct):
-        patient = load_patient(file)
-        patients[file.stem] = patient
-    return(patients)
-
 def get_patient():
     return
 
@@ -70,14 +63,6 @@ def get_api(token, url, params=None):
     headers = {"Authorization": "Bearer {}".format(token)}
     res = req.get(url, headers=headers, params=params)
     return res.json()
-
-def load_patient(file):
-    f = file.open()
-    code = json.load(f)
-    f.close()
-    mrn = code["patient"]
-    token = code["access_code"]
-    return({"mrn": mrn, "token": token})
 
 def conditions_list(patients, index):
     pat = list(patients.values())[index]
