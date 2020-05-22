@@ -122,7 +122,7 @@ class CMSPatient(Patient):
 
     def load_conditions(self):
         self.codes_icd9: list = []
-        url = "https://sandbox.bluebutton.cms.gov/v1/fhir/ExplanationOfBenefit"
+        url = f"{app.config['CMS_API_BASE_URL']}ExplanationOfBenefit"
         params = {"patient": self.mrn, "_count":"50"}
         headers = {"Authorization": "Bearer {}".format(self.token)}
         res = req.get(url, params=params, headers=headers)
@@ -144,7 +144,7 @@ class CMSPatient(Patient):
         self.conditions = names
     
     def load_demographics(self):
-        url = "https://sandbox.bluebutton.cms.gov/v1/fhir/Patient/" + self.mrn
+        url = f"{app.config['CMS_API_BASE_URL']}Patient/" + self.mrn
         headers = {"Authorization": "Bearer {}".format(self.token)}
         res = req.get(url, headers=headers)
         fhir = res.json()
