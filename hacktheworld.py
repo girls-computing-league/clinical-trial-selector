@@ -219,8 +219,6 @@ class CombinedPatient:
         self.num_conditions_with_trials = 0
         self.filtered = False
         self.from_source: Dict = {}
-        self.from_source["va"] = self.VAPatient
-        self.from_source["cms"] = self.CMSPatient
     
     def clear_collections(self):
         self.trials: List[Trial] = []

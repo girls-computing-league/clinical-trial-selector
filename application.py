@@ -69,12 +69,6 @@ event_name = 'update_progress'
 
 callback_urlbase = app.config["CTS_CALLBACK_URLBASE"]
 
-def authentications():
-    auts = []
-    if ('va_patient' in session): auts.append('va')
-    if ('cms_patient' in session): auts.append('cms')
-    return auts
-
 @app.route('/')
 def showtrials():
     if not session.get("combined_patient", None):
@@ -98,24 +92,18 @@ def oauth_redirect(source):
     combined = session.get("combined_patient", hack.CombinedPatient())
     mrn = resp['patient']
     token = resp['access_token']
-    session[f'{source}_access_token'] = token
-    session[f'{source}_patient'] = mrn
-    session.pop("trials", None)
+    session.pop('trials', None)
     if source == 'va':
         pat = hack.Patient(mrn, token)
     else:
         pat = hack.CMSPatient(mrn, token)
     pat.load_demographics()
-    session[f'{source}_gender'] = pat.gender
-    session[f'{source}_birthdate'] = pat.birthdate
-    session[f'{source}_name'] = pat.name
     if source == 'va':
-        session[f'va_zipcode'] = pat.zipcode
         combined.VAPatient = pat
-        combined.from_source["va"] = combined.VAPatient
+        combined.from_source['va'] = combined.VAPatient
     else:
         combined.CMSPatient = pat
-        combined.from_source["cms"] = combined.CMSPatient
+        combined.from_source['cms'] = combined.CMSPatient
     combined.loaded = False
     session['combined_patient'] = combined
     return redirect('/')
@@ -124,15 +112,14 @@ def oauth_redirect(source):
 def getInfo():
     app.logger.info("GETTING INFO NOW")
     combined: hack.CombinedPatient = session.get("combined_patient", hack.CombinedPatient())
-    auts = authentications()
     socketio.emit(event_name, {"data": 15}, room=session.sid)
-    if (not auts):
+    if (len(combined.from_source)==0):
         return redirect("/")
     combined.load_data()
     socketio.emit(event_name, {"data": 50}, room=session.sid)
     
-    patient_id = session.get('va_patient')
-    token = session.get('va_access_token')
+    patient_id = getattr(combined.from_source.get('va', {}), 'mrn', None)
+    token = getattr(combined.from_source.get('va', {}), 'token', None)
 
     session['codes'] = combined.ncit_codes
     session['trials'] = combined.trials

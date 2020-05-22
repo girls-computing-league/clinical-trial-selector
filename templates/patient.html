@@ -101,7 +101,7 @@
       <div class="site-content__nav vads-l-col--3 vads-u-padding-x--3">
 
         {%- for source in (["va"] if config["ENV"] == "prod" else ["va", "cms"]) %}
-          {%- set patient = combined.from_source[source] if combined else None %}
+          {%- set patient = combined.from_source[source] if combined and combined.from_source[source] else None %}
           <table>
             <thead>
               <tr>
