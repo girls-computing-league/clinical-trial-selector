@@ -109,7 +109,7 @@ class Patient:
         self.results = []
         for obs in self.api.get_observations():
             app.logger.debug(f"LOINC CODE = {obs.loinc}")
-            result: Optional[TestResult] = TestResult.from_observation(obs)
+            result = TestResult.from_observation(obs)
             if result is not None:
                 app.logger.debug(f"Result added: {result.test_name} {result.value} {result.unit} on {result.datetime}")
                 self.results.append(result)
