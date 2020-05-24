@@ -220,6 +220,12 @@ class CombinedPatient:
         self.filtered = False
         self.from_source: Dict[str, Patient] = {}
 
+    def has_patients(self) -> bool:
+        return len(self.from_source) > 0
+
+    def va_patient(self) -> Optional[Patient]:
+        return self.from_source.get('va', None)
+
     def login_patient(self, source: str, mrn: str, token: str):
         patient = self.patient_type[source](mrn, token)
         patient.load_demographics()
@@ -271,6 +277,14 @@ class CombinedPatient:
         self.loaded = True
         self.numTrials = len(self.trials)
         self.num_conditions_with_trials = len(self.trials_by_ncit)
+
+    def load_test_results(self) -> None:
+        va_patient = self.va_patient()
+        if va_patient is None:
+            return
+        va_patient.load_test_results()
+        self.results = va_patient.results
+        self.latest_results = va_patient.latest_results
 
     def append_patient_data(self,patient):
         patient.load_all()

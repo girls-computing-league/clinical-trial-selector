@@ -100,33 +100,15 @@ def oauth_redirect(source):
 @app.route('/getInfo', methods=['POST'])
 def getInfo():
     app.logger.info("GETTING INFO NOW")
-    combined: hack.CombinedPatient = session.get("combined_patient", hack.CombinedPatient())
+    combined = combined_from_session()
     socketio.emit(event_name, {"data": 15}, room=session.sid)
-    if (len(combined.from_source)==0):
+    if not combined.has_patients():
         return redirect("/")
     combined.load_data()
     socketio.emit(event_name, {"data": 50}, room=session.sid)
-    
-    patient_id = getattr(combined.from_source.get('va', {}), 'mrn', None)
-    token = getattr(combined.from_source.get('va', {}), 'token', None)
-
-    session['codes'] = combined.ncit_codes
-    # session['trials'] = combined.trials
-    session['numTrials'] = combined.numTrials
-    session['index'] = 0
-    session["combined_patient"] = combined
-    socketio.emit(event_name, {"data": 70}, room=session.sid)
-
-    if patient_id is not None and token is not None:
-        va_patient = combined.from_source['va']
-        va_patient.load_test_results()
-        combined.results = va_patient.results
-        combined.latest_results = va_patient.latest_results
-        # for trial in combined.trials:
-        #     trial.determine_filters()
+    combined.load_test_results()
     socketio.emit(event_name, {"data": 95}, room=session.sid)
     socketio.emit('disconnect', {"data": 100}, room=session.sid)
-
     return redirect("/")
 
 @app.route('/trials')
