@@ -41,7 +41,7 @@ def read_config(environment: str):
     app.config.from_pyfile(f"config/{environment}.cfg")
     app.config.from_pyfile(f"secrets/{environment}_keys.cfg")
 
-env = 'local' if args.get('local', app.env) == 'development' else ('test' if app.env == 'test' else 'aws')
+env = 'local' if args.get('local', app.env) == 'development' else ('test_aws' if app.env == 'test' else 'aws')
 read_config(env)
 read_config('default')
 
