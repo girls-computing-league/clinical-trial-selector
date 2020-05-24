@@ -94,7 +94,6 @@ def oauth_redirect(source):
     combined = combined_from_session()
     mrn = resp['patient']
     token = resp['access_token']
-    session.pop('trials', None)
     combined.login_patient(source, mrn, token)
     return redirect('/')
 
@@ -112,7 +111,7 @@ def getInfo():
     token = getattr(combined.from_source.get('va', {}), 'token', None)
 
     session['codes'] = combined.ncit_codes
-    session['trials'] = combined.trials
+    # session['trials'] = combined.trials
     session['numTrials'] = combined.numTrials
     session['index'] = 0
     session["combined_patient"] = combined

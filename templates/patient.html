@@ -37,6 +37,8 @@
   </header>
 
   <div>
+
+    {%- set combined = session["combined_patient"] if session["combined_patient"] else None %}
     {%- if trialID != '0' %}    
       <div class="site-top-nav-wrapper site-l-wrapper sticky">
         <nav class="site-header__nav">
@@ -80,7 +82,6 @@
             <li class="site-header__nav-item">
               <a class="site-header__nav-item__link {{ nomatches_selection }}" href="/nomatches" data-toggle="tab">Codes w/o Matches</a>
             </li>
-            {%- set combined = session["combined_patient"] if session["combined_patient"] else None %}
             {%- if combined.loaded %}
               <li class="site-header__nav-item">
                 <a class="site-header__nav-item__link " href="/download_trials" data-toggle="tab">Download Trials</a>
