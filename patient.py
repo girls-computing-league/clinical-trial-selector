@@ -380,5 +380,7 @@ def convert_expressions(lab_value: str, condition: str):
     if len(condition_reg) == 0:
         return "0", ""
     condition = condition_reg[0].replace(',', '')
+    condition = condition.replace('=<', '<=')
+    condition = condition.replace('=>', '>=')
 #    lab_value = lab_value[0]
     return lab_value, condition

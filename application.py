@@ -68,6 +68,9 @@ event_name = 'update_progress'
 
 callback_urlbase = app.config["CTS_CALLBACK_URLBASE"]
 
+def combined_from_session() -> hack.CombinedPatient:
+    return session.setdefault('combined_patient', hack.CombinedPatient())
+
 @app.route('/')
 def showtrials():
     if not session.get("combined_patient", None):
@@ -88,12 +91,11 @@ def oauth_redirect(source):
     app.logger.info(f"Redirected from {source.upper()} authentication")
     resp: Dict[str, str] = getattr(oauth,source).authorize_access_token()
     app.logger.debug(f"Response: {resp}")
-    combined: hack.CombinedPatient = session.get("combined_patient", hack.CombinedPatient())
+    combined = combined_from_session()
     mrn = resp['patient']
     token = resp['access_token']
     session.pop('trials', None)
     combined.login_patient(source, mrn, token)
-    session['combined_patient'] = combined
     return redirect('/')
 
 @app.route('/getInfo', methods=['POST'])
@@ -117,8 +119,8 @@ def getInfo():
     socketio.emit(event_name, {"data": 70}, room=session.sid)
 
     if patient_id is not None and token is not None:
-        session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
-        app.logger.debug("FROM SESSION", session['Laboratory_Results'])
+        # session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
+        # app.logger.debug("FROM SESSION", session['Laboratory_Results'])
         va_patient = combined.from_source['va']
         va_patient.load_test_results()
         combined.results = va_patient.results
@@ -179,7 +181,7 @@ class FilterForm(FlaskForm):
     platelets = StringField('platelets ', [validators.Length(max=25)])
 
 
-@app.route('/filter_by_lab_results', methods=['GET', 'POST'])
+@app.route('/filter_by_lab_results', methods=['POST'])
 def filter_by_lab_results():
     """
     A view that filters trials based on:
@@ -189,15 +191,13 @@ def filter_by_lab_results():
 
     form = FilterForm()
 
-    if form.validate_on_submit():
-        for key, value in form.data.items():
-            if key != "csrf_token":
-                # lab_results = {key: (value.split()[0], value.split()[1])}
-                lab_results = {key: value}
-    else:
-        lab_results = session['Laboratory_Results']
-
     combined_patient = session['combined_patient']
+
+    if form.validate_on_submit():
+        lab_results = {key:value for (key,value) in form.data.items() if key != 'csrf_token'}
+    else:
+        lab_results = combined_patient.latest_results
+
     trials_by_ncit = combined_patient.trials_by_ncit
     socketio.emit(event_name, {"data": 20}, room=session.sid)
 
