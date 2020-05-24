@@ -25,6 +25,7 @@ from flask_wtf.csrf import CSRFError
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from labtests import labs
+from typing import Dict
 
 args: dict = {}
 if __name__ == "__main__":
@@ -87,24 +88,13 @@ def authenticate(source):
 @app.route('/<source>redirect')
 def oauth_redirect(source):
     app.logger.info(f"Redirected from {source.upper()} authentication")
-    resp = getattr(oauth,source).authorize_access_token()
+    resp: Dict[str, str] = getattr(oauth,source).authorize_access_token()
     app.logger.debug(f"Response: {resp}")
-    combined = session.get("combined_patient", hack.CombinedPatient())
+    combined: hack.CombinedPatient = session.get("combined_patient", hack.CombinedPatient())
     mrn = resp['patient']
     token = resp['access_token']
     session.pop('trials', None)
-    if source == 'va':
-        pat = hack.Patient(mrn, token)
-    else:
-        pat = hack.CMSPatient(mrn, token)
-    pat.load_demographics()
-    if source == 'va':
-        combined.VAPatient = pat
-        combined.from_source['va'] = combined.VAPatient
-    else:
-        combined.CMSPatient = pat
-        combined.from_source['cms'] = combined.CMSPatient
-    combined.loaded = False
+    combined.login_patient(source, mrn, token)
     session['combined_patient'] = combined
     return redirect('/')
 
@@ -131,9 +121,10 @@ def getInfo():
     if patient_id is not None and token is not None:
         session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
         app.logger.debug("FROM SESSION", session['Laboratory_Results'])
-        combined.VAPatient.load_test_results()
-        combined.results = combined.VAPatient.results
-        combined.latest_results = combined.VAPatient.latest_results
+        va_patient = combined.from_source['va']
+        va_patient.load_test_results()
+        combined.results = va_patient.results
+        combined.latest_results = va_patient.latest_results
         # for trial in combined.trials:
         #     trial.determine_filters()
     socketio.emit(event_name, {"data": 95}, room=session.sid)

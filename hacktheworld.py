@@ -3,7 +3,7 @@ import logging
 import sys
 import umls
 import requests as req
-from typing import Dict, List, Optional, Union, Iterable, Match, Set
+from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable
 from mypy_extensions import TypedDict 
 from datetime import date
 from distances import distance
@@ -208,18 +208,24 @@ class Trial:
         for unit in s:
             app.logger.debug(f"leukocytes unit: {unit}")
                     
-
 class CombinedPatient:
+
+    patient_type: Dict[str, Callable[[str, str], Patient]] = {'va': Patient, 'cms': CMSPatient}
+    
     def __init__(self):
-        self.VAPatient: Patient = None
-        self.CMSPatient = None
         self.loaded = False
         self.clear_collections()
         self.numTrials = 0
         self.num_conditions_with_trials = 0
         self.filtered = False
-        self.from_source: Dict = {}
-    
+        self.from_source: Dict[str, Patient] = {}
+
+    def login_patient(self, source: str, mrn: str, token: str):
+        patient = self.patient_type[source](mrn, token)
+        patient.load_demographics()
+        self.from_source[source] = patient
+        self.loaded = False
+
     def clear_collections(self):
         self.trials: List[Trial] = []
         self.ncit_codes: list = []
@@ -232,7 +238,7 @@ class CombinedPatient:
 
     def calculate_distances(self):
         db = Zipcode()
-        patzip = self.VAPatient.zipcode
+        patzip = self.from_source['va'].zipcode
         pat_latlong = db.zip2geo(patzip)
 
         for trial in self.trials:
@@ -248,12 +254,11 @@ class CombinedPatient:
 
     def load_data(self):
         self.clear_collections() 
-        if self.CMSPatient is not None:
-            self.append_patient_data(self.CMSPatient)
-        if self.VAPatient is not None:
-            self.append_patient_data(self.VAPatient)
-            self.calculate_distances()
-            self.results = self.VAPatient.results
+        for source, patient in self.from_source.items():
+            self.append_patient_data(patient)
+            if source=='va':
+                self.calculate_distances()
+                self.results = patient.results
         for code in self.ncit_codes:
             trials = []
             for trial in self.trials:
