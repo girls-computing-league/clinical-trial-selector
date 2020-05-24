@@ -1,12 +1,6 @@
 {% extends "base.html" %}
 
 {%- set trialID = request.args.get('id', '0') %}
-{%- set trailns = namespace(trial=none) %}
-{%- for tr in session["trials"] %}
-  {%- if tr.id == trialID %}
-    {%- set trailns.trial = tr %}
-  {% endif %}
-{% endfor %}
 
 {% block content %}
   {{ super() }}

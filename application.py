@@ -119,8 +119,6 @@ def getInfo():
     socketio.emit(event_name, {"data": 70}, room=session.sid)
 
     if patient_id is not None and token is not None:
-        # session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
-        # app.logger.debug("FROM SESSION", session['Laboratory_Results'])
         va_patient = combined.from_source['va']
         va_patient.load_test_results()
         combined.results = va_patient.results
@@ -173,7 +171,6 @@ def download_trails():
     output.headers["Content-Disposition"] = "attachment; filename=info.csv"
     output.headers["Content-type"] = "text/csv"
     return output
-
 
 class FilterForm(FlaskForm):
     hemoglobin = StringField('hemoglobin ', [validators.Length(max=25)])
