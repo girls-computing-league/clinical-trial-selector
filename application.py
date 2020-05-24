@@ -36,18 +36,16 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
 
 app = Flask(__name__)
-if args.get("local", app.env) == "development":
-    app.config.from_pyfile("config/local.cfg")
-    app.config.from_pyfile("secrets/local_keys.cfg")
-elif app.env == "test":
-    app.config.from_pyfile("config/test_aws.cfg")
-    app.config.from_pyfile("secrets/test_aws_keys.cfg")
-else:
-    app.config.from_pyfile("config/aws.cfg")
-    app.config.from_pyfile("secrets/aws_keys.cfg")
+
+def read_config(environment: str):
+    app.config.from_pyfile(f"config/{environment}.cfg")
+    app.config.from_pyfile(f"secrets/{environment}_keys.cfg")
+
+env = 'local' if args.get('local', app.env) == 'development' else ('test' if app.env == 'test' else 'aws')
+read_config(env)
+read_config('default')
+
 log_level = args.get("log", app.config["CTS_LOGLEVEL"]).upper()
-app.config.from_pyfile("config/default.cfg")
-app.config.from_pyfile("secrets/default_keys.cfg")
 
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 
@@ -311,12 +309,10 @@ def logout():
 
 @app.route('/generalprivacypolicy.html')
 def privacy_policy():
-    session.clear()
     return render_template("generalprivacypolicy.html")
 
 @app.route('/generaltermsofuse.html')
 def terms_use():
-    session.clear()
     return render_template("generaltermsofuse.html")
 
 @socketio.on("connect")
