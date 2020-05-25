@@ -1,6 +1,7 @@
 from typing import Tuple, Optional, Dict, Any, Union
 from dateutil.parser import parse
 from datetime import datetime
+import json
 
 class Observation:
     
@@ -27,3 +28,32 @@ class Observation:
         if not iso:
             return None
         return parse(iso)
+
+class Patient:
+
+    def __init__(self, resource: Dict[str, Any]):
+        self._resource = resource
+        self.fullname = self._extract_fullname()
+        self.gender = self._extract_gender()
+        self.birth_date = self._extract_birth_date()
+        self.zipcode = self._extract_zipcode()
+        self.JSON = json.dumps(self._resource)
+
+    def _extract_fullname(self) -> str:
+        name = self._resource.get('name', [{'text': ''}])[0]
+        fullname = name.get('text', '')
+        if fullname == "":
+            given = name.get('given', [''])[0]
+            family = name.get('family', '')
+            fullname = f"{given} {family}"
+        return fullname
+
+    def _extract_gender(self) -> str:
+        return self._resource.get('gender', '')
+
+    def _extract_birth_date(self) -> str:
+        return self._resource.get('birthDate', '')
+
+    def _extract_zipcode(self) -> str:
+        return self._resource.get('address', [{'postalCode': ''}])[0].get('postalCode', '')
+

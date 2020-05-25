@@ -3,32 +3,40 @@ import logging
 import sys
 import umls
 import requests as req
-from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable
+from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable, Type, cast
+from abc import ABCMeta, abstractmethod
 from mypy_extensions import TypedDict 
 from datetime import date
 from distances import distance
 from zipcode import Zipcode
 from flask import current_app as app
-from apis import VaApi
+from apis import VaApi, CmsApi, FhirApi
 from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
 import json
 import re
 
-class Patient:
+class Patient(metaclass=ABCMeta):
+
     def __init__(self, mrn: str, token: str):
-        #logging.getLogger().setLevel(logging.DEBUG)
+        #logging.geaLogger().setLevel(logging.DEBUG)
         self.mrn = mrn 
         self.token = token
         self.auth = umls.Authentication(app.config["UMLS_API_KEY"])
         self.tgt = self.auth.gettgt()
-        self.api = VaApi(self.mrn, self.token)
         self.results: List[TestResult] = []
         self.latest_results: Dict[str, TestResult] = {}
+        self.api: FhirApi
 
     def load_demographics(self):
-        self.gender, self.birthdate, self.name, self.zipcode, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
+        dem = self.api.get_demographics()
+        self.name = dem.fullname
+        self.gender = dem.gender
+        self.birthdate = dem.birth_date
+        self.zipcode = dem.zipcode
+        self.PatientJSON = dem.JSON
+        logging.debug("Patient JSON: " + self.PatientJSON)
         logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def calculate_age(self):
@@ -105,6 +113,12 @@ class Patient:
     def snomed2ncit(self, code_snomed):
         return self.code2ncit(code_snomed, self.codes_snomed, "SNOMEDCT_US")
 
+class VAPatient(Patient):
+
+    def __init__(self, mrn: str, token: str):
+        super().__init__(mrn, token)
+        self.api: VaApi = VaApi(self.mrn, self.token)
+
     def load_test_results(self) -> None:
         self.results = []
         for obs in self.api.get_observations():
@@ -119,6 +133,10 @@ class Patient:
                     self.latest_results[result.test_name] = result
 
 class CMSPatient(Patient):
+
+    def __init__(self, mrn: str, token: str):
+        super().__init__(mrn, token)
+        self.api = CmsApi(self.mrn, self.token)
 
     def load_conditions(self):
         self.codes_icd9: list = []
@@ -142,19 +160,6 @@ class CMSPatient(Patient):
                     names.append(coding["display"])
         self.codes_icd9 = codes
         self.conditions = names
-    
-    def load_demographics(self):
-        url = f"{app.config['CMS_API_BASE_URL']}Patient/" + self.mrn
-        headers = {"Authorization": "Bearer {}".format(self.token)}
-        res = req.get(url, headers=headers)
-        fhir = res.json()
-        self.PatientJSON = res.text
-        logging.debug("FHIR: {}".format(self.PatientJSON))
-        self.gender = fhir["gender"]
-        self.birthdate = fhir["birthDate"]
-        name = fhir["name"][0]
-        self.name = "{} {}".format(name["given"][0], name["family"])
-        logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def load_codes(self):
         self.codes_ncit = []
@@ -210,7 +215,7 @@ class Trial:
                     
 class CombinedPatient:
 
-    patient_type: Dict[str, Callable[[str, str], Patient]] = {'va': Patient, 'cms': CMSPatient}
+    patient_type: Dict[str, Type[Patient]] = {'va': VAPatient, 'cms': CMSPatient}
     
     def __init__(self):
         self.loaded = False
@@ -223,8 +228,9 @@ class CombinedPatient:
     def has_patients(self) -> bool:
         return len(self.from_source) > 0
 
-    def va_patient(self) -> Optional[Patient]:
-        return self.from_source.get('va', None)
+    def va_patient(self) -> Optional[VAPatient]:
+        patient = self.from_source.get('va', None)
+        return patient if isinstance(patient,VAPatient) else None
 
     def login_patient(self, source: str, mrn: str, token: str):
         patient = self.patient_type[source](mrn, token)
