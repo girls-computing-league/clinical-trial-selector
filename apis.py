@@ -34,9 +34,9 @@ class FhirApi(Api):
                     url = link.get('url')
                     break
 
-    def get_demographics(self) -> fhir.Patient:
+    def get_demographics(self) -> fhir.Demographics:
         url = f"{self.base_url}Patient/{self.id}"
-        return fhir.Patient(self.get(url))
+        return fhir.Demographics(self.get(url))
 
 class VaApi(FhirApi):
 

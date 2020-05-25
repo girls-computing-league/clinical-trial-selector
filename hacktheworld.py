@@ -19,6 +19,8 @@ import re
 
 class Patient(metaclass=ABCMeta):
 
+    api_factory: Type[FhirApi]
+
     def __init__(self, mrn: str, token: str):
         #logging.geaLogger().setLevel(logging.DEBUG)
         self.mrn = mrn 
@@ -27,7 +29,11 @@ class Patient(metaclass=ABCMeta):
         self.tgt = self.auth.gettgt()
         self.results: List[TestResult] = []
         self.latest_results: Dict[str, TestResult] = {}
-        self.api: FhirApi
+        self.api = self.api_factory(self.mrn, self.token)
+        self.after_init()
+
+    def after_init(self):
+        pass
 
     def load_demographics(self):
         dem = self.api.get_demographics()
@@ -115,13 +121,14 @@ class Patient(metaclass=ABCMeta):
 
 class VAPatient(Patient):
 
-    def __init__(self, mrn: str, token: str):
-        super().__init__(mrn, token)
-        self.api: VaApi = VaApi(self.mrn, self.token)
+    api_factory = VaApi
+
+    def after_init(self):
+        self.va_api: VaApi = cast(VaApi, self.api)
 
     def load_test_results(self) -> None:
         self.results = []
-        for obs in self.api.get_observations():
+        for obs in self.va_api.get_observations():
             app.logger.debug(f"LOINC CODE = {obs.loinc}")
             result = TestResult.from_observation(obs)
             if result is not None:
@@ -134,9 +141,7 @@ class VAPatient(Patient):
 
 class CMSPatient(Patient):
 
-    def __init__(self, mrn: str, token: str):
-        super().__init__(mrn, token)
-        self.api = CmsApi(self.mrn, self.token)
+    api_factory = CmsApi
 
     def load_conditions(self):
         self.codes_icd9: list = []

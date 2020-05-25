@@ -29,7 +29,7 @@ class Observation:
             return None
         return parse(iso)
 
-class Patient:
+class Demographics:
 
     def __init__(self, resource: Dict[str, Any]):
         self._resource = resource
