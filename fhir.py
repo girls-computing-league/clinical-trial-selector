@@ -14,10 +14,10 @@ class Observation:
         self.datetime = self._extract_datetime()
 
     def _extract_loinc(self) -> str:
-        for coding in self._resource.get('code',{}).get('coding',[]):
-            if coding.get('system') == "http://loinc.org":
-                return coding.get('code')
-        return ""
+        coding_list = self._resource.get('code',{}).get('coding',[])
+        coding_system = 'http://loinc.org'
+        return next((coding.get('code') for coding in coding_list \
+                if coding.get('system') == coding_system) ,'')
 
     def _extract_value(self) -> Tuple[Optional[float], Optional[str]]:
         value_quantity: Dict[str, Any] = self._resource.get('valueQuantity', {})
@@ -37,7 +37,7 @@ class Demographics:
         self.gender = self._extract_gender()
         self.birth_date = self._extract_birth_date()
         self.zipcode = self._extract_zipcode()
-        self.JSON = json.dumps(self._resource)
+        self.JSON = json.dumps(self._resource, indent=2)
 
     def _extract_fullname(self) -> str:
         name = self._resource.get('name', [{'text': ''}])[0]

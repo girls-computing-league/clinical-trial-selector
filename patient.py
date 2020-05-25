@@ -36,12 +36,6 @@ def get_api(token, url, params=None):
     res = req.get(url, headers=headers, params=params)
     return res.json()
 
-def conditions_list(patients, index):
-    pat = list(patients.values())[index]
-    token = pat["token"]
-    mrn = pat["mrn"]
-    return load_conditions(mrn, token)
-
 def load_conditions(mrn, token):
     more_pages = True
     url = app.config['VA_CONDITIONS_URL']+mrn

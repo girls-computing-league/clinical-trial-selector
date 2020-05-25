@@ -42,10 +42,8 @@ class Patient(metaclass=ABCMeta):
         self.birthdate = dem.birth_date
         self.zipcode = dem.zipcode
         self.PatientJSON = dem.JSON
-        logging.debug("Patient JSON: " + self.PatientJSON)
+        logging.debug(f"Patient JSON: {self.PatientJSON}")
         logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
-
-    def calculate_age(self):
         today = date.today()
         born = date.fromisoformat(self.birthdate)
         self.age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
@@ -82,8 +80,6 @@ class Patient(metaclass=ABCMeta):
         return
 
     def load_all(self):
-        self.load_demographics()
-        self.calculate_age()
         self.load_conditions()
         self.load_codes()
         self.find_trials()
