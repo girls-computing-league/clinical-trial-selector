@@ -42,7 +42,7 @@ def get_authenticate_bcda_api_token(client_id: str, client_secret: str):
 
 def decrypt_cipher(ct: Any, key: Any):
     nonce = ct.read(GCM_NONCE_SIZE)
-    cipher: Any = AES.new(key, AES.MODE_GCM, nonce=nonce, mac_len=GCM_TAG_SIZE)
+    cipher: Any = AES.new(key, AES.MODE_GCM, nonce=nonce, mac_len=GCM_TAG_SIZE) # type: ignore
     ciphertext = ct.read()
     return cipher.decrypt_and_verify(
         ciphertext[:-GCM_TAG_SIZE],

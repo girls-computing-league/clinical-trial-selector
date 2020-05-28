@@ -3,36 +3,47 @@ import logging
 import sys
 import umls
 import requests as req
-from typing import Dict, List, Optional, Union, Iterable, Match, Set
+from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable, Type, cast
+from abc import ABCMeta, abstractmethod
 from mypy_extensions import TypedDict 
 from datetime import date
 from distances import distance
 from zipcode import Zipcode
 from flask import current_app as app
-from apis import VaApi
+from apis import VaApi, CmsApi, FhirApi
 from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
 import json
 import re
 
-class Patient:
-    def __init__(self, sub: str, pat_token: Dict[str, str]):
-        #logging.getLogger().setLevel(logging.DEBUG)
-        self.sub = sub
-        self.mrn = pat_token["mrn"]
-        self.token = pat_token["token"]
+class Patient(metaclass=ABCMeta):
+
+    api_factory: Type[FhirApi]
+
+    def __init__(self, mrn: str, token: str):
+        #logging.geaLogger().setLevel(logging.DEBUG)
+        self.mrn = mrn 
+        self.token = token
         self.auth = umls.Authentication(app.config["UMLS_API_KEY"])
         self.tgt = self.auth.gettgt()
-        self.api = VaApi(self.mrn, self.token)
         self.results: List[TestResult] = []
         self.latest_results: Dict[str, TestResult] = {}
+        self.api = self.api_factory(self.mrn, self.token)
+        self.after_init()
+
+    def after_init(self):
+        pass
 
     def load_demographics(self):
-        self.gender, self.birthdate, self.name, self.zipcode, self.PatientJSON = pt.load_demographics(self.mrn, self.token)
+        dem = self.api.get_demographics()
+        self.name = dem.fullname
+        self.gender = dem.gender
+        self.birthdate = dem.birth_date
+        self.zipcode = dem.zipcode
+        self.PatientJSON = dem.JSON
+        logging.debug(f"Patient JSON: {self.PatientJSON}")
         logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
-
-    def calculate_age(self):
         today = date.today()
         born = date.fromisoformat(self.birthdate)
         self.age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
@@ -69,8 +80,6 @@ class Patient:
         return
 
     def load_all(self):
-        self.load_demographics()
-        self.calculate_age()
         self.load_conditions()
         self.load_codes()
         self.find_trials()
@@ -106,11 +115,18 @@ class Patient:
     def snomed2ncit(self, code_snomed):
         return self.code2ncit(code_snomed, self.codes_snomed, "SNOMEDCT_US")
 
+class VAPatient(Patient):
+
+    api_factory = VaApi
+
+    def after_init(self):
+        self.va_api: VaApi = cast(VaApi, self.api)
+
     def load_test_results(self) -> None:
         self.results = []
-        for obs in self.api.get_observations():
+        for obs in self.va_api.get_observations():
             app.logger.debug(f"LOINC CODE = {obs.loinc}")
-            result: Optional[TestResult] = TestResult.from_observation(obs)
+            result = TestResult.from_observation(obs)
             if result is not None:
                 app.logger.debug(f"Result added: {result.test_name} {result.value} {result.unit} on {result.datetime}")
                 self.results.append(result)
@@ -121,9 +137,11 @@ class Patient:
 
 class CMSPatient(Patient):
 
+    api_factory = CmsApi
+
     def load_conditions(self):
         self.codes_icd9: list = []
-        url = "https://sandbox.bluebutton.cms.gov/v1/fhir/ExplanationOfBenefit"
+        url = f"{app.config['CMS_API_BASE_URL']}ExplanationOfBenefit"
         params = {"patient": self.mrn, "_count":"50"}
         headers = {"Authorization": "Bearer {}".format(self.token)}
         res = req.get(url, params=params, headers=headers)
@@ -143,19 +161,6 @@ class CMSPatient(Patient):
                     names.append(coding["display"])
         self.codes_icd9 = codes
         self.conditions = names
-    
-    def load_demographics(self):
-        url = "https://sandbox.bluebutton.cms.gov/v1/fhir/Patient/" + self.mrn
-        headers = {"Authorization": "Bearer {}".format(self.token)}
-        res = req.get(url, headers=headers)
-        fhir = res.json()
-        self.PatientJSON = res.text
-        logging.debug("FHIR: {}".format(self.PatientJSON))
-        self.gender = fhir["gender"]
-        self.birthdate = fhir["birthDate"]
-        name = fhir["name"][0]
-        self.name = "{} {}".format(name["given"][0], name["family"])
-        logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
 
     def load_codes(self):
         self.codes_ncit = []
@@ -172,27 +177,6 @@ class CMSPatient(Patient):
 
     def icd2ncit(self, code_icd9):
         return self.code2ncit(code_icd9, self.codes_icd9, "ICD9CM")
-
-
-class PatientLoader:
-    def __init__(self):
-        self.patients: list = []
-
-        # Load VA Patients
-        va_tokens = pt.load_patients("va")
-        for pat_token in va_tokens:
-            self.patients.append(Patient(pat_token, va_tokens[pat_token]))
-
-        # Load CMS Patients
-        cms_tokens = pt.load_patients("cms")
-        for pat_token in cms_tokens:
-            self.patients.append(CMSPatient(pat_token, cms_tokens[pat_token]))
-
-        self.pat_tokens = {va_tokens, cms_tokens}
-
-    def load_all_patients(self):
-        for patient in self.patients:
-            patient.load_all()
 
 class Criterion(TypedDict): 
     inclusion_indicator: bool
@@ -230,17 +214,31 @@ class Trial:
         for unit in s:
             app.logger.debug(f"leukocytes unit: {unit}")
                     
-
 class CombinedPatient:
+
+    patient_type: Dict[str, Type[Patient]] = {'va': VAPatient, 'cms': CMSPatient}
+    
     def __init__(self):
-        self.VAPatient: Patient = None
-        self.CMSPatient = None
         self.loaded = False
         self.clear_collections()
         self.numTrials = 0
         self.num_conditions_with_trials = 0
         self.filtered = False
-    
+        self.from_source: Dict[str, Patient] = {}
+
+    def has_patients(self) -> bool:
+        return len(self.from_source) > 0
+
+    def va_patient(self) -> Optional[VAPatient]:
+        patient = self.from_source.get('va', None)
+        return patient if isinstance(patient,VAPatient) else None
+
+    def login_patient(self, source: str, mrn: str, token: str):
+        patient = self.patient_type[source](mrn, token)
+        patient.load_demographics()
+        self.from_source[source] = patient
+        self.loaded = False
+
     def clear_collections(self):
         self.trials: List[Trial] = []
         self.ncit_codes: list = []
@@ -253,7 +251,7 @@ class CombinedPatient:
 
     def calculate_distances(self):
         db = Zipcode()
-        patzip = self.VAPatient.zipcode
+        patzip = self.from_source['va'].zipcode
         pat_latlong = db.zip2geo(patzip)
 
         for trial in self.trials:
@@ -269,12 +267,11 @@ class CombinedPatient:
 
     def load_data(self):
         self.clear_collections() 
-        if self.CMSPatient is not None:
-            self.append_patient_data(self.CMSPatient)
-        if self.VAPatient is not None:
-            self.append_patient_data(self.VAPatient)
-            self.calculate_distances()
-            self.results = self.VAPatient.results
+        for source, patient in self.from_source.items():
+            self.append_patient_data(patient)
+            if source=='va':
+                self.calculate_distances()
+                self.results = patient.results
         for code in self.ncit_codes:
             trials = []
             for trial in self.trials:
@@ -287,6 +284,14 @@ class CombinedPatient:
         self.loaded = True
         self.numTrials = len(self.trials)
         self.num_conditions_with_trials = len(self.trials_by_ncit)
+
+    def load_test_results(self) -> None:
+        va_patient = self.va_patient()
+        if va_patient is None:
+            return
+        va_patient.load_test_results()
+        self.results = va_patient.results
+        self.latest_results = va_patient.latest_results
 
     def append_patient_data(self,patient):
         patient.load_all()

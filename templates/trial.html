@@ -1,9 +1,9 @@
 {% extends "patient.html" %}
 
-{%- set id = request.args.get('id', '0') %}
+{%- set trialID = request.args.get('id', '0') %}
 {%- set ns = namespace(trial=none) %}
-{%- for tr in session["trials"] %}
-    {%- if tr.id == id %}
+{%- for tr in session['combined_patient'].trials %}
+    {%- if tr.id == trialID %}
         {%- set ns.trial = tr %}
     {% endif %}
 {% endfor %}

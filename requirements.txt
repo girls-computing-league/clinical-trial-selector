@@ -1,6 +1,6 @@
 appnope==0.1.0
 asn1crypto==0.24.0
-authlib=0.14.1
+authlib==0.14.1
 awscli==1.16.248
 backcall==0.1.0
 blinker==1.4

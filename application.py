@@ -25,6 +25,7 @@ from flask_wtf.csrf import CSRFError
 from wtforms import Form, StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from labtests import labs
+from typing import Dict
 
 args: dict = {}
 if __name__ == "__main__":
@@ -35,18 +36,16 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
 
 app = Flask(__name__)
-if args.get("local", app.env) == "development":
-    app.config.from_pyfile("config/local.cfg")
-    app.config.from_pyfile("secrets/local_keys.cfg")
-elif app.env == "test":
-    app.config.from_pyfile("config/test_aws.cfg")
-    app.config.from_pyfile("secrets/test_aws_keys.cfg")
-else:
-    app.config.from_pyfile("config/aws.cfg")
-    app.config.from_pyfile("secrets/aws_keys.cfg")
+
+def read_config(environment: str):
+    app.config.from_pyfile(f"config/{environment}.cfg")
+    app.config.from_pyfile(f"secrets/{environment}_keys.cfg")
+
+env = 'local' if args.get('local', app.env) == 'development' else ('test_aws' if app.env == 'test' else 'aws')
+read_config(env)
+read_config('default')
+
 log_level = args.get("log", app.config["CTS_LOGLEVEL"]).upper()
-app.config.from_pyfile("config/default.cfg")
-app.config.from_pyfile("secrets/default_keys.cfg")
 
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 
@@ -69,11 +68,8 @@ event_name = 'update_progress'
 
 callback_urlbase = app.config["CTS_CALLBACK_URLBASE"]
 
-def authentications():
-    auts = []
-    if ('va_patient' in session): auts.append('va')
-    if ('cms_patient' in session): auts.append('cms')
-    return auts
+def combined_from_session() -> hack.CombinedPatient:
+    return session.setdefault('combined_patient', hack.CombinedPatient())
 
 @app.route('/')
 def showtrials():
@@ -93,62 +89,26 @@ def authenticate(source):
 @app.route('/<source>redirect')
 def oauth_redirect(source):
     app.logger.info(f"Redirected from {source.upper()} authentication")
-    resp = getattr(oauth,source).authorize_access_token()
+    resp: Dict[str, str] = getattr(oauth,source).authorize_access_token()
     app.logger.debug(f"Response: {resp}")
-    combined = session.get("combined_patient", hack.CombinedPatient())
-    session[f'{source}_access_token'] = resp['access_token']
-    session[f'{source}_patient'] = resp['patient']
-    session.pop("trials", None)
-    pat_token = {"mrn": resp["patient"], "token": resp["access_token"]}
-    if source == 'va':
-        pat = hack.Patient(resp['patient'], pat_token)
-    else:
-        pat = hack.CMSPatient(resp['patient'], pat_token)
-    pat.load_demographics()
-    session[f'{source}_gender'] = pat.gender
-    session[f'{source}_birthdate'] = pat.birthdate
-    session[f'{source}_name'] = pat.name
-    if source == 'va':
-        session[f'va_zipcode'] = pat.zipcode
-        combined.VAPatient = pat
-    else:
-        combined.CMSPatient = pat
-    combined.loaded = False
-    session['combined_patient'] = combined
+    combined = combined_from_session()
+    mrn = resp['patient']
+    token = resp['access_token']
+    combined.login_patient(source, mrn, token)
     return redirect('/')
 
 @app.route('/getInfo', methods=['POST'])
 def getInfo():
     app.logger.info("GETTING INFO NOW")
-    combined: hack.CombinedPatient = session.get("combined_patient", hack.CombinedPatient())
-    auts = authentications()
+    combined = combined_from_session()
     socketio.emit(event_name, {"data": 15}, room=session.sid)
-    if (not auts):
+    if not combined.has_patients():
         return redirect("/")
     combined.load_data()
     socketio.emit(event_name, {"data": 50}, room=session.sid)
-    
-    patient_id = session.get('va_patient')
-    token = session.get('va_access_token')
-
-    session['codes'] = combined.ncit_codes
-    session['trials'] = combined.trials
-    session['numTrials'] = combined.numTrials
-    session['index'] = 0
-    session["combined_patient"] = combined
-    socketio.emit(event_name, {"data": 70}, room=session.sid)
-
-    if patient_id is not None and token is not None:
-        session['Laboratory_Results'] = get_lab_observations_by_patient(patient_id, token)
-        app.logger.debug("FROM SESSION", session['Laboratory_Results'])
-        combined.VAPatient.load_test_results()
-        combined.results = combined.VAPatient.results
-        combined.latest_results = combined.VAPatient.latest_results
-        # for trial in combined.trials:
-        #     trial.determine_filters()
+    combined.load_test_results()
     socketio.emit(event_name, {"data": 95}, room=session.sid)
     socketio.emit('disconnect', {"data": 100}, room=session.sid)
-
     return redirect("/")
 
 @app.route('/trials')
@@ -193,14 +153,13 @@ def download_trails():
     output.headers["Content-type"] = "text/csv"
     return output
 
-
 class FilterForm(FlaskForm):
     hemoglobin = StringField('hemoglobin ', [validators.Length(max=25)])
     leukocytes = StringField('leukocytes ', [validators.Length(max=25)])
     platelets = StringField('platelets ', [validators.Length(max=25)])
 
 
-@app.route('/filter_by_lab_results', methods=['GET', 'POST'])
+@app.route('/filter_by_lab_results', methods=['POST'])
 def filter_by_lab_results():
     """
     A view that filters trials based on:
@@ -210,15 +169,13 @@ def filter_by_lab_results():
 
     form = FilterForm()
 
-    if form.validate_on_submit():
-        for key, value in form.data.items():
-            if key != "csrf_token":
-                # lab_results = {key: (value.split()[0], value.split()[1])}
-                lab_results = {key: value}
-    else:
-        lab_results = session['Laboratory_Results']
-
     combined_patient = session['combined_patient']
+
+    if form.validate_on_submit():
+        lab_results = {key:value for (key,value) in form.data.items() if key != 'csrf_token'}
+    else:
+        lab_results = combined_patient.latest_results
+
     trials_by_ncit = combined_patient.trials_by_ncit
     socketio.emit(event_name, {"data": 20}, room=session.sid)
 
@@ -330,12 +287,10 @@ def logout():
 
 @app.route('/generalprivacypolicy.html')
 def privacy_policy():
-    session.clear()
     return render_template("generalprivacypolicy.html")
 
 @app.route('/generaltermsofuse.html')
 def terms_use():
-    session.clear()
     return render_template("generaltermsofuse.html")
 
 @socketio.on("connect")

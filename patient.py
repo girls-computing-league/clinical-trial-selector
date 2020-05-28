@@ -16,27 +16,12 @@ from flask import current_app as app
 
 client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
 
-# # BASE_URL = "https://dev-api.vets.gov/services/argonaut/v0/"
-# BASE_URL = app.config["VA_API_BASE_URL"] + "services/fhir/v0/argonaut/data-query/"
-# #BASE_URL = "https://dev-api.va.gov/services/fhir/v0/argonaut/data-query/"
-# DEMOGRAPHICS_URL = BASE_URL + "Patient/"
-# CONDITIONS_URL = BASE_URL + "Condition?_count=50&patient="
-# DISEASES_URL = "https://clinicaltrialsapi.cancer.gov/v1/diseases"
-# TRIALS_URL = "https://clinicaltrialsapi.cancer.gov/v1/clinical-trials"
-# OBSERVATION_URL = BASE_URL + 'Observation'
-
 trial_filter_cnt = 0
 
 LOINC_CODES = {
     '718-7': 'hemoglobin',
     '6690-2': 'leukocytes',
     '777-3': 'platelets'
-}
-
-TABLE_NAME_BY_CELL_TYPE = {
-    'hemoglobin': 'Dataset1_Hemoglobin_Trials_First',
-    'wbc': 'Dataset1_WBC_Trials_First',
-    'platelets': 'Dataset1_Platelets_Trials_First',
 }
 
 match_type = 'hemoglobin|platelets|leukocytes'
@@ -48,44 +33,10 @@ def rchop(thestring, ending):
     return thestring[:-len(ending)]
   return thestring
 
-def filepaths_gen(direct="va"):
-    acc_dir = Path("./accesscodes/" + direct)
-    return(acc_dir.glob("*.json"))
-
-def load_demographics(mrn, token):
-    url = app.config['VA_DEMOGRAPHICS_URL'] + mrn
-    api_res = get_api(token, url)
-    logging.debug("Patient JSON: " + json.dumps(api_res))
-    return api_res["gender"], api_res["birthDate"], api_res["name"][0]["text"], api_res["address"][0]["postalCode"], json.dumps(api_res)
-
-def load_patients(direct="va"):
-    patients = {}
-    for file in filepaths_gen(direct):
-        patient = load_patient(file)
-        patients[file.stem] = patient
-    return(patients)
-
-def get_patient():
-    return
-
 def get_api(token, url, params=None):
     headers = {"Authorization": "Bearer {}".format(token)}
     res = req.get(url, headers=headers, params=params)
     return res.json()
-
-def load_patient(file):
-    f = file.open()
-    code = json.load(f)
-    f.close()
-    mrn = code["patient"]
-    token = code["access_code"]
-    return({"mrn": mrn, "token": token})
-
-def conditions_list(patients, index):
-    pat = list(patients.values())[index]
-    token = pat["token"]
-    mrn = pat["mrn"]
-    return load_conditions(mrn, token)
 
 def load_conditions(mrn, token):
     more_pages = True
@@ -522,5 +473,7 @@ def convert_expressions(lab_value: str, condition: str):
     if len(condition_reg) == 0:
         return "0", ""
     condition = condition_reg[0].replace(',', '')
+    condition = condition.replace('=<', '<=')
+    condition = condition.replace('=>', '>=')
 #    lab_value = lab_value[0]
     return lab_value, condition

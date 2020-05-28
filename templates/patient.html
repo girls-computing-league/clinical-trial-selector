@@ -1,12 +1,6 @@
 {% extends "base.html" %}
 
 {%- set trialID = request.args.get('id', '0') %}
-{%- set trailns = namespace(trial=none) %}
-{%- for tr in session["trials"] %}
-  {%- if tr.id == trialID %}
-    {%- set trailns.trial = tr %}
-  {% endif %}
-{% endfor %}
 
 {% block content %}
   {{ super() }}
@@ -43,6 +37,8 @@
   </header>
 
   <div>
+
+    {%- set combined = session["combined_patient"] if session["combined_patient"] else None %}
     {%- if trialID != '0' %}    
       <div class="site-top-nav-wrapper site-l-wrapper sticky">
         <nav class="site-header__nav">
@@ -86,12 +82,12 @@
             <li class="site-header__nav-item">
               <a class="site-header__nav-item__link {{ nomatches_selection }}" href="/nomatches" data-toggle="tab">Codes w/o Matches</a>
             </li>
-            {%- if session["combined_patient"] and session["combined_patient"].loaded %}
+            {%- if combined.loaded %}
               <li class="site-header__nav-item">
                 <a class="site-header__nav-item__link " href="/download_trials" data-toggle="tab">Download Trials</a>
               </li>
             {% endif %}
-          </ul>
+         </ul>
         </nav>
       </div>
     {% endif %}
@@ -99,13 +95,14 @@
     <div class="site-content vads-u-margin-bottom--9 vads-l-row vads-u-padding-x--3">
       <div class="site-content__nav vads-l-col--3 vads-u-padding-x--3">
 
-        {%- for source in (["va"] if config["ENV"] == "prod" else ["va", "cms"]) %}
-         <table>
+        {%- for source in ["va", "cms"] %}
+          {%- set patient = combined.from_source[source] if combined and combined.from_source[source] else None %}
+          <table>
             <thead>
               <tr>
                 <th class="vads-u-display--flex vads-u-justify-content--space-between">
                   <div class="vads-u-flex--auto">{{ source.upper() }} Patient Info</div>
-                  {%- if not session[source+"_patient"] %}
+                  {%- if not patient %}
                     <form action="{{ url_for('authenticate',source=source) }}" method="POST" class="vads-u-flex-auto">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                       <button class="usa-button vads-u-margin--0" type="submit">Login</button>
@@ -115,12 +112,12 @@
               </tr>
             </thead>
             <tbody class="vads-u-line-height--1">
-              {%- for label, value in {
-                "Name":session[source+"_name"], 
-                "ID":session[source+"_patient"], 
-                "DOB":session[source+"_birthdate"], 
-                "Gender":session[source+"_gender"],
-                "Zipcode":session[source+"_zipcode"]}.items() %}
+             {%- for label, value in {
+                "Name": patient.name,
+                "ID": patient.mrn,
+                "DOB": patient.birthdate,
+                "Gender": patient.gender,
+                "Zipcode": patient.zipcode}.items() %}
                 <tr>
                   <td class="vads-u-display--flex vads-u-justify-content--space-between vads-u-flex-wrap--wrap vads-u-padding-y--1p5">
                     <div class="vads-u-flex--auto"><strong>{{label}}</strong></div>

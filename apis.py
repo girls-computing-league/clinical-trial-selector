@@ -34,6 +34,10 @@ class FhirApi(Api):
                     url = link.get('url')
                     break
 
+    def get_demographics(self) -> fhir.Demographics:
+        url = f"{self.base_url}Patient/{self.id}"
+        return fhir.Demographics(self.get(url))
+
 class VaApi(FhirApi):
 
     url_config = "VA_API_HEALTH_BASE_URL"
@@ -42,9 +46,10 @@ class VaApi(FhirApi):
         for resource in self.get_fhir_bundle("Observation"):
             yield fhir.Observation(resource)
 
-class CmsApi(Api):
+class CmsApi(FhirApi):
 
-    pass
+    url_config = "CMS_API_BASE_URL"
+
 
 
 
