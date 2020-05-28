@@ -3,7 +3,9 @@ import json
 import requests as req
 import logging
 import re
+import pickle
 import boto3, botocore
+import subprocess
 from jsonpath_rw_ext import parse
 from typing import Dict, List, Any, Tuple, Union, Optional
 import concurrent.futures as futures
@@ -47,8 +49,11 @@ def find_trials(ncit_codes, gender="unknown", age=0):
         while next_trial<= total:
             ncit = ncit_dict["ncit"]
             params = {"size": f"{size}", "from": f"{next_trial}", "diseases.nci_thesaurus_concept_id": ncit}
+<<<<<<< HEAD
             if (gender != "unknown"):
                 params["eligibility.structured.gender"] = [gender, 'BOTH']
+=======
+>>>>>>> Creating Facebook Parser
             if (age != 0):
                 params["eligibility.structured.max_age_in_years_gte"] = age
                 params["eligibility.structured.min_age_in_years_lte"] = age
@@ -61,6 +66,15 @@ def find_trials(ncit_codes, gender="unknown", age=0):
             next_trial += size
 
             trials.append(trialset)
+            if (gender != "unknown"):
+                params["eligibility.structured.gender"] = gender
+                res = req.get(app.config['TRIALS_URL'], params=params)
+                res_dict = res.json()
+                trialset = {"code_ncit": ncit, "trialset": res_dict}
+                total = res_dict["total"]
+                next_trial += size
+
+                trials.append(trialset)
     return trials
 
 def get_lab_observations_by_patient(patient_id, token):
@@ -97,7 +111,6 @@ def get_lab_observations_by_patient(patient_id, token):
     values_by_cell_type = {LOINC_CODES[key]: val['value'] for key, val in lab_results.items()}
     return values_by_cell_type
 
-
 def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
                                  lab_results: Dict[str, Any])\
         -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
@@ -110,6 +123,124 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
     filtered_trials_by_ncit: list = []
     excluded_trials_by_ncit: list = []
     trial_filter_cnt = 0
+    logging.info("TRIALS: " + str(trials_by_ncit))
+    logging.info("LAB RESULTS: " + str(lab_results))
+    for condition in trials_by_ncit:
+        ncit = condition['ncit']
+        trials = condition['trials']
+        for trial in trials:
+            header = "#nct_id,title,has_us_facility,conditions,eligibility_criteria"
+            trial_info = trial.id + "," + trial.title + ",false," + trial.diseases[0]['preferred_name'] + ',"\n\t\tInclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.inclusions).replace('"',"'") + '\n\n\t\tExclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.exclusions).replace('"',"'") + '"'
+
+            script_line = app.config['PARSER_LOCATION'] + "src/cmd/cfg/main.go"
+            config_line = app.config['PARSER_LOCATION'] + "src/resources/config/cfg.conf"
+
+            input_line = "parser_io/inputs/" + trial.id + ".csv"
+            output_line = "parser_io/outputs/" + trial.id + ".csv"
+
+            print(header + "\n" + trial_info, file=open(input_line, "w"))
+
+            command_line = ['bash', 'parser_io/script.sh', '-c', config_line, '-m', script_line, '-o', output_line, '-i', input_line, '>', '/dev/null', '2>&1']
+            #logging.info("RUNNING COMMAND: " + str(command_line))
+            subprocess.run(command_line);
+            obj = {}
+            elg = True
+            with open(output_line, "r") as output_csv:
+                output_csv_lines = output_csv.readlines()
+                output_split = [line.split("\t") for line in output_csv_lines]
+
+                for i in range(len(output_split[0])):
+                    obj[output_split[0][i].strip()] = [split[i] for split in output_split[1:]]
+
+                condition_passed = True
+                reason = None
+                logging.info(obj)
+                for i in range(len(output_split)-1):
+                    inc_type = obj['eligibility_type'][i]
+                    var_type = obj['variable_type'][i]
+                    question = obj['question'][i]
+                    json_obj = json.loads(obj['relation'][i])
+                    consists = True
+                    found = False
+                    inclusion = inc_type == 'inclusion'
+
+                    # Hemoglobin Check
+                    if json_obj['name'] == 'hb_count':
+                        found = True
+                        lab_val = lab_results['hemoglobin']
+                        if var_type == 'numerical':
+                            if 'lower' in json_obj:
+                                if json_obj['lower']['incl'] and float(lab_val) < float(json_obj['lower']['value']):
+                                    consists = False
+                                if not json_obj['lower']['incl'] and float(lab_val) <= float(json_obj['lower']['value']):
+                                    consists = False
+                            if 'upper' in json_obj:
+                                if json_obj['upper']['incl'] and float(lab_val) > float(json_obj['upper']['value']):
+                                    consists = False
+                                if not json_obj['upper']['incl'] and float(lab_val) >= float(json_obj['upper']['value']):
+                                    consists = False
+                        elif var_type == 'ordinal':
+                            if float(lab_val) not in [float(val) for val in json_obj.value]:
+                                consists = False
+
+                    # Platelet Count
+                    if json_obj['name'] == 'platelet_count':
+                        found = True
+                        lab_val = lab_results['platelets']
+                        if var_type == 'numerical':
+                            if 'lower' in json_obj:
+                                if json_obj['lower']['incl'] and float(lab_val) < float(json_obj['lower']['value']):
+                                    consists = False
+                                if not json_obj['lower']['incl'] and float(lab_val) <= float(json_obj['lower']['value']):
+                                    consists = False
+                            if 'upper' in json_obj:
+                                if json_obj['upper']['incl'] and float(lab_val) > float(json_obj['upper']['value']):
+                                    consists = False
+                                if not json_obj['upper']['incl'] and float(lab_val) >= float(json_obj['upper']['value']):
+                                    consists = False
+                        elif var_type == 'ordinal':
+                            if float(lab_val) not in [float(val) for val in json_obj.value]:
+                                consists = False
+
+                    # White Blood Cell Count
+                    if json_obj['name'] == 'wbc':
+                        found = True
+                        lab_val = lab_results['leukocytes']
+                        if var_type == 'numerical':
+                            if 'lower' in json_obj:
+                                if json_obj['lower']['incl'] and float(lab_val) < float(json_obj['lower']['value']):
+                                    consists = False
+                                if not json_obj['lower']['incl'] and float(lab_val) <= float(json_obj['lower']['value']):
+                                    consists = False
+                            if 'upper' in json_obj:
+                                if json_obj['upper']['incl'] and float(lab_val) > float(json_obj['upper']['value']):
+                                    consists = False
+                                if not json_obj['upper']['incl'] and float(lab_val) >= float(json_obj['upper']['value']):
+                                    consists = False
+                        elif var_type == 'ordinal':
+                            if float(lab_val) not in [float(val) for val in json_obj.value]:
+                                consists = False
+
+                    if not found:
+                        continue
+
+                    if consists and not inclusion:
+                        elg = False
+                    if not consists and inclusion:
+                        elg = False
+
+
+
+            subprocess.run(['rm',output_line])
+            subprocess.run(['rm',input_line])
+            if elg:
+                logging.info('passed')
+            else:
+                logging.info('not passed')
+
+            # Feed Header + trial_info into Facebook's AI System, Specifically the scripts/cfg_parser.sh
+
+
     # with futures.ThreadPoolExecutor(max_workers=75) as executor:
     tasks = {}
     for trialset in trials_by_ncit:
@@ -157,6 +288,7 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
             excluded_list.extend(excluded_trials)
 
         for ncit_code in filtered:
+            logging.info(ncit_codes[ncit_code], filtered[ncit_code])
             filtered_trials_by_ncit.append({"ncit": ncit_codes[ncit_code], "trials": filtered[ncit_code]})
 
         for ncit_code in excluded:
@@ -222,7 +354,7 @@ def find_conditions(trial: Any) -> Dict:
             conditions = {match[1]: str(match[0]) for match in matches}
             simple_matches = len(lab_simple.findall(joined_description))
             if len(conditions) == simple_matches:
-                return conditions 
+                return conditions
             else:
                 mapping = get_mapping_with_aws_comprehend(filtered_inclusions)
                 if len(mapping) > len(conditions):
