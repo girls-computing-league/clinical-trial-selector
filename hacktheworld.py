@@ -30,6 +30,8 @@ class Patient(metaclass=ABCMeta):
         self.results: List[TestResult] = []
         self.latest_results: Dict[str, TestResult] = {}
         self.api = self.api_factory(self.mrn, self.token)
+        self.conditions: List[str]
+        self.codes_snomed: List[str]
         self.after_init()
 
     def after_init(self):
@@ -48,8 +50,10 @@ class Patient(metaclass=ABCMeta):
         born = date.fromisoformat(self.birthdate)
         self.age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
-    def load_conditions(self):
-        self.conditions,self.codes_snomed = pt.load_conditions(self.mrn, self.token)
+    @abstractmethod
+    def load_conditions(self) -> None:
+        pass
+        # self.conditions,self.codes_snomed = pt.load_conditions(self.mrn, self.token)
 
     def load_codes(self):
         # self.codes, self.names = pt.find_all_codes(self.conditions)
@@ -121,6 +125,14 @@ class VAPatient(Patient):
 
     def after_init(self):
         self.va_api: VaApi = cast(VaApi, self.api)
+        self.conditions_by_code: Dict[str, Dict[str, str]] = {}
+
+    def load_conditions(self):
+        self.conditions_by_code = {condition.code: 
+                                    {'codeset': condition.codeset, 'description': condition.description} 
+                                        for condition in self.va_api.get_conditions()}
+        self.conditions = [cond['description'] for cond in self.conditions_by_code.values()]
+        self.codes_snomed = list(self.conditions_by_code.keys())
 
     def load_test_results(self) -> None:
         self.results = []
@@ -137,16 +149,24 @@ class VAPatient(Patient):
 
 class CMSPatient(Patient):
 
+    def after_init(self):
+        self.cms_api: CmsApi = cast(CmsApi, self.api)
+        self.conditions_by_code: Dict[str, Dict[str, str]] = {}
+
     api_factory = CmsApi
 
     def load_conditions(self):
+        for eob in self.cms_api.get_explanations_of_benefits():
+            for diagnosis in eob.diagnoses:
+                code = diagnosis['code']
+                self.conditions_by_code[code if len(code)<4 else f"{code[0:3]}.{code[3:]}"] = {'codeset': diagnosis['codeset'], 'description': diagnosis['description']}
         self.codes_icd9: list = []
         url = f"{app.config['CMS_API_BASE_URL']}ExplanationOfBenefit"
         params = {"patient": self.mrn, "_count":"50"}
         headers = {"Authorization": "Bearer {}".format(self.token)}
         res = req.get(url, params=params, headers=headers)
         fhir = res.json()
-        logging.debug("CONDITIONS JSON: {}".format(json.dumps(fhir)))
+        # logging.debug("CONDITIONS JSON: {}".format(json.dumps(fhir, indent=2)))
         codes: list = []
         names: list = []
         for entry in fhir["entry"]:

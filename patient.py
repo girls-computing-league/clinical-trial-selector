@@ -11,6 +11,7 @@ from gevent import Greenlet, spawn, iwait
 from pprint import pformat
 from apis import VaApi
 from flask import current_app as app
+import time
 
 client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
 
@@ -35,33 +36,6 @@ def get_api(token, url, params=None):
     headers = {"Authorization": "Bearer {}".format(token)}
     res = req.get(url, headers=headers, params=params)
     return res.json()
-
-def load_conditions(mrn, token):
-    more_pages = True
-    url = app.config['VA_CONDITIONS_URL']+mrn
-    conditions: list = []
-    codes_snomed: list = []
-    while more_pages:
-        api_res = get_api(token, url)
-        logging.debug("Conditions JSON: {}".format(json.dumps(api_res)))
-        next_url = url
-        for condition in api_res["entry"]:
-            cond_str = rchop(condition["resource"]["code"]["text"], " (disorder)")
-            if not (cond_str in conditions):
-                conditions.append(cond_str)
-            cond_snomed = condition["resource"]["code"]["coding"][0]["code"]
-            if not (cond_snomed in codes_snomed):
-                codes_snomed.append(cond_snomed)
-        for link in api_res["link"]:
-            if link["relation"] == "self":
-                self_url = link["url"]
-            if link["relation"] == "next":
-                next_url = link["url"]
-            if link["relation"] == "last":
-                last_url = link["url"]
-        url = next_url
-        more_pages = not (self_url == last_url)
-        return conditions, codes_snomed
 
 def find_codes(disease):
     res = req.get(app.config['DISEASES_URL'], params={"name": disease})
@@ -88,7 +62,9 @@ def find_trials(ncit_codes, gender="unknown", age=0):
             if (age != 0):
                 params["eligibility.structured.max_age_in_years_gte"] = age
                 params["eligibility.structured.min_age_in_years_lte"] = age
+            now = time.clock()
             res = req.get(app.config['TRIALS_URL'], params=params)
+            logging.debug(f"Time elapsed: {time.clock()-now} seconds")
             res_dict = res.json()
             trialset = {"code_ncit": ncit, "trialset": res_dict}
             total = res_dict["total"]
