@@ -37,20 +37,10 @@ def get_api(token, url, params=None):
     res = req.get(url, headers=headers, params=params)
     return res.json()
 
-def find_codes(disease):
-    res = req.get(app.config['DISEASES_URL'], params={"name": disease})
-    codes_api = res.json()
-    codes = []
-    names = []
-    for term in codes_api["terms"]:
-        for code in term["codes"]:
-            codes.append(code)
-        names.append(term["name"])
-    return codes, names
-
 def find_trials(ncit_codes, gender="unknown", age=0):
     size = 50
     trials = []
+    all_ncit = [ncit_dict['ncit'] for ncit_dict in ncit_codes]
     for ncit_dict in ncit_codes:
         total = 1
         next_trial = 1
@@ -58,7 +48,7 @@ def find_trials(ncit_codes, gender="unknown", age=0):
             ncit = ncit_dict["ncit"]
             params = {"size": f"{size}", "from": f"{next_trial}", "diseases.nci_thesaurus_concept_id": ncit}
             if (gender != "unknown"):
-                params["eligibility.structured.gender"] = gender
+                params["eligibility.structured.gender"] = [gender, 'BOTH']
             if (age != 0):
                 params["eligibility.structured.max_age_in_years_gte"] = age
                 params["eligibility.structured.min_age_in_years_lte"] = age
@@ -72,17 +62,6 @@ def find_trials(ncit_codes, gender="unknown", age=0):
 
             trials.append(trialset)
     return trials
-
-
-def find_all_codes(disease_list):
-    codes: list = []
-    names: list = []
-    for disease in disease_list:
-        codelist, nameslist = find_codes(disease)
-        codes += codelist
-        names += nameslist
-    return codes, names
-
 
 def get_lab_observations_by_patient(patient_id, token):
     # loinc_codes = ','.join(list(LOINC_CODES.keys()))

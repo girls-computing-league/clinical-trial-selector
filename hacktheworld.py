@@ -91,7 +91,6 @@ class Patient(metaclass=ABCMeta):
     def find_trials(self):
         logging.info("Searching for trials...")
         self.trials: list = []
-        #trials_json = pt.find_trials(self.codes)
         trials_json = pt.find_trials(self.codes_ncit, gender=self.gender, age=self.age)
         for trialset in trials_json:
             code_ncit = trialset["code_ncit"]
@@ -117,27 +116,6 @@ class Patient(metaclass=ABCMeta):
             print(space + trial.summary)
             print()
         return
-
-    def code2ncit(self, code_orig, code_list, codeset):
-        no_match = {"ncit": "999999", "ncit_desc": "No code match"}
-        condition = self.conditions[code_list.index(code_orig)]
-        tik = self.auth.getst(self.tgt)
-        params = {"targetSource": "NCI", "ticket": tik}
-        res = req.get(f'https://uts-ws.nlm.nih.gov/rest/crosswalk/current/source/{codeset}/{code_orig}', params=params)
-        if (res.status_code != 200):
-            logging.debug("{} CODE {} ({}) --> NO MATCH ({})".format(codeset, code_orig, condition, res.status_code))
-            return no_match
-        for result in res.json()["result"]:
-            if not (result["ui"] in ["TCGA", "OMFAQ", "MPN-SAF"]): 
-                name_ncit = result["name"]
-                code_ncit = result["ui"]
-                logging.debug("{} CODE {} ({})---> NCIT CODE {} ({})".format(codeset, code_orig, condition, code_ncit, name_ncit))
-                logging.debug("{} CODE {} JSON: {}".format(codeset, code_orig, res.json()))
-                return {"ncit": code_ncit, "ncit_desc": name_ncit}
-        return no_match
-    
-    def snomed2ncit(self, code_snomed):
-        return self.code2ncit(code_snomed, self.codes_snomed, "SNOMEDCT_US")
 
 class VAPatient(Patient):
 
@@ -188,9 +166,6 @@ class CMSPatient(Patient):
         # Deprecate the following collections:
         self.codes_icd9 = list(self.conditions_by_code.keys())
         self.conditions = [condition['description'] for condition in self.conditions_by_code.values()]
-
-    def icd2ncit(self, code_icd9):
-        return self.code2ncit(code_icd9, self.codes_icd9, "ICD9CM")
 
 class Criterion(TypedDict): 
     inclusion_indicator: bool

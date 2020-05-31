@@ -1,4 +1,4 @@
-from typing import Generator, Optional, Dict, Union, Iterable, Tuple, cast
+from typing import Generator, Optional, Dict, Union, Iterable, Tuple, List, cast, Any
 from flask import current_app as app, g
 import requests as req
 from abc import ABCMeta, abstractmethod
@@ -60,6 +60,18 @@ class UmlsApi(Api):
             else:
                 logging.info(f"No match for {orig_code}")
                 yield orig_code, None
+
+class NciApi(Api):
+    
+    url_config = 'TRIALS_URL'
+
+    def __init__(self):
+        self.age: int
+        self.gender: str
+
+    def get_trials(self, age: int, gender: str, ncit_codes: List[str]) -> Iterable[Dict[str,Any]]:
+        pass
+
 
 class PatientApi(Api):
 
