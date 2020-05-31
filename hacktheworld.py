@@ -95,21 +95,17 @@ class Patient(metaclass=ABCMeta):
 
     def find_trials(self):
         logging.info("Searching for trials...")
-        tracemalloc.start()
         ncit_codes = {match['match'] for match in self.code_matches.values()}
         for ncit_code in ncit_codes:
             self.trial_ids_by_ncit[ncit_code] = []
         for trial_json in self.nci.get_trials(self.age, self.gender, ncit_codes):
             logging.info(f"Processing trial {trial_json['nci_id']}")
-            current, peak = tracemalloc.get_traced_memory()
-            logging.info(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
             diseases = trial_json['ncit_codes']
             trial = Trial(trial_json, list(diseases)[0] if len(diseases) > 0 else '')
             self.trials_by_id[trial.id] = trial
             for ncit_code in trial_json['ncit_codes']:
                 self.trial_ids_by_ncit[ncit_code].append(trial.id)
         logging.info("Completed trials (new method)")
-        tracemalloc.stop()
 
         # Deprecate the following collections:
         self.trials = list(self.trials_by_id.values())
