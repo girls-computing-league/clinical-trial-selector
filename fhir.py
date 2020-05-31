@@ -46,7 +46,8 @@ class Observation(FHIRResource):
 
     def after_init(self):
         self.loinc: str = self._extract('loinc')
-        self.value: float = float(self._extract('value'))
+        value = self._extract('value')
+        self.value: float = float(value) if value else None
         self.unit: str = self._extract('unit')
         datetime: str = self._extract('datetime')
         self.datetime = parse(datetime) if datetime else None
