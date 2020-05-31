@@ -142,6 +142,8 @@ class FhirApi(PatientApi):
         for resource in self.extraction_functions['resources'].search(bundle):
             yield resource
         if total>count:
+            next_url = self.extraction_functions['next'].search(bundle)
+            logging.warn(f"Next url would be {next_url}")
             final_page = ((total-1) // count) + 1
             pages = {}
             for page_num in range(2, final_page+1):
