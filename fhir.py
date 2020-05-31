@@ -13,7 +13,8 @@ class FHIRResource(metaclass=ABCMeta):
 
     codeset_from_system: Dict[str, str] = {
         'http://snomed.info/sct': 'SNOMEDCT_US',
-        'http://hl7.org/fhir/sid/icd-9-cm': 'ICD9CM'
+        'http://hl7.org/fhir/sid/icd-9-cm': 'ICD9CM',
+        'http://hl7.org/fhir/sid/icd-10': 'ICD10CM'
     }
     
     @classmethod
