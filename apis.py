@@ -138,7 +138,7 @@ class FhirApi(PatientApi):
         logging.info(f"Getting resource at {url}")
         bundle = self.get(url, params)
         total = bundle['total']
-        logging.info(f"Total {total}, received {url}")
+        logging.warn(f"Total {total}, received {url}")
         for resource in self.extraction_functions['resources'].search(bundle):
             yield resource
         if total>count:
