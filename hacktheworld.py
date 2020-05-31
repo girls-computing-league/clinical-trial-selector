@@ -98,6 +98,7 @@ class Patient(metaclass=ABCMeta):
         for ncit_code in ncit_codes:
             self.trial_ids_by_ncit[ncit_code] = []
         for trial_json in self.nci.get_trials(self.age, self.gender, ncit_codes):
+            logging.info(f"Processing trial {trial_json['nci_id]']}")
             diseases = trial_json['ncit_codes']
             trial = Trial(trial_json, list(diseases)[0] if len(diseases) > 0 else '')
             self.trials_by_id[trial.id] = trial
@@ -186,7 +187,7 @@ class Criterion(TypedDict):
 
 class Trial:
     def __init__(self, trial_json, code_ncit):
-        self.trial_json = trial_json
+        # self.trial_json = trial_json
         self.code_ncit = code_ncit
         self.id = trial_json['nci_id']
         self.title = trial_json['brief_title']
