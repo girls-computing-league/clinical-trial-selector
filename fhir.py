@@ -4,6 +4,7 @@ from datetime import datetime
 import json
 import jmespath as path
 from abc import ABCMeta, abstractmethod
+import logging
 
 class FHIRResource(metaclass=ABCMeta):
 
@@ -95,5 +96,6 @@ class ExplanationOfBenefit(FHIRResource):
     def after_init(self):
         self.diagnoses: List[Dict[str, str]] = self._extract('diagnoses')
         if self.diagnoses:
+            logging.warn(f"Processing {len(self.diagnoses)} diagnoses")
             for diagnosis in self.diagnoses:
                 diagnosis['codeset'] = self.codeset_from_system[diagnosis['system']] 
