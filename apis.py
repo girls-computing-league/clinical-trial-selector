@@ -157,7 +157,7 @@ class FhirApi(PatientApi):
             for page in iwait(pages):
                 logging.warn(f"Received resource at {pages[page]}")
                 for resource in self.extraction_functions['resources'].search(page.value):
-                    logggin.warn(f"Returning EOB {resource['id']}")
+                    logging.warn(f"Returning EOB {resource['id']}")
                     yield resource
 
         # while url is not None:
