@@ -134,12 +134,32 @@ class FhirApi(PatientApi):
     }
 
     def get_fhir_bundle(self, endpoint: str, params=None, count=100) -> Iterable[Dict[str, Union[str, list, dict]]]:
-        url: Optional[str] = f"{self.base_url}{endpoint}?patient={self.id}&_count={count}"
-        while url is not None:
-            bundle = self.get(url, params)
-            for resource in self.extraction_functions['resources'].search(bundle):
-                yield resource
-            url = self.extraction_functions['next'].search(bundle)
+        url: str = f"{self.base_url}{endpoint}?patient={self.id}&_count={count}"
+        logging.info(f"Getting resource at {url}")
+        bundle = self.get(url, params)
+        total = bundle['total']
+        logging.info(f"Total {total}, received {url}")
+        for resource in self.extraction_functions['resources'].search(bundle):
+            yield resource
+        if total>count:
+            final_page = ((total-1) // count) + 1
+            pages = {}
+            for page_num in range(2, final_page+1):
+                url_page = f"{url}&page={page_num}"
+                logging.info(f"Getting resource at {url_page}")
+                pages[spawn(self.get, url_page, params)] = url_page
+            for page in iwait(pages):
+                logging.info(f"Received resource at {pages[page]}")
+                for resource in self.extraction_functions['resources'].search(page.value):
+                    yield resource
+
+        # while url is not None:
+        #     logging.info(f"Getting resource at {url}")
+        #     bundle = self.get(url, params)
+        #     logging.info(f"Total {bundle['total']}, received {url}")
+        #     for resource in self.extraction_functions['resources'].search(bundle):
+        #         yield resource
+        #     url = self.extraction_functions['next'].search(bundle)
 
     def get_demographics(self) -> fhir.Demographics:
         url = f"{self.base_url}Patient/{self.id}"
