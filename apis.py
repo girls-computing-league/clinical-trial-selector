@@ -133,6 +133,9 @@ class FhirApi(PatientApi):
         'next': path.compile("link[?relation=='next'].url | [0]")
     }
 
+    def page_parameter(self, page:int) -> str:
+        pass
+
     def get_fhir_bundle(self, endpoint: str, params=None, count=100) -> Iterable[Dict[str, Union[str, list, dict]]]:
         url: str = f"{self.base_url}{endpoint}?patient={self.id}&_count={count}"
         logging.info(f"Getting resource at {url}")
@@ -147,11 +150,12 @@ class FhirApi(PatientApi):
             final_page = ((total-1) // count) + 1
             pages = {}
             for page_num in range(2, final_page+1):
-                url_page = f"{url}&page={page_num}"
-                logging.info(f"Getting resource at {url_page}")
+                page_param = self.page_parameter(page_num)
+                url_page = f"{url}{page_param}"
+                logging.warn(f"Getting resource at {url_page}")
                 pages[spawn(self.get, url_page, params)] = url_page
             for page in iwait(pages):
-                logging.info(f"Received resource at {pages[page]}")
+                logging.warn(f"Received resource at {pages[page]}")
                 for resource in self.extraction_functions['resources'].search(page.value):
                     yield resource
 
@@ -179,6 +183,9 @@ class VaApi(FhirApi):
         for resource in self.get_fhir_bundle("Condition"):
             yield fhir.Condition(resource)
 
+    def page_parameter(self, page:int) -> str:
+        return f"&page={page}"
+
 class CmsApi(FhirApi):
 
     url_config = "CMS_API_BASE_URL"
@@ -187,6 +194,8 @@ class CmsApi(FhirApi):
         for resource in self.get_fhir_bundle('ExplanationOfBenefit', count=50):
             yield fhir.ExplanationOfBenefit(resource)
 
-
+    def page_parameter(self, page:int) -> str:
+        start = 50*(page-1)
+        return f"&startIndex={start}"
 
 
