@@ -175,10 +175,10 @@ class CMSPatient(Patient):
                     self.conditions_by_code[code if len(code)<4 else f"{code[0:3]}.{code[3:]}"] = {'codeset': diagnosis['codeset'], 'description': diagnosis['description']}
 
         # Deprecate the following collections:
-        self.info("CMS Conditions loaded")
+        logging.info("CMS Conditions loaded")
         self.codes_icd9 = list(self.conditions_by_code.keys())
         self.conditions = [condition['description'] for condition in self.conditions_by_code.values()]
-        self.info("CMS condition collections computed")
+        logging.info("CMS condition collections computed")
 
 class Criterion(TypedDict): 
     inclusion_indicator: bool
