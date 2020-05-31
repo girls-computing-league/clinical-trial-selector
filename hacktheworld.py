@@ -10,7 +10,7 @@ from datetime import date
 from distances import distance
 from zipcode import Zipcode
 from flask import current_app as app
-from apis import VaApi, CmsApi, FhirApi, UmlsApi
+from apis import VaApi, CmsApi, FhirApi, UmlsApi, NciApi
 from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
@@ -32,14 +32,18 @@ class Patient(metaclass=ABCMeta):
         self.latest_results: Dict[str, TestResult] = {}
         self.api = self.api_factory(self.mrn, self.token)
         self.umls = UmlsApi()
+        self.nci = NciApi()
         self.conditions_by_code: Dict[str, Dict[str, str]] = {}
         self.no_matches: set = set()
         self.code_matches: Dict[str, Dict[str, str]] = {}
+        self.trials_by_id: Dict[str, Trial] = {}
+        self.trial_ids_by_ncit: Dict[str, List[str]] = {}
         # The following collections are to be deprecated:
         self.conditions: List[str]
         self.codes_ncit: List[Dict[str,str]] = []
         self.matches: List[Dict[str,str]] = []
         self.codes_without_matches: List[Dict[str, str]] = []
+        self.trials: List[Trial] = []
 
         self.after_init()
 
@@ -90,31 +94,37 @@ class Patient(metaclass=ABCMeta):
 
     def find_trials(self):
         logging.info("Searching for trials...")
-        self.trials: list = []
-        trials_json = pt.find_trials(self.codes_ncit, gender=self.gender, age=self.age)
-        for trialset in trials_json:
-            code_ncit = trialset["code_ncit"]
-            logging.debug("Trials for NCIT code {}:".format(code_ncit))
-            for trial_json in trialset["trialset"]["trials"]:
-                trial = Trial(trial_json, code_ncit)
-                logging.debug("{} - {}".format(trial.id, trial.title))
-                self.trials.append(trial)
-        logging.info("Trials found")
+        ncit_codes = {match['match'] for match in self.code_matches.values()}
+        for ncit_code in ncit_codes:
+            self.trial_ids_by_ncit[ncit_code] = []
+        for trial_json in self.nci.get_trials(self.age, self.gender, ncit_codes):
+            diseases = trial_json['ncit_codes']
+            trial = Trial(trial_json, list(diseases)[0] if len(diseases) > 0 else '')
+            self.trials_by_id[trial.id] = trial
+            for ncit_code in trial_json['ncit_codes']:
+                self.trial_ids_by_ncit[ncit_code].append(trial.id)
+        logging.info("Completed trials (new method)")
+
+        # Deprecate the following collections:
+        self.trials = list(self.trials_by_id.values())
+
+        # self.trials: list = []
+        # trials_json = pt.find_trials(self.codes_ncit, gender=self.gender, age=self.age)
+        # for trialset in trials_json:
+        #     code_ncit = trialset["code_ncit"]
+        #     logging.debug("Trials for NCIT code {}:".format(code_ncit))
+        #     for trial_json in trialset["trialset"]["trials"]:
+        #         trial = Trial(trial_json, code_ncit)
+        #         logging.debug("{} - {}".format(trial.id, trial.title))
+        #         self.trials.append(trial)
+        # logging.info("Trials found")
+
         return
 
     def load_all(self):
         self.load_conditions()
         self.load_codes()
         self.find_trials()
-        return
-
-    def print_trials(self):
-        space = "      "
-        for trial in self.trials: 
-            print(trial.id)
-            print(space + trial.title)
-            print(space + trial.summary)
-            print()
         return
 
 class VAPatient(Patient):

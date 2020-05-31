@@ -1,4 +1,4 @@
-from typing import Generator, Optional, Dict, Union, Iterable, Tuple, List, cast, Any
+from typing import Generator, Optional, Dict, Union, Iterable, Tuple, List, cast, Any, Set
 from flask import current_app as app, g
 import requests as req
 from abc import ABCMeta, abstractmethod
@@ -16,10 +16,10 @@ class Api():
     def __init__(self):
         self.base_url: str = app.config[self.url_config]
 
-    def _get_response(self, url: str, headers: Optional[Dict[str,str]] = None, params: Optional[Dict[str, str]] = None) -> req.Response:
+    def _get_response(self, url: str, headers: Optional[Dict[str,str]] = None, params: Optional[Dict[str, Union[str, List[str]]]] = None) -> req.Response:
         return req.get(url, headers=headers, params=params)
 
-    def _get(self, url: str, headers: Optional[Dict[str, str]] = None, params: Optional[Dict[str, str]] = None) -> dict:
+    def _get(self, url: str, headers: Optional[Dict[str, str]] = None, params: Optional[Dict[str, Union[str, List[str]]]] = None) -> Dict[str,Any]:
         return self._get_response(url, headers=headers, params=params).json()
 
 class UmlsApi(Api):
@@ -64,14 +64,56 @@ class UmlsApi(Api):
 class NciApi(Api):
     
     url_config = 'TRIALS_URL'
+    size = 50
+
+    _extract_functions = {
+        'diseases': path.compile("diseases[*].nci_thesaurus_concept_id")
+    }
 
     def __init__(self):
         self.age: int
         self.gender: str
+        self.ncit_codes: Set[str]
+        super().__init__()
+        
+    def _get_trials_page(self, start_from: int) -> Dict[str,Any]:
+        url = self.base_url
+        params: Dict[str, Union[str, List[str]]] = {'size': f"{self.size}"}
+        params['from'] = f"{start_from}"
+        params['diseases.nci_thesaurus_concept_id'] = list(self.ncit_codes)
+        params['eligibility.structured.gender'] = [self.gender, 'BOTH']
+        params["eligibility.structured.max_age_in_years_gte"] = str(self.age)
+        params["eligibility.structured.min_age_in_years_lte"] = str(self.age)
+        return self._get(url, params=params)
 
-    def get_trials(self, age: int, gender: str, ncit_codes: List[str]) -> Iterable[Dict[str,Any]]:
-        pass
+    def _add_disease_list(self, trial: Dict[str, Any]) -> None:
+        diseases =  self.ncit_codes & set(self._extract_functions['diseases'].search(trial))
+        if len(diseases) == 0:
+            logging.warn(f"Cannot find source ncit code for trial {trial['nci_id']}")
+        trial['ncit_codes'] = diseases
 
+    def get_trials(self, age: int, gender: str, ncit_codes: Set[str]) -> Iterable[Dict[str,Any]]:
+        self.age = age
+        self.gender = gender
+        self.ncit_codes = ncit_codes
+        logging.info("Trial query starting at 1")
+        first_page = self._get_trials_page(1)
+        logging.info("Received trials starting at 1")
+        for trial in first_page['trials']:
+            self._add_disease_list(trial)
+            yield trial
+        total = first_page['total']
+        if total > self.size:
+            pages = {}
+            for start_from in range(1+self.size, 1+total, self.size):
+                logging.info(f"Trial query starting at {start_from}")
+                pages[spawn(self._get_trials_page, start_from)] = start_from
+
+            for page in iwait(pages):
+                logging.info(f"Received trials starting at {pages[page]}")
+                for trial in page.value['trials']:
+                    self._add_disease_list(trial)
+                    yield trial
 
 class PatientApi(Api):
 
@@ -80,7 +122,7 @@ class PatientApi(Api):
         self.token: str = token
         super().__init__()
 
-    def get(self, url: str, params: Optional[Dict[str,str]] = None) -> dict:
+    def get(self, url: str, params: Optional[Dict[str,Union[str, List[str]]]] = None) -> dict:
         headers = {"Authorization": f"Bearer {self.token}"}
         return self._get(url, headers, params)
 
