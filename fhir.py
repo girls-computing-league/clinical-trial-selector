@@ -1,4 +1,4 @@
-from typing import Tuple, Optional, Dict, Any, Union
+from typing import Tuple, Optional, Dict, Any, Union, List
 from dateutil.parser import parse
 from datetime import datetime
 import json
@@ -10,6 +10,11 @@ class FHIRResource(metaclass=ABCMeta):
     expressions: Dict[str, str]
 
     compiled_expressions: Dict[str, path.parser.ParsedResult] 
+
+    codeset_from_system: Dict[str, str] = {
+        'http://snomed.info/sct': 'SNOMEDCT_US',
+        'http://hl7.org/fhir/sid/icd-9-cm': 'ICD9CM'
+    }
     
     @classmethod
     def compile_expressions(cls, expressions: Dict[str, str]) -> Dict[str, path.parser.ParsedResult]:
@@ -40,7 +45,7 @@ class Observation(FHIRResource):
 
     def after_init(self):
         self.loinc: str = self._extract('loinc')
-        self.value: str = self._extract('value')
+        self.value: float = float(self._extract('value'))
         self.unit: str = self._extract('unit')
         datetime: str = self._extract('datetime')
         self.datetime = parse(datetime) if datetime else None
@@ -66,7 +71,7 @@ class Condition(FHIRResource):
     expressions = {
         'description': 'code.text',
         'code': 'code.coding[0].code',
-        'codeset': 'code.coding[0].system'
+        'system': 'code.coding[0].system'
     }
 
     compiled_expressions = FHIRResource.compile_expressions(expressions)
@@ -74,15 +79,18 @@ class Condition(FHIRResource):
     def after_init(self):
         self.description: str = self._extract('description')
         self.code: str = self._extract('code')
-        self.codeset: str = self._extract('codeset')
+        self.system: str = self._extract('system')
+        self.codeset: str = self.codeset_from_system[self.system]
 
-class ExplanationOfBenefits(FHIRResource):
+class ExplanationOfBenefit(FHIRResource):
 
     expressions = {
-        'diagnoses': "diagnosis[?diagnosisCodeableConcept.coding[0].code != '9999999'].diagnosisCodeableConcept.coding[0].{code:code, codeset: system, description:display}"
+        'diagnoses': "diagnosis[?diagnosisCodeableConcept.coding[0].code != '9999999'].diagnosisCodeableConcept.coding[0].{code:code, system: system, description:display}"
     }
 
     compiled_expressions = FHIRResource.compile_expressions(expressions)
 
     def after_init(self):
-        self.diagnoses: Dict[str, str] = self._extract('diagnoses')
+        self.diagnoses: List[Dict[str, str]] = self._extract('diagnoses')
+        for diagnosis in self.diagnoses:
+            diagnosis['codeset'] = self.codeset_from_system[diagnosis['system']] 

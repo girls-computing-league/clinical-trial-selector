@@ -1,10 +1,10 @@
 {% extends "patient.html" %}
 
-{%- set trialID = request.args.get('id', '0') %}
-{%- set ns = namespace(trial=none) %}
-{%- for tr in session['combined_patient'].trials %}
-    {%- if tr.id == trialID %}
-        {%- set ns.trial = tr %}
+{% set trialID = request.args.get('id', '0') %}
+{% set ns = namespace(trial=none) %}
+{% for tr in session['combined_patient'].trials %}
+    {% if tr.id == trialID %}
+        {% set ns.trial = tr %}
     {% endif %}
 {% endfor %}
 
@@ -17,9 +17,9 @@
       {{section_header}}
     </button>
     <div id="{{section_name}}" class="usa-accordion-content">
-        {%- for line in (section_content|string).splitlines() %}
+        {% for line in (section_content|string).splitlines() %}
          <p>{{line}}</p>
-        {%- endfor %}
+        {% endfor %}
     </div>
   </li>
 </ul>
@@ -29,7 +29,7 @@
 {% block pt_main %}
 
     <div class="tab-content">
-      {%- if trial_selection %}
+      {% if trial_selection %}
         <div class="vads-u-padding--0" id="info">
           <strong>
             Information about trial #{{trialID}}:
@@ -37,18 +37,18 @@
             {{ section("title", "Brief Title", ns.trial.title) }}
             {{ section("pi", "Principal Investigator", ns.trial.pi) }}
             {{ section("official", "Official Title", ns.trial.official) }}
-            {%- if ns.trial.population["population"] %}
+            {% if ns.trial.population["population"] %}
                 {{ section("population", "Target Population", ns.trial.population)}}
             {% endif %}
             {{ section("summary", "Summary", ns.trial.summary) }}
             {{ section("description", "Detailed Description", ns.trial.description) }}
-            {%- for criterion in ns.trial.eligibility %}
+            {% for criterion in ns.trial.eligibility %}
               {{ section("eligibility"+loop.index|string, 
                 "Eligibility criterion #{} ({})".format(loop.index, "Inclusion" if criterion.inclusion_indicator else "Exclusion"), 
                 criterion.description) }}
-            {%- endfor %}
+            {% endfor %}
         </div><!--/tab-pane-->
-      {%- elif measures_selection %}
+      {% elif measures_selection %}
 
          <div class="vads-u-padding--0" id="measures">
           <strong>
@@ -62,7 +62,7 @@
                     </tr>
                 </thead>
 
-                {%- for measure in ns.trial.measures %}
+                {% for measure in ns.trial.measures %}
 
                     <tbody class="usa-accordion">
                         <tr>
@@ -80,11 +80,11 @@
 
                     </tbody>
 
-                {%- endfor %}
+                {% endfor %}
             </table>
         
         </div><!--/tab-pane-->
-      {%- elif diseases_selection %}
+      {% elif diseases_selection %}
         <div class="vads-u-padding--0" id="diseases">
           <strong>
             Relevant diseases for trial #{{trialID}}:
@@ -98,7 +98,7 @@
                             </tr>
                         </thead>
         
-                        {%- for disease in ns.trial.diseases %}
+                        {% for disease in ns.trial.diseases %}
                             <tbody class="usa-accordion">
                                 <tr>
                                    <td colspan="2" class="page-header">
@@ -110,11 +110,11 @@
                                             <td>{{ disease["inclusion_indicator"] }}</td>
                                         </tr>
                             </tbody>
-                        {%- endfor %}
+                        {% endfor %}
                     </table>
         
         </div><!--/tab-pane-->
-      {%- elif locations_selection %}
+      {% elif locations_selection %}
         <div class="vads-u-padding--0" id="locations">
           <strong>
             Locations for trial #{{trialID}}:
@@ -130,7 +130,7 @@
                             </tr>
                         </thead>
 
-                        {%- for site in ns.trial.sites %}
+                        {% for site in ns.trial.sites %}
                             <tbody class="usa-accordion">
                                 <tr>
                                     <td colspan="4" class="page-header">
@@ -139,20 +139,20 @@
                                 </tr>
                                         <tr id="{{site['org_postal_code']}}{{ loop.index0 }}" class="usa-accordion-content">
                                             <td> {{ site["org_address_line_1"] }}<br>
-                                                {%- if site["org_address_line_2"] %}
+                                                {% if site["org_address_line_2"] %}
                                                     {{ site["org_address_line_2"]}}<br>
-                                                {%- endif %}
+                                                {% endif %}
                                                 {{site["org_city"]}}, {{site["org_state_or_province"]}} {{site["org_postal_code"]}} </td>
                                             <td>{{site["org_phone"]}}</td>
                                             <td>{{site["org_status"]}}</td>
                                             <td>{% if site["distance"] is defined %}{{ site["distance"]|round|int }}{% endif %}</td>
                                         </tr>
                             </tbody>
-                        {%- endfor %}
+                        {% endfor %}
                     </table>
         
         </div><!--/tab-pane-->
-      {%- endif %}
+      {% endif %}
     </div><!--/tab-content-->
 
 {% endblock %}

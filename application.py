@@ -14,6 +14,7 @@ import logging, sys
 import ssl
 from flask_socketio import SocketIO, join_room
 from flask import Flask, session, redirect, render_template, request, flash, make_response
+from flask.logging import default_handler
 from flask_session import Session 
 from flask_talisman import Talisman
 from authlib.integrations.flask_client import OAuth
@@ -49,6 +50,10 @@ log_level = args.get("log", app.config["CTS_LOGLEVEL"]).upper()
 
 from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 
+formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(name)-23s %(message)s')
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(formatter)
+logging.getLogger().addHandler(handler)
 logging.getLogger().setLevel(log_level)
 logging.info("Clinical Trial Selector starting...")
 logging.warning(f"app.env = {app.env}")
@@ -104,8 +109,10 @@ def getInfo():
     socketio.emit(event_name, {"data": 15}, room=session.sid)
     if not combined.has_patients():
         return redirect("/")
+    app.logger.info("loading data...")
     combined.load_data()
     socketio.emit(event_name, {"data": 50}, room=session.sid)
+    app.logger.info("loading test results...")
     combined.load_test_results()
     socketio.emit(event_name, {"data": 95}, room=session.sid)
     socketio.emit('disconnect', {"data": 100}, room=session.sid)

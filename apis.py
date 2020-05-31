@@ -1,26 +1,78 @@
-from typing import Generator, Optional, Dict, Union, Iterable
-from flask import current_app as app
+from typing import Generator, Optional, Dict, Union, Iterable, Tuple, cast
+from flask import current_app as app, g
 import requests as req
 from abc import ABCMeta, abstractmethod
 import fhir
 import jmespath as path
 import json
+import umls
+from gevent import spawn, iwait, Greenlet
+import logging
 
 class Api():
     
     url_config: str
 
+    def __init__(self):
+        self.base_url: str = app.config[self.url_config]
+
+    def _get_response(self, url: str, headers: Optional[Dict[str,str]] = None, params: Optional[Dict[str, str]] = None) -> req.Response:
+        return req.get(url, headers=headers, params=params)
+
+    def _get(self, url: str, headers: Optional[Dict[str, str]] = None, params: Optional[Dict[str, str]] = None) -> dict:
+        return self._get_response(url, headers=headers, params=params).json()
+
+class UmlsApi(Api):
+
+    url_config = 'UMLS_BASE_URL'
+
+    extraction_functions = {
+        'crosswalk': path.compile("result[?ui != 'TCGA' && ui != 'OMFAQ' && ui != 'MPN-SAF'].{code: ui, description:name} | [0]")
+    }
+
+    def __init__(self):
+        self.auth = umls.Authentication(app.config['UMLS_API_KEY'])
+        self.tgt = g.setdefault('tgt', self.auth.gettgt())
+        super().__init__()
+
+    def get_crosswalk(self, orig_code: str, codeset: str) -> Tuple[Optional[str], Optional[str]]:
+        tik = self.auth.getst(self.tgt)
+        params = {"targetSource": "NCI", "ticket": tik}
+        url = f"{self.base_url}{codeset}/{orig_code}"
+        response = self._get_response(url, params=params)
+        if response.status_code != 200:
+            return None, None
+        result = response.json()
+        crosswalk = self.extraction_functions['crosswalk'].search(result)
+        return (crosswalk['code'], crosswalk['description'])
+
+    def get_matches(self, conditions_by_code: Dict[str, Dict[str, str]]) -> Iterable[Tuple[str, Optional[Dict[str, str]]]]:
+        matches: Dict[Greenlet, str] = {}
+        for orig_code, condition in conditions_by_code.items():
+            logging.info(f"Getting match for {condition['codeset']} code {orig_code} [{condition['description']}] ")
+            matches[spawn(self.get_crosswalk, orig_code, condition['codeset'])] = orig_code
+        for match in iwait(matches):
+            orig_code = matches[match]
+            ncit_code, ncit_desc = cast(Tuple[Optional[str], Optional[str]], match.value)
+            if ncit_code and ncit_desc:
+                logging.info(f"Match for {orig_code} is {ncit_code}")
+                yield orig_code, {'match': ncit_code, 'description': ncit_desc}
+            else:
+                logging.info(f"No match for {orig_code}")
+                yield orig_code, None
+
+class PatientApi(Api):
+
     def __init__(self, id: str, token: str):
         self.id: str = id
         self.token: str = token
-        self.base_url: str = app.config[self.url_config]
+        super().__init__()
 
-    def get(self, url, params=None) -> dict:
+    def get(self, url: str, params: Optional[Dict[str,str]] = None) -> dict:
         headers = {"Authorization": f"Bearer {self.token}"}
-        res = req.get(url, headers=headers, params=params)
-        return res.json()
+        return self._get(url, headers, params)
 
-class FhirApi(Api):
+class FhirApi(PatientApi):
 
     extraction_functions: Dict[str, path.parser.ParsedResult] = {
         'resources': path.compile('entry[*].resource'),
@@ -55,9 +107,9 @@ class CmsApi(FhirApi):
 
     url_config = "CMS_API_BASE_URL"
     
-    def get_explanations_of_benefits(self) -> Iterable[fhir.ExplanationOfBenefits]:
+    def get_explanations_of_benefit(self) -> Iterable[fhir.ExplanationOfBenefit]:
         for resource in self.get_fhir_bundle('ExplanationOfBenefit', count=50):
-            yield fhir.ExplanationOfBenefits(resource)
+            yield fhir.ExplanationOfBenefit(resource)
 
 
 
