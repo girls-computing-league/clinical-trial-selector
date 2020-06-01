@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='formation.min.css')}}">
     <link rel="stylesheet" href="https://design.va.gov/assets/stylesheets/application.css">
     <script src="https://design.va.gov/assets/javascripts/polyfills/array.from.js"></script>
-{%- endblock %}
+{% endblock %}
 
 {% block scripts %}
     {{ super() }}
@@ -18,9 +18,9 @@
 
     <script src="{{ url_for('static', filename='socket.js') }}"></script>
 
-{%- endblock %}
+{% endblock %}
 
-{%- block footer %}
+{% block footer %}
 
   <footer class="site-footer vads-u-padding-y--2" role="contentinfo">
     <div class="site-l-wrapper">

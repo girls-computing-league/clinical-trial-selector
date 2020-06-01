@@ -13,6 +13,7 @@ from gevent import Greenlet, spawn, iwait
 from pprint import pformat
 from apis import VaApi
 from flask import current_app as app
+import time
 
 client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
 
@@ -38,84 +39,31 @@ def get_api(token, url, params=None):
     res = req.get(url, headers=headers, params=params)
     return res.json()
 
-def load_conditions(mrn, token):
-    more_pages = True
-    url = app.config['VA_CONDITIONS_URL']+mrn
-    conditions: list = []
-    codes_snomed: list = []
-    while more_pages:
-        api_res = get_api(token, url)
-        logging.debug("Conditions JSON: {}".format(json.dumps(api_res)))
-        next_url = url
-        for condition in api_res["entry"]:
-            cond_str = rchop(condition["resource"]["code"]["text"], " (disorder)")
-            if not (cond_str in conditions):
-                conditions.append(cond_str)
-            cond_snomed = condition["resource"]["code"]["coding"][0]["code"]
-            if not (cond_snomed in codes_snomed):
-                codes_snomed.append(cond_snomed)
-        for link in api_res["link"]:
-            if link["relation"] == "self":
-                self_url = link["url"]
-            if link["relation"] == "next":
-                next_url = link["url"]
-            if link["relation"] == "last":
-                last_url = link["url"]
-        url = next_url
-        more_pages = not (self_url == last_url)
-        return conditions, codes_snomed
-
-def find_codes(disease):
-    res = req.get(app.config['DISEASES_URL'], params={"name": disease})
-    codes_api = res.json()
-    codes = []
-    names = []
-    for term in codes_api["terms"]:
-        for code in term["codes"]:
-            codes.append(code)
-        names.append(term["name"])
-    return codes, names
-
 def find_trials(ncit_codes, gender="unknown", age=0):
     size = 50
     trials = []
+    all_ncit = [ncit_dict['ncit'] for ncit_dict in ncit_codes]
     for ncit_dict in ncit_codes:
         total = 1
         next_trial = 1
         while next_trial<= total:
             ncit = ncit_dict["ncit"]
             params = {"size": f"{size}", "from": f"{next_trial}", "diseases.nci_thesaurus_concept_id": ncit}
+            if (gender != "unknown"):
+                params["eligibility.structured.gender"] = [gender, 'BOTH']
             if (age != 0):
                 params["eligibility.structured.max_age_in_years_gte"] = age
                 params["eligibility.structured.min_age_in_years_lte"] = age
+            now = time.clock()
             res = req.get(app.config['TRIALS_URL'], params=params)
+            logging.debug(f"Time elapsed: {time.clock()-now} seconds")
             res_dict = res.json()
             trialset = {"code_ncit": ncit, "trialset": res_dict}
             total = res_dict["total"]
             next_trial += size
 
             trials.append(trialset)
-            if (gender != "unknown"):
-                params["eligibility.structured.gender"] = gender
-                res = req.get(app.config['TRIALS_URL'], params=params)
-                res_dict = res.json()
-                trialset = {"code_ncit": ncit, "trialset": res_dict}
-                total = res_dict["total"]
-                next_trial += size
-
-                trials.append(trialset)
     return trials
-
-
-def find_all_codes(disease_list):
-    codes: list = []
-    names: list = []
-    for disease in disease_list:
-        codelist, nameslist = find_codes(disease)
-        codes += codelist
-        names += nameslist
-    return codes, names
-
 
 def get_lab_observations_by_patient(patient_id, token):
     # loinc_codes = ','.join(list(LOINC_CODES.keys()))

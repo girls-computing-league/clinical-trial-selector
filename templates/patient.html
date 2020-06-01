@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{%- set trialID = request.args.get('id', '0') %}
+{% set trialID = request.args.get('id', '0') %}
 
 {% block content %}
   {{ super() }}
@@ -14,17 +14,17 @@
               <strong class="vads-u-display--block small-screen:vads-u-display--inline">
                 Clinical Trial Selector
               </strong>
-              {%- if trialID != '0' %}
+              {% if trialID != '0' %}
                 | Browse Trial # {{trialID}}
-              {%- endif %}
+              {% endif %}
             </a>
           </em>
         </div>
-        {%- if trialID != '0' %}
+        {% if trialID != '0' %}
           <div class="site-header__logo" id="extended-logo">
             <a href="/" class="usa-button vads-u-margin--1">All Trials</a>
           </div>
-        {%- endif %}
+        {% endif %}
         <div class="site-header__utility-links">
           <!-- <a href="/infected_patients" class="usa-button vads-u-margin--1">Matcher for Doctors</a> -->
           <form action="{{ url_for('logout') }}" method="POST">
@@ -38,8 +38,8 @@
 
   <div>
 
-    {%- set combined = session["combined_patient"] if session["combined_patient"] else None %}
-    {%- if trialID != '0' %}    
+    {% set combined = session["combined_patient"] if session["combined_patient"] else None %}
+    {% if trialID != '0' %}    
       <div class="site-top-nav-wrapper site-l-wrapper sticky">
         <nav class="site-header__nav">
           <ul class="site-header__nav-list">
@@ -68,7 +68,7 @@
             <li class="site-header__nav-item">
               <a class="site-header__nav-item__link {{ trials_selection }}" href="/trials" data-toggle="tab">Trials</a>
             </li>
-            {%- if session["excluded"] %}
+            {% if session["excluded"] %}
               <li class="site-header__nav-item">
                 <a class="site-header__nav-item__link {{ excluded_selection }}" href="/excluded" data-toggle="tab">Excluded</a>
               </li>
@@ -82,7 +82,7 @@
             <li class="site-header__nav-item">
               <a class="site-header__nav-item__link {{ nomatches_selection }}" href="/nomatches" data-toggle="tab">Codes w/o Matches</a>
             </li>
-            {%- if combined.loaded %}
+            {% if combined.loaded %}
               <li class="site-header__nav-item">
                 <a class="site-header__nav-item__link " href="/download_trials" data-toggle="tab">Download Trials</a>
               </li>
@@ -95,14 +95,14 @@
     <div class="site-content vads-u-margin-bottom--9 vads-l-row vads-u-padding-x--3">
       <div class="site-content__nav vads-l-col--3 vads-u-padding-x--3">
 
-        {%- for source in ["va", "cms"] %}
-          {%- set patient = combined.from_source[source] if combined and combined.from_source[source] else None %}
+        {% for source in ["va", "cms"] %}
+          {% set patient = combined.from_source[source] if combined and combined.from_source[source] else None %}
           <table>
             <thead>
               <tr>
                 <th class="vads-u-display--flex vads-u-justify-content--space-between">
                   <div class="vads-u-flex--auto">{{ source.upper() }} Patient Info</div>
-                  {%- if not patient %}
+                  {% if not patient %}
                     <form action="{{ url_for('authenticate',source=source) }}" method="POST" class="vads-u-flex-auto">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                       <button class="usa-button vads-u-margin--0" type="submit">Login</button>
@@ -112,7 +112,7 @@
               </tr>
             </thead>
             <tbody class="vads-u-line-height--1">
-             {%- for label, value in {
+             {% for label, value in {
                 "Name": patient.name,
                 "ID": patient.mrn,
                 "DOB": patient.birthdate,
@@ -124,10 +124,10 @@
                     <div class="vads-u-flex--auto">{{value}}</div>
                   </td>
                 </tr>
-              {%- endfor %}
+              {% endfor %}
             </tbody>
          </table>
-        {%- endfor %}
+        {% endfor %}
       </div>
       <div class="site-content__content vads-l-col--8 vads-u-padding--3">
         <main>

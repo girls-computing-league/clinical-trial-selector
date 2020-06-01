@@ -14,9 +14,9 @@
                         <a class="usa-button" href="/">Clinical trials</a>
                         {% if not session.get('bcda_doc_token', None) %}
                             <a class="usa-button" href="/doctor_login">Doctor Login</a>
-                        {%- else %}
+                        {% else %}
                             <a class="usa-button" href="/doctor_logout">Logout</a>
-                        {%- endif %}
+                        {% endif %}
                     </span>
             </div>
         </div>
@@ -43,7 +43,7 @@
             </thead>
             <tbody>
                 {% if session["infected_patients"] %}
-                    {%- for key, patient in session["infected_patients"].items() %}
+                    {% for key, patient in session["infected_patients"].items() %}
                         <tr>
                             <td>
                                 <a href="/infected_patients_info?id={{ key }}">
@@ -57,8 +57,8 @@
                                 <td>{{ patient.get('status', 'NA') }}</td>
                             {% endif %}
                         </tr>
-                    {%- endfor %}
-                {%- endif %}
+                    {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>

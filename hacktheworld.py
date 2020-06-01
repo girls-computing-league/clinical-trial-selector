@@ -3,19 +3,21 @@ import logging
 import sys
 import umls
 import requests as req
-from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable, Type, cast
+from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable, Type, cast, Tuple
 from abc import ABCMeta, abstractmethod
 from mypy_extensions import TypedDict 
 from datetime import date
 from distances import distance
 from zipcode import Zipcode
 from flask import current_app as app
-from apis import VaApi, CmsApi, FhirApi
+from apis import VaApi, CmsApi, FhirApi, UmlsApi, NciApi
 from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
 import json
 import re
+import time
+import tracemalloc
 
 class Patient(metaclass=ABCMeta):
 
@@ -30,9 +32,24 @@ class Patient(metaclass=ABCMeta):
         self.results: List[TestResult] = []
         self.latest_results: Dict[str, TestResult] = {}
         self.api = self.api_factory(self.mrn, self.token)
+        self.umls = UmlsApi()
+        self.nci = NciApi()
+        self.conditions_by_code: Dict[str, Dict[str, str]] = {}
+        self.no_matches: set = set()
+        self.code_matches: Dict[str, Dict[str, str]] = {}
+        self.trials_by_id: Dict[str, Trial] = {}
+        self.trial_ids_by_ncit: Dict[str, List[str]] = {}
+        # The following collections are to be deprecated:
+        self.conditions: List[str]
+        self.codes_ncit: List[Dict[str,str]] = []
+        self.matches: List[Dict[str,str]] = []
+        self.codes_without_matches: List[Dict[str, str]] = []
+        self.trials: List[Trial] = []
+
         self.after_init()
 
-    def after_init(self):
+    @abstractmethod
+    def after_init(self) -> None:
         pass
 
     def load_demographics(self):
@@ -48,35 +65,62 @@ class Patient(metaclass=ABCMeta):
         born = date.fromisoformat(self.birthdate)
         self.age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
-    def load_conditions(self):
-        self.conditions,self.codes_snomed = pt.load_conditions(self.mrn, self.token)
+    @abstractmethod
+    def load_conditions(self) -> None:
+        pass
 
     def load_codes(self):
-        # self.codes, self.names = pt.find_all_codes(self.conditions)
-        self.codes_ncit: list = []
-        self.matches: list = []
-        self.codes_without_matches: list = []
-        for code_snomed in self.codes_snomed:
-            code_ncit = self.snomed2ncit(code_snomed)
-            orig_desc = self.conditions[self.codes_snomed.index(code_snomed)]
-            if (code_ncit["ncit"] != "999999"):
-                self.codes_ncit.append(code_ncit)
-                self.matches.append({"orig_desc":orig_desc, "orig_code":code_snomed, "codeset":"SNOMED", "new_code":code_ncit["ncit"], "new_desc":code_ncit["ncit_desc"]})
+        logging.info("loading Codes")
+
+        for orig_code, match in self.umls.get_matches(self.conditions_by_code):
+            if match:
+                self.code_matches[orig_code] = match
             else:
-                self.codes_without_matches.append({"orig_desc":orig_desc, "orig_code":code_snomed, "codeset":"SNOMED"})
+                self.no_matches.add(orig_code)
+
+        logging.info("Codes loaded - new approach")
+
+        # Deprecate the following collections:
+        self.codes_ncit = [{'ncit': match['match'], 'ncit_desc': match['description']} for match in self.code_matches.values()]
+        self.matches = [{'orig_desc': self.conditions_by_code[orig_code]['description'], \
+                        'orig_code': orig_code, \
+                        'codeset': self.conditions_by_code[orig_code]['codeset'], \
+                        'new_code': match['match'], \
+                        'new_desc': match['description']} \
+                            for orig_code, match in self.code_matches.items()]
+        self.codes_without_matches = [{'orig_code': no_match, \
+                                    'orig_desc': self.conditions_by_code[no_match]['description'], \
+                                    'codeset': self.conditions_by_code[no_match]['codeset']} \
+                                        for no_match in self.no_matches]
 
     def find_trials(self):
         logging.info("Searching for trials...")
-        self.trials: list = []
-        #trials_json = pt.find_trials(self.codes)
-        trials_json = pt.find_trials(self.codes_ncit, gender=self.gender, age=self.age)
-        for trialset in trials_json:
-            code_ncit = trialset["code_ncit"]
-            logging.debug("Trials for NCIT code {}:".format(code_ncit))
-            for trial_json in trialset["trialset"]["trials"]:
-                trial = Trial(trial_json, code_ncit)
-                logging.debug("{} - {}".format(trial.id, trial.title))
-                self.trials.append(trial)
+        ncit_codes = {match['match'] for match in self.code_matches.values()}
+        for ncit_code in ncit_codes:
+            self.trial_ids_by_ncit[ncit_code] = []
+        for trial_json in self.nci.get_trials(self.age, self.gender, ncit_codes):
+            logging.info(f"Processing trial {trial_json['nci_id']}")
+            diseases = trial_json['ncit_codes']
+            trial = Trial(trial_json, list(diseases)[0] if len(diseases) > 0 else '')
+            self.trials_by_id[trial.id] = trial
+            for ncit_code in trial_json['ncit_codes']:
+                self.trial_ids_by_ncit[ncit_code].append(trial.id)
+        logging.info("Completed trials (new method)")
+
+        # Deprecate the following collections:
+        self.trials = list(self.trials_by_id.values())
+
+        # self.trials: list = []
+        # trials_json = pt.find_trials(self.codes_ncit, gender=self.gender, age=self.age)
+        # for trialset in trials_json:
+        #     code_ncit = trialset["code_ncit"]
+        #     logging.debug("Trials for NCIT code {}:".format(code_ncit))
+        #     for trial_json in trialset["trialset"]["trials"]:
+        #         trial = Trial(trial_json, code_ncit)
+        #         logging.debug("{} - {}".format(trial.id, trial.title))
+        #         self.trials.append(trial)
+        # logging.info("Trials found")
+
         return
 
     def load_all(self):
@@ -85,42 +129,25 @@ class Patient(metaclass=ABCMeta):
         self.find_trials()
         return
 
-    def print_trials(self):
-        space = "      "
-        for trial in self.trials: 
-            print(trial.id)
-            print(space + trial.title)
-            print(space + trial.summary)
-            print()
-        return
-
-    def code2ncit(self, code_orig, code_list, codeset):
-        no_match = {"ncit": "999999", "ncit_desc": "No code match"}
-        condition = self.conditions[code_list.index(code_orig)]
-        tik = self.auth.getst(self.tgt)
-        params = {"targetSource": "NCI", "ticket": tik}
-        res = req.get(f'https://uts-ws.nlm.nih.gov/rest/crosswalk/current/source/{codeset}/{code_orig}', params=params)
-        if (res.status_code != 200):
-            logging.debug("{} CODE {} ({}) --> NO MATCH ({})".format(codeset, code_orig, condition, res.status_code))
-            return no_match
-        for result in res.json()["result"]:
-            if not (result["ui"] in ["TCGA", "OMFAQ", "MPN-SAF"]): 
-                name_ncit = result["name"]
-                code_ncit = result["ui"]
-                logging.debug("{} CODE {} ({})---> NCIT CODE {} ({})".format(codeset, code_orig, condition, code_ncit, name_ncit))
-                logging.debug("{} CODE {} JSON: {}".format(codeset, code_orig, res.json()))
-                return {"ncit": code_ncit, "ncit_desc": name_ncit}
-        return no_match
-    
-    def snomed2ncit(self, code_snomed):
-        return self.code2ncit(code_snomed, self.codes_snomed, "SNOMEDCT_US")
-
 class VAPatient(Patient):
 
     api_factory = VaApi
 
     def after_init(self):
         self.va_api: VaApi = cast(VaApi, self.api)
+        # Deprecate the following collections:
+        self.codes_snomed: List[str]
+
+    def load_conditions(self):
+        logging.info("Loading conditions")
+        self.conditions_by_code = {condition.code: 
+                                    {'codeset': condition.codeset, 'description': condition.description} 
+                                        for condition in self.va_api.get_conditions()}
+
+        # Deprecate the following collections:
+        self.conditions = [cond['description'] for cond in self.conditions_by_code.values()]
+        self.codes_snomed = list(self.conditions_by_code.keys())
+        logging.info("Conditions loaded")
 
     def load_test_results(self) -> None:
         self.results = []
@@ -137,46 +164,23 @@ class VAPatient(Patient):
 
 class CMSPatient(Patient):
 
+    def after_init(self):
+        self.cms_api: CmsApi = cast(CmsApi, self.api)
+
     api_factory = CmsApi
 
     def load_conditions(self):
-        self.codes_icd9: list = []
-        url = f"{app.config['CMS_API_BASE_URL']}ExplanationOfBenefit"
-        params = {"patient": self.mrn, "_count":"50"}
-        headers = {"Authorization": "Bearer {}".format(self.token)}
-        res = req.get(url, params=params, headers=headers)
-        fhir = res.json()
-        logging.debug("CONDITIONS JSON: {}".format(json.dumps(fhir)))
-        codes: list = []
-        names: list = []
-        for entry in fhir["entry"]:
-            diags = entry["resource"]["diagnosis"]
-            for diag in diags:
-                coding = diag["diagnosisCodeableConcept"]["coding"][0]
-                code = coding["code"]
-                if len(code) > 3:
-                    code = code[0:3] + "." + code[3:]
-                if code != "999.9999" and not (code in codes) and "display" in coding:
-                    codes.append(code)
-                    names.append(coding["display"])
-        self.codes_icd9 = codes
-        self.conditions = names
+        for eob in self.cms_api.get_explanations_of_benefit():
+            if eob.diagnoses:
+                for diagnosis in eob.diagnoses:
+                    code = diagnosis['code']
+                    self.conditions_by_code[code if len(code)<4 else f"{code[0:3]}.{code[3:]}"] = {'codeset': diagnosis['codeset'], 'description': diagnosis['description']}
 
-    def load_codes(self):
-        self.codes_ncit = []
-        self.matches = []
-        self.codes_without_matches = []
-        for code_icd9 in self.codes_icd9:
-            code_ncit = self.icd2ncit(code_icd9)
-            orig_desc = self.conditions[self.codes_icd9.index(code_icd9)]
-            if (code_ncit["ncit"] != "999999"):
-                self.codes_ncit.append(code_ncit)
-                self.matches.append({"orig_desc":orig_desc, "orig_code":code_icd9, "codeset":"ICD-9", "new_code":code_ncit["ncit"], "new_desc":code_ncit["ncit_desc"]})
-            else:
-                self.codes_without_matches.append({"orig_desc":orig_desc, "orig_code":code_icd9, "codeset":"ICD-9"})
-
-    def icd2ncit(self, code_icd9):
-        return self.code2ncit(code_icd9, self.codes_icd9, "ICD9CM")
+        # Deprecate the following collections:
+        logging.info("CMS Conditions loaded")
+        self.codes_icd9 = list(self.conditions_by_code.keys())
+        self.conditions = [condition['description'] for condition in self.conditions_by_code.values()]
+        logging.info("CMS condition collections computed")
 
 class Criterion(TypedDict): 
     inclusion_indicator: bool
@@ -184,7 +188,7 @@ class Criterion(TypedDict):
 
 class Trial:
     def __init__(self, trial_json, code_ncit):
-        self.trial_json = trial_json
+        # self.trial_json = trial_json
         self.code_ncit = code_ncit
         self.id = trial_json['nci_id']
         self.title = trial_json['brief_title']
@@ -244,10 +248,14 @@ class CombinedPatient:
         self.ncit_codes: list = []
         self.trials_by_ncit: list = []
         self.ncit_without_trials: list = []
-        self.matches: list = []
-        self.codes_without_matches: list = []
         self.results: List[TestResult] = []
         self.latest_results: Dict[str, TestResult] = {}
+        self.conditions_by_code: Dict[str, Dict[str, str]] = {}
+        self.no_matches: set = set()
+        self.code_matches: Dict[str, Dict[str, str]] = {}
+        # Deprecate the following collections:
+        self.matches: list = []
+        self.codes_without_matches: list = []
 
     def calculate_distances(self):
         db = Zipcode()
@@ -301,6 +309,12 @@ class CombinedPatient:
         for code in patient.codes_ncit:
             if not (code in self.ncit_codes):
                 self.ncit_codes.append(code)
+
+        self.conditions_by_code.update(patient.conditions_by_code)
+        self.code_matches.update(patient.code_matches)
+        self.no_matches.update(patient.no_matches)
+
+        # Deprecate the following collections
         self.matches += patient.matches
         self.codes_without_matches += patient.codes_without_matches
 
