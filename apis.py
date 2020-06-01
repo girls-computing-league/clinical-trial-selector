@@ -89,7 +89,7 @@ class NciApi(Api):
     def _add_disease_list(self, trial: Dict[str, Any]) -> None:
         diseases =  self.ncit_codes & set(self._extract_functions['diseases'].search(trial))
         if len(diseases) == 0:
-            logging.warn(f"Cannot find source ncit code for trial {trial['nci_id']}")
+            logging.info(f"Cannot find source ncit code for trial {trial['nci_id']}")
         trial['ncit_codes'] = diseases
 
     def get_trials(self, age: int, gender: str, ncit_codes: Set[str]) -> Iterable[Dict[str,Any]]:
@@ -141,23 +141,23 @@ class FhirApi(PatientApi):
         logging.info(f"Getting resource at {url}")
         bundle = self.get(url, params)
         total = bundle['total']
-        logging.warn(f"Total {total}, received {url}")
+        logging.info(f"Total {total}, received {url}")
         for resource in self.extraction_functions['resources'].search(bundle):
             yield resource
         if total>count:
             next_url = self.extraction_functions['next'].search(bundle)
-            logging.warn(f"Next url would be {next_url}")
+            logging.info(f"Next url would be {next_url}")
             final_page = ((total-1) // count) + 1
             pages = {}
             for page_num in range(2, final_page+1):
                 page_param = self.page_parameter(page_num)
                 url_page = f"{url}{page_param}"
-                logging.warn(f"Getting resource at {url_page}")
+                logging.info(f"Getting resource at {url_page}")
                 pages[spawn(self.get, url_page, params)] = url_page
             for page in iwait(pages):
-                logging.warn(f"Received resource at {pages[page]}")
+                logging.info(f"Received resource at {pages[page]}")
                 for resource in self.extraction_functions['resources'].search(page.value):
-                    logging.warn(f"Returning {endpoint} resources {resource['id']}")
+                    logging.info(f"Returning {endpoint} resources {resource['id']}")
                     yield resource
 
         # while url is not None:
