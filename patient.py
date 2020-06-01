@@ -160,14 +160,14 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
     :return: (List[dict], List[dict])
     """
     max_trials_in_future = 10
-    filtered_trials_by_ncit: list = []
-    excluded_trials_by_ncit: list = []
     trial_filter_cnt = 0
-    logging.info("TRIALS: " + str(trials_by_ncit))
-    logging.info("LAB RESULTS: " + str(lab_results))
+    filtered_trials_by_ncit = []
+    excluded_trials_by_ncit = []
     for condition in trials_by_ncit:
         ncit = condition['ncit']
         trials = condition['trials']
+        inc = []
+        exc = []
         for trial in trials:
             header = "#nct_id,title,has_us_facility,conditions,eligibility_criteria"
             trial_info = trial.id + "," + trial.title + ",false," + trial.diseases[0]['preferred_name'] + ',"\n\t\tInclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.inclusions).replace('"',"'") + '\n\n\t\tExclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.exclusions).replace('"',"'") + '"'
@@ -194,7 +194,6 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
 
                 condition_passed = True
                 reason = None
-                logging.info(obj)
                 for i in range(len(output_split)-1):
                     inc_type = obj['eligibility_type'][i]
                     var_type = obj['variable_type'][i]
@@ -210,17 +209,19 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
                         lab_val = lab_results['hemoglobin']
                         if var_type == 'numerical':
                             if 'lower' in json_obj:
-                                if json_obj['lower']['incl'] and float(lab_val) < float(json_obj['lower']['value']):
+                                val = float(json_obj['lower']['value'].replace(' ',''))
+                                if json_obj['lower']['incl'] and float(lab_val) < val:
                                     consists = False
-                                if not json_obj['lower']['incl'] and float(lab_val) <= float(json_obj['lower']['value']):
+                                if not json_obj['lower']['incl'] and float(lab_val) <= val:
                                     consists = False
                             if 'upper' in json_obj:
-                                if json_obj['upper']['incl'] and float(lab_val) > float(json_obj['upper']['value']):
+                                val = float(json_obj['upper']['value'].replace(' ',''))
+                                if json_obj['upper']['incl'] and float(lab_val) > val:
                                     consists = False
-                                if not json_obj['upper']['incl'] and float(lab_val) >= float(json_obj['upper']['value']):
+                                if not json_obj['upper']['incl'] and float(lab_val) >= val:
                                     consists = False
                         elif var_type == 'ordinal':
-                            if float(lab_val) not in [float(val) for val in json_obj.value]:
+                            if float(lab_val) not in [float(val.replace(' ','')) for val in json_obj.value]:
                                 consists = False
 
                     # Platelet Count
@@ -229,17 +230,19 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
                         lab_val = lab_results['platelets']
                         if var_type == 'numerical':
                             if 'lower' in json_obj:
-                                if json_obj['lower']['incl'] and float(lab_val) < float(json_obj['lower']['value']):
+                                val = float(json_obj['lower']['value'].replace(' ',''))
+                                if json_obj['lower']['incl'] and float(lab_val) < val:
                                     consists = False
-                                if not json_obj['lower']['incl'] and float(lab_val) <= float(json_obj['lower']['value']):
+                                if not json_obj['lower']['incl'] and float(lab_val) <= val:
                                     consists = False
                             if 'upper' in json_obj:
-                                if json_obj['upper']['incl'] and float(lab_val) > float(json_obj['upper']['value']):
+                                val = float(json_obj['upper']['value'].replace(' ',''))
+                                if json_obj['upper']['incl'] and float(lab_val) > val:
                                     consists = False
-                                if not json_obj['upper']['incl'] and float(lab_val) >= float(json_obj['upper']['value']):
+                                if not json_obj['upper']['incl'] and float(lab_val) >= val:
                                     consists = False
                         elif var_type == 'ordinal':
-                            if float(lab_val) not in [float(val) for val in json_obj.value]:
+                            if float(lab_val) not in [float(val.replace(' ','')) for val in json_obj.value]:
                                 consists = False
 
                     # White Blood Cell Count
@@ -248,17 +251,19 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
                         lab_val = lab_results['leukocytes']
                         if var_type == 'numerical':
                             if 'lower' in json_obj:
-                                if json_obj['lower']['incl'] and float(lab_val) < float(json_obj['lower']['value']):
+                                val = float(json_obj['lower']['value'].replace(' ',''))
+                                if json_obj['lower']['incl'] and float(lab_val) < val:
                                     consists = False
-                                if not json_obj['lower']['incl'] and float(lab_val) <= float(json_obj['lower']['value']):
+                                if not json_obj['lower']['incl'] and float(lab_val) <= val:
                                     consists = False
                             if 'upper' in json_obj:
-                                if json_obj['upper']['incl'] and float(lab_val) > float(json_obj['upper']['value']):
+                                val = float(json_obj['upper']['value'].replace(' ',''))
+                                if json_obj['upper']['incl'] and float(lab_val) > val:
                                     consists = False
-                                if not json_obj['upper']['incl'] and float(lab_val) >= float(json_obj['upper']['value']):
+                                if not json_obj['upper']['incl'] and float(lab_val) >= val:
                                     consists = False
                         elif var_type == 'ordinal':
-                            if float(lab_val) not in [float(val) for val in json_obj.value]:
+                            if float(lab_val) not in [float(val.replace(' ','')) for val in json_obj.value]:
                                 consists = False
 
                     if not found:
@@ -268,19 +273,19 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
                         elg = False
                     if not consists and inclusion:
                         elg = False
-
-
-
             subprocess.run(['rm',output_line])
             subprocess.run(['rm',input_line])
             if elg:
                 logging.info('passed')
+                inc.append(trial)
             else:
                 logging.info('not passed')
-
-            # Feed Header + trial_info into Facebook's AI System, Specifically the scripts/cfg_parser.sh
-
-
+                exc.append(trial)
+        if len(inc) != 0:
+            filtered_trials_by_ncit.append({"ncit": ncit, "trials": inc})
+        if len(exc) != 0:
+            excluded_trials_by_ncit.append({"ncit": ncit, "trials": exc})
+    """
     # with futures.ThreadPoolExecutor(max_workers=75) as executor:
     tasks = {}
     for trialset in trials_by_ncit:
@@ -328,7 +333,8 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
             excluded_list.extend(excluded_trials)
 
         for ncit_code in filtered:
-            logging.info(ncit_codes[ncit_code], filtered[ncit_code])
+            logging.info('NCIT: ' + str(ncit_codes[ncit_code]))
+            logging.info('Filtered: ' + str(filtered[ncit_code]))
             filtered_trials_by_ncit.append({"ncit": ncit_codes[ncit_code], "trials": filtered[ncit_code]})
 
         for ncit_code in excluded:
@@ -340,6 +346,7 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
             #     print('Failed task: ', exc)
             #     raise Exception
             #     continue
+    """
 
     return filtered_trials_by_ncit, excluded_trials_by_ncit
 
