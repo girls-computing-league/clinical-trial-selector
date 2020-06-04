@@ -96,6 +96,9 @@ class Patient(metaclass=ABCMeta):
     def find_trials(self):
         logging.info("Searching for trials...")
         ncit_codes = {match['match'] for match in self.code_matches.values()}
+        if len(ncit_codes) == 0:
+            logging.info('No ncit conditions to search for')
+            return
         for ncit_code in ncit_codes:
             self.trial_ids_by_ncit[ncit_code] = []
         for trial_json in self.nci.get_trials(self.age, self.gender, ncit_codes):

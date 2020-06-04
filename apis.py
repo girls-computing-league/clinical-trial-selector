@@ -102,7 +102,8 @@ class NciApi(Api):
         for trial in first_page['trials']:
             self._add_disease_list(trial)
             yield trial
-        total = first_page['total']
+        total = first_page.get('total', 0)
+        logging.info(f"Total trials: {total}")
         if total > self.size:
             pages = {}
             for start_from in range(1+self.size, 1+total, self.size):
@@ -111,7 +112,7 @@ class NciApi(Api):
 
             for page in iwait(pages):
                 logging.info(f"Received trials starting at {pages[page]}")
-                for trial in page.value['trials']:
+                for trial in page.value.get('trials', []):
                     self._add_disease_list(trial)
                     yield trial
 
