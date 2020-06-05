@@ -84,6 +84,7 @@ def showtrials():
 
 @app.route('/welcome')
 def welcome():
+    combined = combined_from_session()
     return render_template('welcome.html', welcome_selection="current")
 
 @app.route("/authenticate/<source>", methods=["POST"])
@@ -120,26 +121,38 @@ def getInfo():
 
 @app.route('/trials')
 def show_all_trials():
+    if not session.get("combined_patient", None):
+        return welcome()
     return render_template('welcome.html', form=FilterForm(), trials_selection="current", labs=labs)
 
 @app.route('/excluded')
 def show_excluded():
+    if not session.get("combined_patient", None):
+        return welcome()
     return render_template('welcome.html', form=FilterForm(), excluded_selection="current")
 
 @app.route('/conditions')
 def show_conditions():
+    if not session.get("combined_patient", None):
+        return welcome()
     return render_template('welcome.html', form=FilterForm(), conditions_selection="current")
 
 @app.route('/matches')
 def show_matches():
+    if not session.get("combined_patient", None):
+        return welcome()
     return render_template('welcome.html', form=FilterForm(), matches_selection="current")
 
 @app.route('/nomatches')
 def show_nomatches():
+    if not session.get("combined_patient", None):
+        return welcome()
     return render_template('welcome.html', form=FilterForm(), nomatches_selection="current")
 
 @app.route('/download_trials')
 def download_trails():
+    if not session.get("combined_patient", None):
+        return welcome()
     combined_patient = session['combined_patient']
     header = ['id', 'code_ncit', 'title', 'pi','official','summary','description']
 

@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 
-{% set trialID = request.args.get('id', '0') %}
 
 {% block content %}
   {{ super() }}
 
+  {% set ns = namespace() %}
+  {% set trialID = request.args.get('id', '0') %}
+  {% set ns.combined = session['combined_patient'] if session['combined_patient'] else none %}
   <header class="site-header" role="banner">
     <div class="site-l-wrapper">
       <div class="site-header__masthead">
@@ -38,7 +40,6 @@
 
   <div>
 
-    {% set combined = session["combined_patient"] if session["combined_patient"] else None %}
     {% if trialID != '0' %}    
       <div class="site-top-nav-wrapper site-l-wrapper sticky">
         <nav class="site-header__nav">
@@ -82,7 +83,7 @@
             <li class="site-header__nav-item">
               <a class="site-header__nav-item__link {{ nomatches_selection }}" href="/nomatches" data-toggle="tab">Codes w/o Matches</a>
             </li>
-            {% if combined.loaded %}
+            {% if ns.combined.loaded %}
               <li class="site-header__nav-item">
                 <a class="site-header__nav-item__link " href="/download_trials" data-toggle="tab">Download Trials</a>
               </li>
@@ -96,7 +97,7 @@
       <div class="site-content__nav vads-l-col--3 vads-u-padding-x--3">
 
         {% for source in ["va", "cms"] %}
-          {% set patient = combined.from_source[source] if combined and combined.from_source[source] else None %}
+          {% set patient = ns.combined.from_source[source] if ns.combined and ns.combined.from_source[source] else none %}
           <table>
             <thead>
               <tr>
@@ -131,7 +132,7 @@
       </div>
       <div class="site-content__content vads-l-col--8 vads-u-padding--3">
         <main>
-          {% block pt_main %}{% endblock %}
+          {% block pt_main scoped %}{% endblock %}
         </main>
       </div>
     </div>

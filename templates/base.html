@@ -35,18 +35,3 @@
   </footer>
 
 {% endblock %}
-
-{% block content %}
-
-  {{ super() }}
-  <div class="container">
-      {% for message in get_flashed_messages() %}
-      <br>
-          <div class="alert alert-warning text-center">
-              <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-              <strong>{{message}}</strong>
-          </div>
-      {% endfor %}
-  </div>
-		
-{% endblock %}
