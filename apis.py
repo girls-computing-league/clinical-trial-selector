@@ -84,6 +84,7 @@ class NciApi(Api):
         params['eligibility.structured.gender'] = [self.gender, 'BOTH']
         params["eligibility.structured.max_age_in_years_gte"] = str(self.age)
         params["eligibility.structured.min_age_in_years_lte"] = str(self.age)
+        params['current_trial_status'] = 'Active'
         return self._get(url, params=params)
 
     def _add_disease_list(self, trial: Dict[str, Any]) -> None:
