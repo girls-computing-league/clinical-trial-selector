@@ -1,10 +1,10 @@
 {% extends "patient.html" %}
 
 {% set trialID = request.args.get('id', '0') %}
-{% set ns = namespace(trial=none) %}
+{% set ns2 = namespace(trial=none) %}
 {% for tr in session['combined_patient'].trials %}
     {% if tr.id == trialID %}
-        {% set ns.trial = tr %}
+        {% set ns2.trial = tr %}
     {% endif %}
 {% endfor %}
 
@@ -34,15 +34,15 @@
           <strong>
             Information about trial #{{trialID}}:
           </strong>
-            {{ section("title", "Brief Title", ns.trial.title) }}
-            {{ section("pi", "Principal Investigator", ns.trial.pi) }}
-            {{ section("official", "Official Title", ns.trial.official) }}
-            {% if ns.trial.population["population"] %}
-                {{ section("population", "Target Population", ns.trial.population)}}
+            {{ section("title", "Brief Title", ns2.trial.title) }}
+            {{ section("pi", "Principal Investigator", ns2.trial.pi) }}
+            {{ section("official", "Official Title", ns2.trial.official) }}
+            {% if ns2.trial.population["population"] %}
+                {{ section("population", "Target Population", ns2.trial.population)}}
             {% endif %}
-            {{ section("summary", "Summary", ns.trial.summary) }}
-            {{ section("description", "Detailed Description", ns.trial.description) }}
-            {% for criterion in ns.trial.eligibility %}
+            {{ section("summary", "Summary", ns2.trial.summary) }}
+            {{ section("description", "Detailed Description", ns2.trial.description) }}
+            {% for criterion in ns2.trial.eligibility %}
               {{ section("eligibility"+loop.index|string, 
                 "Eligibility criterion #{} ({})".format(loop.index, "Inclusion" if criterion.inclusion_indicator else "Exclusion"), 
                 criterion.description) }}
@@ -62,7 +62,7 @@
                     </tr>
                 </thead>
 
-                {% for measure in ns.trial.measures %}
+                {% for measure in ns2.trial.measures %}
 
                     <tbody class="usa-accordion">
                         <tr>
@@ -98,7 +98,7 @@
                             </tr>
                         </thead>
         
-                        {% for disease in ns.trial.diseases %}
+                        {% for disease in ns2.trial.diseases %}
                             <tbody class="usa-accordion">
                                 <tr>
                                    <td colspan="2" class="page-header">
@@ -130,7 +130,7 @@
                             </tr>
                         </thead>
 
-                        {% for site in ns.trial.sites %}
+                        {% for site in ns2.trial.sites %}
                             <tbody class="usa-accordion">
                                 <tr>
                                     <td colspan="4" class="page-header">
