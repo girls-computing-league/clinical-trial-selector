@@ -99,7 +99,7 @@ class NciApi(Api):
         logging.info("Trial query starting at 1")
         first_page = self._get_trials_page(1)
         logging.info("Received trials starting at 1")
-        for trial in first_page['trials']:
+        for trial in first_page.get('trials', []):
             self._add_disease_list(trial)
             yield trial
         total = first_page.get('total', 0)
