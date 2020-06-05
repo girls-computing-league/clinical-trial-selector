@@ -142,7 +142,7 @@ class FhirApi(PatientApi):
         url: str = f"{self.base_url}{endpoint}?patient={self.id}&_count={count}"
         logging.info(f"Getting resource at {url}")
         bundle = self.get(url, params)
-        total = bundle['total']
+        total = bundle.get('total', 0)
         logging.info(f"Total {total}, received {url}")
         for resource in self.extraction_functions['resources'].search(bundle):
             yield resource
