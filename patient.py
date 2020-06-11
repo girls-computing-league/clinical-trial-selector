@@ -49,11 +49,8 @@ def find_trials(ncit_codes, gender="unknown", age=0):
         while next_trial<= total:
             ncit = ncit_dict["ncit"]
             params = {"size": f"{size}", "from": f"{next_trial}", "diseases.nci_thesaurus_concept_id": ncit}
-<<<<<<< HEAD
             if (gender != "unknown"):
                 params["eligibility.structured.gender"] = [gender, 'BOTH']
-=======
->>>>>>> Creating Facebook Parser
             if (age != 0):
                 params["eligibility.structured.max_age_in_years_gte"] = age
                 params["eligibility.structured.min_age_in_years_lte"] = age
