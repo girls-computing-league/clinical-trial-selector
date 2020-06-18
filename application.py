@@ -8,22 +8,19 @@ monkey.patch_all()
 
 import csv
 import io
-import json
 import argparse
 import logging, sys
 import ssl
 from flask_socketio import SocketIO, join_room
 from flask import Flask, session, redirect, render_template, request, flash, make_response
-from flask.logging import default_handler
-from flask_session import Session 
+from flask_session import Session
 from flask_talisman import Talisman
 from authlib.integrations.flask_client import OAuth
 import hacktheworld as hack
 from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
                                EXPORT_URL, submit_get_patients_job, get_infected_patients_info)
 from flask_wtf import FlaskForm, CSRFProtect
-from flask_wtf.csrf import CSRFError
-from wtforms import Form, StringField, validators
+from wtforms import StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from labtests import labs
 from typing import Dict
