@@ -125,15 +125,15 @@ class Patient(metaclass=ABCMeta):
         # logging.info("Trials found")
 
         for ncit_code in self.codes_ncit:
-            print(ncit_code)
+            logging.debug(ncit_code)
             new_trails_json = pt.find_new_trails(ncit_code)
             for trial_set in new_trails_json.get('FullStudiesResponse', {}).get('FullStudies', []):
-                print(trial_set['Study']['ProtocolSection'])
+                logging.debug(trial_set['Study']['ProtocolSection'])
                 trial = TrialV2(trial_set['Study']['ProtocolSection'], ncit_code['ncit'])
                 self.trials.append(trial)
-        print(self.conditions)
-        print(self.matches)
-        print(self.codes_ncit)
+        logging.debug(self.conditions)
+        logging.debug(self.matches)
+        logging.debug(self.codes_ncit)
         
         return
 
