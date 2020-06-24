@@ -136,7 +136,7 @@ def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
         exc = []
         for trial in trials:
             header = "#nct_id,title,has_us_facility,conditions,eligibility_criteria"
-            trial_info = trial.id + "," + trial.title + ",false," + trial.diseases[0]['preferred_name'] \
+            trial_info = trial.id + "," + trial.title + ",false," + (trial.diseases[0]['preferred_name'] if len(trial.diseases) > 0 else "disease") \
                 + ',"\n\t\tInclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.inclusions).replace('"', "'") \
                 + '\n\n\t\tExclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.exclusions).replace('"', "'") + '"'
 
