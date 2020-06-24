@@ -3,7 +3,7 @@ import logging
 import sys
 import umls
 import requests as req
-from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable, Type, cast, Tuple
+from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable, Type, cast, Tuple, Any
 from abc import ABCMeta, abstractmethod
 from mypy_extensions import TypedDict 
 from datetime import date
@@ -14,10 +14,9 @@ from apis import VaApi, CmsApi, FhirApi, UmlsApi, NciApi
 from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
+import os
+import subprocess
 import json
-import re
-import time
-import tracemalloc
 
 class Patient(metaclass=ABCMeta):
 
@@ -363,6 +362,123 @@ class CombinedPatient:
         # Deprecate the following collections
         self.matches += patient.matches
         self.codes_without_matches += patient.codes_without_matches
+
+    def generateResults(self, trial):
+        input_line = "parser_io/inputs/" + trial.id + ".csv"
+        output_line = "parser_io/outputs/" + trial.id + ".csv"
+
+        header = "#nct_id,title,has_us_facility,conditions,eligibility_criteria"
+        trial_info = trial.id + "," + trial.title + ",false," + (trial.diseases[0]['preferred_name'] if len(trial.diseases) > 0 else "disease") \
+                     + ',"\n\t\tInclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.inclusions).replace(
+            '"', "'") \
+                     + '\n\n\t\tExclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.exclusions).replace(
+            '"', "'") + '"'
+
+        print(header + "\n" + trial_info, file=open(input_line, "w"))
+
+        command_line = ['bash', 'parser_io/script.sh', '-o', output_line,
+                        '-i', input_line, '>', '/dev/null', '2>&1']
+
+        subprocess.run(command_line)
+
+    def filter_by_criteria(self, form) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        trials_by_ncit = self.trials_by_ncit
+        if form.validate_on_submit():
+            lab_results = {key: value for (key, value) in form.data.items() if key != 'csrf_token'}
+        else:
+            lab_results = self.latest_results
+
+        filtered_trials_by_ncit = []
+        excluded_trials_by_ncit = []
+        for condition in trials_by_ncit:
+            ncit = condition['ncit']
+            trials = condition['trials']
+            inc = []
+            exc = []
+            for trial in trials:
+                input_line = "parser_io/inputs/" + trial.id + ".csv"
+                output_line = "parser_io/outputs/" + trial.id + ".csv"
+                if not os.path.exists(input_line):
+                    self.generateResults(trial)
+
+                obj = {}
+                elg = True
+                with open(output_line, "r") as output_csv:
+                    output_csv_lines = output_csv.readlines()
+                    output_split = [line.split("\t") for line in output_csv_lines]
+
+                    for i in range(len(output_split[0])):
+                        obj[output_split[0][i].strip()] = [split[i] for split in output_split[1:]]
+
+                    for i in range(len(output_split) - 1):
+                        var_type = obj['variable_type'][i]
+                        json_obj = json.loads(obj['relation'][i])
+                        consists = True
+                        found = False
+                        filter_condition = ""
+
+                        value_dict = {
+                            'hb_count': {
+                                'results_key': 'hemoglobin',
+                                'name': 'Hemoglobin'
+                            },
+                            'platelet_count': {
+                                'results_key': 'platelets',
+                                'name': 'Platelets'
+                            },
+                            'wbc': {
+                                'results_key': 'leukocytes',
+                                'name': 'White Blood Cells'
+                            },
+                        }
+
+                        for value_type in value_dict:
+                            if json_obj['name'] == value_type:
+                                found = True
+                                filter_condition += value_dict[value_type]['name'] + ": "
+                                lab_val = lab_results[value_dict[value_type]['results_key']]
+                                if var_type == 'numerical':
+                                    if 'lower' in json_obj:
+                                        val = float(json_obj['lower']['value'].replace(' ', ''))
+                                        filter_condition += "Must be greater than " + str(val) + ". "
+                                        if json_obj['lower']['incl'] and float(lab_val) < val:
+                                            consists = False
+                                        if not json_obj['lower']['incl'] and float(lab_val) <= val:
+                                            consists = False
+                                    if 'upper' in json_obj:
+                                        val = float(json_obj['upper']['value'].replace(' ', ''))
+                                        filter_condition += "Must be less than " + str(val) + ". "
+                                        if json_obj['upper']['incl'] and float(lab_val) > val:
+                                            consists = False
+                                        if not json_obj['upper']['incl'] and float(lab_val) >= val:
+                                            consists = False
+                                elif var_type == 'ordinal':
+                                    allowed_values = [float(val.replace(' ', '')) for val in json_obj.value]
+                                    filter_condition += "Must be one of: " + ", ".join(
+                                        [str(value) for value in allowed_values])
+                                    if float(lab_val) not in allowed_values:
+                                        consists = False
+
+                        if not found:
+                            continue
+
+                        if not consists:
+                            elg = False
+                        print(trial.id, obj['criterion'][i], obj['eligibility_type'][i], consists)
+                        trial.filter_condition.append((filter_condition, consists))
+                if elg:
+                    logging.info('passed')
+                    inc.append(trial)
+                else:
+                    logging.info('not passed')
+                    exc.append(trial)
+            if len(inc) != 0:
+                filtered_trials_by_ncit.append({"ncit": ncit, "trials": inc})
+            if len(exc) != 0:
+                excluded_trials_by_ncit.append({"ncit": ncit, "trials": exc})
+
+        return filtered_trials_by_ncit, excluded_trials_by_ncit
+
 
 class TestResult:
 

@@ -2,12 +2,12 @@
 
 set -eu
 
+CMD = $GOPATH + "/src/github.com/facebookresearch/Clinical-Trial-Parser/src/cfg/main.go"
+CONFIG = $GOPATH + "/src/github.com/facebookresearch/Clinical-Trial-Parser/src/resources/config/cfg.conf"
 while getopts m:i:o:c: option
 do
 case "${option}"
 in
-c) CONFIG=${OPTARG};;
-m) CMD=${OPTARG};;
 i) INPUT=${OPTARG};;
 o) OUTPUT=${OPTARG};;
 esac

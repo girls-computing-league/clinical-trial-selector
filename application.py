@@ -45,8 +45,6 @@ read_config('default')
 
 log_level = args.get("log", app.config["CTS_LOGLEVEL"]).upper()
 
-from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
-
 formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(name)-23s %(message)s')
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(formatter)
@@ -187,17 +185,9 @@ def filter_by_lab_results():
     form = FilterForm()
 
     combined_patient = session['combined_patient']
-
-    if form.validate_on_submit():
-        lab_results = {key:value for (key,value) in form.data.items() if key != 'csrf_token'}
-    else:
-        lab_results = combined_patient.latest_results
-
-    trials_by_ncit = combined_patient.trials_by_ncit
     socketio.emit(event_name, {"data": 20}, room=session.sid)
+    filter_trails_by_inclusion_criteria, excluded_trails_by_inclusion_criteria = combined_patient.filter_by_criteria(form)
 
-    filter_trails_by_inclusion_criteria, excluded_trails_by_inclusion_criteria = \
-        filter_by_inclusion_criteria(trials_by_ncit, lab_results)
     socketio.emit(event_name, {"data": 65}, room=session.sid)
 
     session['combined_patient'].trials_by_ncit = filter_trails_by_inclusion_criteria
