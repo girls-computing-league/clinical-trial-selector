@@ -464,7 +464,7 @@ class CombinedPatient:
 
                         if not consists:
                             elg = False
-                        print(trial.id, obj['criterion'][i], obj['eligibility_type'][i], consists)
+
                         trial.filter_condition.append((filter_condition, consists))
                 if elg:
                     logging.info('passed')
