@@ -63,6 +63,22 @@ def find_trials(ncit_codes, gender="unknown", age=0):
             trials.append(trialset)
     return trials
 
+def find_new_trails(ncit_code):
+    search_text = ncit_code['ncit_desc']
+    print('Calling new api for ncit_code-' + ncit_code['ncit'] + ' and ncit desc -' + ncit_code['ncit_desc'] )
+    params = {'expr': search_text, 'min_rnk': 1, 'max_rnk': 100, 'fmt': 'json'} #get trials based on condition
+    response = req.get(app.config['ADDITIONAL_TRIALS_URL'], params=params)
+    return response.json()
+
+# def find_all_codes(disease_list):
+#     codes: list = []
+#     names: list = []
+#     for disease in disease_list:
+#         codelist, nameslist = find_codes(disease)
+#         codes += codelist
+#         names += nameslist
+#     return codes, names
+
 def get_lab_observations_by_patient(patient_id, token):
     # loinc_codes = ','.join(list(LOINC_CODES.keys()))
     current_url: Optional[str] = app.config['VA_OBSERVATION_URL'] + f'?patient={patient_id}&_count=100'

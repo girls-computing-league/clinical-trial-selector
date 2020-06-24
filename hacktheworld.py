@@ -124,6 +124,17 @@ class Patient(metaclass=ABCMeta):
         #         self.trials.append(trial)
         # logging.info("Trials found")
 
+        for ncit_code in self.codes_ncit:
+            print(ncit_code)
+            new_trails_json = pt.find_new_trails(ncit_code)
+            for trial_set in new_trails_json['FullStudiesResponse']['FullStudies']:
+                print(trial_set['Study']['ProtocolSection'])
+                trial = TrialV2(trial_set['Study']['ProtocolSection'], ncit_code['ncit'])
+                self.trials.append(trial)
+        print(self.conditions)
+        print(self.matches)
+        print(self.codes_ncit)
+        
         return
 
     def load_all(self):
@@ -220,6 +231,38 @@ class Trial:
                             s.add(group[4])
         for unit in s:
             app.logger.debug(f"leukocytes unit: {unit}")
+class TrialV2(Trial):
+
+    def __init__(self, trial_json, code_ncit): #write the code based on the condition it will attatch to that dropdown
+        self.trial_json = trial_json
+        self.code_ncit = code_ncit
+        self.id = trial_json['IdentificationModule']['NCTId']
+        self.title = trial_json['IdentificationModule']['BriefTitle']
+        self.official = trial_json['IdentificationModule'].get('OfficialTitle')
+        self.summary = trial_json['DescriptionModule'].get('BriefSummary')
+        self.description = trial_json['DescriptionModule'].get('DetailedDescription')
+        self.eligibility: List[Dict] = [{'description': trial_json['EligibilityModule'].get('EligibilityCriteria'), 'inclusion_indicator': True}]
+        self.inclusions: List[str] = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
+        self.exclusions: List[str] = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
+        self.measures = [measure for types in ['Primary', 'Secondary', 'Other'] for measure in self.get_measures(types)]
+        self.pi = trial_json.get('SponsorCollaboratorsModule', {}).get('ResponsibleParty', {}).get('ResponsiblePartyInvestigatorFullName', 'N/A')
+        self.sites = []
+        self.population = trial_json['EligibilityModule'].get('StudyPopulation')
+        self.diseases = []
+        self.filter_condition = []
+
+    def get_measures(self, key):
+        return [
+            {
+                'name': measure.get(f'{key}OutcomeMeasure'),
+                'description': measure.get(f'{key}OutcomeDescription'),
+                'timeframe': measure.get(f'{key}OutcomeTimeFrame')
+            }
+                for measure in self.trial_json
+                    .get('OutcomesModule', {})
+                    .get(f'{key}OutcomeList', {})
+                    .get(f'{key}Outcome', [])
+            ]
                     
 class CombinedPatient:
 
