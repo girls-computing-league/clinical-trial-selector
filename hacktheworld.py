@@ -127,7 +127,7 @@ class Patient(metaclass=ABCMeta):
         for ncit_code in self.codes_ncit:
             print(ncit_code)
             new_trails_json = pt.find_new_trails(ncit_code)
-            for trial_set in new_trails_json['FullStudiesResponse']['FullStudies']:
+            for trial_set in new_trails_json.get('FullStudiesResponse', {}).get('FullStudies', []):
                 print(trial_set['Study']['ProtocolSection'])
                 trial = TrialV2(trial_set['Study']['ProtocolSection'], ncit_code['ncit'])
                 self.trials.append(trial)
