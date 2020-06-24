@@ -15,6 +15,9 @@ flask_session
 CMS_VA
 VA_CMS
 
+parser_io/inputs/*.csv
+parser_io/outputs/*.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
