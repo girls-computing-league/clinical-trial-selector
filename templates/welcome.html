@@ -168,13 +168,13 @@
                         <tr>
                                 <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
                                 <td>{{ trial.title }}</td>
-                                {% if trial.filter_condition %}
                                 <td>
+                                  {% if trial.filter_condition %}
                                     {% for condition, include in trial.filter_condition %}
                                         {{condition}}
                                     {% endfor %}
+                                  {% endif %}
                                 </td>
-                                {% endif %}
                         </tr>
                         {% endfor %}
                         </tbody>

@@ -364,11 +364,12 @@ class CombinedPatient:
         self.codes_without_matches += patient.codes_without_matches
 
     def generateResults(self, trial):
+        logging.info(f"Parsing trial {trial.id}")
         input_line = "parser_io/inputs/" + trial.id + ".csv"
         output_line = "parser_io/outputs/" + trial.id + ".csv"
 
         header = "#nct_id,title,has_us_facility,conditions,eligibility_criteria"
-        trial_info = trial.id + "," + trial.title + ",false," + (trial.diseases[0]['preferred_name'] if len(trial.diseases) > 0 else "disease") \
+        trial_info = trial.id + "," + trial.title.replace('"', "'") + ",false," + (trial.diseases[0]['preferred_name'] if len(trial.diseases) > 0 else "disease") \
                      + ',"\n\t\tInclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.inclusions).replace(
             '"', "'") \
                      + '\n\n\t\tExclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.exclusions).replace(
@@ -376,8 +377,9 @@ class CombinedPatient:
 
         print(header + "\n" + trial_info, file=open(input_line, "w"))
 
-        command_line = ['bash', 'parser_io/script.sh', '-o', output_line,
-                        '-i', input_line, '>', '/dev/null', '2>&1']
+        command_line = ['parser_io/cfg', '-conf', 'parser_io/cfg.conf', '-o', output_line,
+                        '-i', input_line]
+                        #, '>', '/dev/null', '2>&1']
 
         subprocess.run(command_line)
 
@@ -398,8 +400,10 @@ class CombinedPatient:
             for trial in trials:
                 input_line = "parser_io/inputs/" + trial.id + ".csv"
                 output_line = "parser_io/outputs/" + trial.id + ".csv"
-                if not os.path.exists(input_line):
+                if not os.path.exists(output_line):
                     self.generateResults(trial)
+                else:
+                    logging.info(f"Cached parsed trial {trial.id}")
 
                 obj = {}
                 elg = True

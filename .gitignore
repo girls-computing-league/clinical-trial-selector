@@ -17,6 +17,7 @@ VA_CMS
 
 parser_io/inputs/*.csv
 parser_io/outputs/*.csv
+parser_io/cfg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
