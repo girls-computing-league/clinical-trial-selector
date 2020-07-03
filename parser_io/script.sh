@@ -15,7 +15,7 @@ i) INPUT=${OPTARG};;
 o) OUTPUT=${OPTARG};;
 esac
 done
-echo go run $CMD -conf $CONFIG -i "$INPUT" -o "$OUTPUT"
+
 if ! /usr/local/go/bin/go run $CMD -conf $CONFIG -i "$INPUT" -o "$OUTPUT"
 then
     rm -f "$OUTPUT"

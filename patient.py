@@ -8,7 +8,7 @@ from typing import Dict, List, Any, Tuple, Optional
 from flask import current_app as app
 import time
 
-client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
+client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40))
 
 trial_filter_cnt = 0
 

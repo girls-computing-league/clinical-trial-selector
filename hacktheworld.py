@@ -209,14 +209,19 @@ class Trial:
         self.summary = trial_json['brief_summary']
         self.description = trial_json['detail_description']
         self.eligibility: List[Criterion] = trial_json['eligibility']['unstructured']
-        self.inclusions: List[str] = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
-        self.exclusions: List[str] = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
+        self.inclusions: Union[List[str], None] = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
+        self.exclusions: Union[List[str], None] = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
+        self.eligibility_combined = '"\n\t\tInclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(
+            self.inclusions).replace('"', "'") \
+                                    + '\n\n\t\tExclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(
+            self.exclusions).replace('"', "'") + '"'
         self.measures = trial_json['outcome_measures']
         self.pi = trial_json['principal_investigator']
         self.sites = trial_json['sites']
         self.population = trial_json['study_population_description']
         self.diseases = trial_json['diseases']
         self.filter_condition: list = []
+
 
     def determine_filters(self) -> None:
         s: Set[str] = set()
@@ -230,6 +235,8 @@ class Trial:
                             s.add(group[4])
         for unit in s:
             app.logger.debug(f"leukocytes unit: {unit}")
+
+
 class TrialV2(Trial):
 
     def __init__(self, trial_json, code_ncit): #write the code based on the condition it will attatch to that dropdown
@@ -241,8 +248,10 @@ class TrialV2(Trial):
         self.summary = trial_json['DescriptionModule'].get('BriefSummary')
         self.description = trial_json['DescriptionModule'].get('DetailedDescription')
         self.eligibility: List[Dict] = [{'description': trial_json['EligibilityModule'].get('EligibilityCriteria'), 'inclusion_indicator': True}]
-        self.inclusions: List[str] = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
-        self.exclusions: List[str] = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
+        self.inclusions: Union[List[str], None] = None
+        self.exclusions: Union[List[str], None] = None
+        self.eligibility_combined = '"' + self.trial_json['EligibilityModule'].get('EligibilityCriteria').replace('"',"") + '"' \
+            if self.trial_json['EligibilityModule'].get('EligibilityCriteria') is not None else ""
         self.measures = [measure for types in ['Primary', 'Secondary', 'Other'] for measure in self.get_measures(types)]
         self.pi = trial_json.get('SponsorCollaboratorsModule', {}).get('ResponsibleParty', {}).get('ResponsiblePartyInvestigatorFullName', 'N/A')
         self.sites = []
@@ -369,12 +378,7 @@ class CombinedPatient:
         output_line = "parser_io/outputs/" + trial.id + ".csv"
 
         header = "#nct_id,title,has_us_facility,conditions,eligibility_criteria"
-        trial_info = trial.id + "," + trial.title.replace('"', "'") + ",false," + (trial.diseases[0]['preferred_name'] if len(trial.diseases) > 0 else "disease") \
-                     + ',"\n\t\tInclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.inclusions).replace(
-            '"', "'") \
-                     + '\n\n\t\tExclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(trial.exclusions).replace(
-            '"', "'") + '"'
-
+        trial_info = trial.id + "," + trial.title + ",false,disease," + trial.eligibility_combined
         print(header + "\n" + trial_info, file=open(input_line, "w"))
 
         command_line = ['parser_io/cfg', '-conf', 'parser_io/cfg.conf', '-o', output_line,
@@ -398,8 +402,9 @@ class CombinedPatient:
             inc = []
             exc = []
             for trial in trials:
-                input_line = "parser_io/inputs/" + trial.id + ".csv"
                 output_line = "parser_io/outputs/" + trial.id + ".csv"
+                if trial.eligibility_combined == "" or trial.eligibility_combined == None:
+                    continue
                 if not os.path.exists(output_line):
                     self.generateResults(trial)
                 else:
@@ -407,69 +412,70 @@ class CombinedPatient:
 
                 obj = {}
                 elg = True
-                with open(output_line, "r") as output_csv:
-                    output_csv_lines = output_csv.readlines()
-                    output_split = [line.split("\t") for line in output_csv_lines]
+                if os.path.exists(output_line):
+                    with open(output_line, "r") as output_csv:
+                        output_csv_lines = output_csv.readlines()
+                        output_split = [line.split("\t") for line in output_csv_lines]
 
-                    for i in range(len(output_split[0])):
-                        obj[output_split[0][i].strip()] = [split[i] for split in output_split[1:]]
+                        for i in range(len(output_split[0])):
+                            obj[output_split[0][i].strip()] = [split[i] for split in output_split[1:]]
 
-                    for i in range(len(output_split) - 1):
-                        var_type = obj['variable_type'][i]
-                        json_obj = json.loads(obj['relation'][i])
-                        consists = True
-                        found = False
-                        filter_condition = ""
+                        for i in range(len(output_split) - 1):
+                            var_type = obj['variable_type'][i]
+                            json_obj = json.loads(obj['relation'][i])
+                            consists = True
+                            found = False
+                            filter_condition = ""
 
-                        value_dict = {
-                            'hb_count': {
-                                'results_key': 'hemoglobin',
-                                'name': 'Hemoglobin'
-                            },
-                            'platelet_count': {
-                                'results_key': 'platelets',
-                                'name': 'Platelets'
-                            },
-                            'wbc': {
-                                'results_key': 'leukocytes',
-                                'name': 'White Blood Cells'
-                            },
-                        }
+                            value_dict = {
+                                'hb_count': {
+                                    'results_key': 'hemoglobin',
+                                    'name': 'Hemoglobin'
+                                },
+                                'platelet_count': {
+                                    'results_key': 'platelets',
+                                    'name': 'Platelets'
+                                },
+                                'wbc': {
+                                    'results_key': 'leukocytes',
+                                    'name': 'White Blood Cells'
+                                },
+                            }
 
-                        for value_type in value_dict:
-                            if json_obj['name'] == value_type:
-                                found = True
-                                filter_condition += value_dict[value_type]['name'] + ": "
-                                lab_val = lab_results[value_dict[value_type]['results_key']]
-                                if var_type == 'numerical':
-                                    if 'lower' in json_obj:
-                                        val = float(json_obj['lower']['value'].replace(' ', ''))
-                                        filter_condition += "Must be greater than " + str(val) + ". "
-                                        if json_obj['lower']['incl'] and float(lab_val) < val:
+                            for value_type in value_dict:
+                                if json_obj['name'] == value_type:
+                                    found = True
+                                    filter_condition += value_dict[value_type]['name'] + ": "
+                                    lab_val = lab_results[value_dict[value_type]['results_key']]
+                                    if var_type == 'numerical':
+                                        if 'lower' in json_obj:
+                                            val = float(json_obj['lower']['value'].replace(' ', ''))
+                                            filter_condition += "Must be greater than " + str(val) + ". "
+                                            if json_obj['lower']['incl'] and float(lab_val) < val:
+                                                consists = False
+                                            if not json_obj['lower']['incl'] and float(lab_val) <= val:
+                                                consists = False
+                                        if 'upper' in json_obj:
+                                            val = float(json_obj['upper']['value'].replace(' ', ''))
+                                            filter_condition += "Must be less than " + str(val) + ". "
+                                            if json_obj['upper']['incl'] and float(lab_val) > val:
+                                                consists = False
+                                            if not json_obj['upper']['incl'] and float(lab_val) >= val:
+                                                consists = False
+                                    elif var_type == 'ordinal':
+                                        allowed_values = [float(val.replace(' ', '')) for val in json_obj.value]
+                                        filter_condition += "Must be one of: " + ", ".join(
+                                            [str(value) for value in allowed_values])
+                                        if float(lab_val) not in allowed_values:
                                             consists = False
-                                        if not json_obj['lower']['incl'] and float(lab_val) <= val:
-                                            consists = False
-                                    if 'upper' in json_obj:
-                                        val = float(json_obj['upper']['value'].replace(' ', ''))
-                                        filter_condition += "Must be less than " + str(val) + ". "
-                                        if json_obj['upper']['incl'] and float(lab_val) > val:
-                                            consists = False
-                                        if not json_obj['upper']['incl'] and float(lab_val) >= val:
-                                            consists = False
-                                elif var_type == 'ordinal':
-                                    allowed_values = [float(val.replace(' ', '')) for val in json_obj.value]
-                                    filter_condition += "Must be one of: " + ", ".join(
-                                        [str(value) for value in allowed_values])
-                                    if float(lab_val) not in allowed_values:
-                                        consists = False
 
-                        if not found:
-                            continue
+                            if not found:
+                                continue
 
-                        if not consists:
-                            elg = False
+                            if not consists:
+                                elg = False
 
-                        trial.filter_condition.append((filter_condition, consists))
+                            trial.filter_condition.append((filter_condition, consists))
                 if elg:
                     logging.info('passed')
                     inc.append(trial)
