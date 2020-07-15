@@ -86,7 +86,7 @@ def welcome():
 @app.route("/authenticate/<source>", methods=["POST"])
 def authenticate(source):
     app.logger.info(f"Authenticating via {source.upper()}...")
-    return getattr(oauth, source).authorize_redirect(f'{callback_urlbase}/{source}redirect')
+    return getattr(oauth, source).authorize_redirect(f'{callback_urlbase}/{source}redirect/')
 
 @app.route('/<source>redirect')
 def oauth_redirect(source):
