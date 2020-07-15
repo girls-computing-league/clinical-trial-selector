@@ -201,4 +201,17 @@ class CmsApi(FhirApi):
         start = 50*(page-1)
         return f"&startIndex={start}"
 
+class FbApi(FhirApi):
 
+    url_config = "FB_API_BASE_URL"
+
+    def get_demographics(self):
+        return FbDemographics();
+
+class FbDemographics(fhir.Demographics):
+
+    def __init__(self):
+        self.fullname = "Facebook Patient"
+        self.birth_date = "1950-05-01"
+        self.gender = "Male"
+        self.zipcode = "99999"
