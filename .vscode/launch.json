@@ -32,7 +32,8 @@
             "program": "${workspaceFolder}/application.py",
             "env": {
                 "FLASK_ENV": "development",
-                "FLASK_DEBUG": "0"
+                "FLASK_DEBUG": "0",
+                "RESOURCE_PATH": "${workspaceFolder}/parser_io/"
             },
             "args": [
                 "--log",
