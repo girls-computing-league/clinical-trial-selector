@@ -221,4 +221,4 @@ class FbDemographics(fhir.Demographics):
         self.birth_date = f"{birthday[6:10]}-{birthday[0:2]}-{birthday[3:5]}"
         self.gender = profile.get('gender')
         self.id = profile.get('id')
-        self.zipcode = profile
+        self.zipcode = ""
