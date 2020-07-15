@@ -210,6 +210,7 @@ class FBPatient(Patient):
         self.gender = dem.gender
         self.birthdate = dem.birth_date
         self.zipcode = dem.zipcode
+        self.mrn = dem.id
         # self.PatientJSON = dem.JSON
         # logging.debug(f"Patient JSON: {self.PatientJSON}")
         # logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
