@@ -5,7 +5,9 @@
   {% if trials_selection and ns.combined and ns.combined.latest_results.values() | length > 0  %}
     {% set results = ns.combined.latest_results %}
     <div class="feature vads-u-margin-top--0" id="LaboratoryObservations">
-      <div><strong>Latest Laboratory Results:</strong></div>
+      <div>
+        <strong>Latest Laboratory Results:</strong>
+      </div>
       <form method=post class="cts-launch-progress-bar" action="/filter_by_lab_results">
         {{ form.hidden_tag() }}
         <table class="vads-u-margin--0">
@@ -318,6 +320,29 @@
                 {% endif %}
             </tbody>
         </table>
+    </div>
+  {% elif addlab_selection %}
+    <div class="tab-pane">
+      <form method=post class="cts-launch-progress-bar" action="/add_lab_result">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          <label for="labType" class="control-label">Lab Type:</label>
+          <select name="labType" id="labType">
+            {% for lab in lab_names %}
+              <option value={{ lab }}>{{ lab }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="labValue" class="control-label">Value:</label>
+          <input class="number" name="labValue" id="labValue">
+        </div>
+        <div class="form-group">
+          <label for="unitValue" class="control-label">Unit:</label>
+          <input class="text" name="unitValue" id="unitValue">
+        </div>
+        <button type="submit">Submit Form</button>
+     </form>
     </div>
   {% endif %}
   </div>

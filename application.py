@@ -11,6 +11,8 @@ import io
 import argparse
 import logging, sys
 import ssl
+import filter
+from datetime import datetime
 from flask_socketio import SocketIO, join_room
 from flask import Flask, session, redirect, render_template, request, flash, make_response
 from flask_session import Session
@@ -79,7 +81,6 @@ def showtrials():
 
 @app.route('/welcome')
 def welcome():
-    combined = combined_from_session()
     return render_template('welcome.html', welcome_selection="current")
 
 @app.route("/authenticate/<source>", methods=["POST"])
@@ -132,6 +133,13 @@ def show_conditions():
         return welcome()
     return render_template('welcome.html', form=FilterForm(), conditions_selection="current")
 
+@app.route('/addlab')
+def show_addlab():
+    if not session.get("combined_patient", None):
+        return welcome()
+    lab_names = [filter.value_dict[lab]['name'] for lab in filter.value_dict.keys()]
+    return render_template('welcome.html', form=FilterForm(), addlab_selection="current", lab_names=lab_names)
+
 @app.route('/matches')
 def show_matches():
     if not session.get("combined_patient", None):
@@ -172,6 +180,19 @@ class FilterForm(FlaskForm):
     hemoglobin = StringField('hemoglobin ', [validators.Length(max=25)])
     leukocytes = StringField('leukocytes ', [validators.Length(max=25)])
     platelets = StringField('platelets ', [validators.Length(max=25)])
+
+
+@app.route('/add_lab_result', methods=['POST'])
+def add_lab_result():
+    body = dict(request.form)
+    combined_patient = session['combined_patient']
+    combined_patient.latest_results[body['labType']] = hack.TestResult(test_name=filter.reverse_value_dict[body['labType']],
+                                                                       datetime=datetime.now(), value=body['labValue'],
+                                                                       unit=body['unitValue'])
+
+    logging.info("NEW PATIENT LAB VALUES")
+    logging.info(combined_patient.latest_results)
+    return redirect('/')
 
 
 @app.route('/filter_by_lab_results', methods=['POST'])
