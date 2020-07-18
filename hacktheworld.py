@@ -58,8 +58,8 @@ class Patient(metaclass=ABCMeta):
         self.birthdate = dem.birth_date
         self.zipcode = dem.zipcode
         self.PatientJSON = dem.JSON
-        logging.debug(f"Patient JSON: {self.PatientJSON}")
-        logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
+        logging.info(f"Patient JSON: {self.PatientJSON}")
+        logging.info("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
         today = date.today()
         born = date.fromisoformat(self.birthdate)
         self.age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
@@ -93,7 +93,7 @@ class Patient(metaclass=ABCMeta):
                                         for no_match in self.no_matches]
 
     def find_trials(self):
-        logging.info("Searching for trials...")
+        logging.info("Searching for trials in hackworld.py...********************************************************************************************************************************************************************************************************************************************************************************************************************************************************")
         ncit_codes = {match['match'] for match in self.code_matches.values()}
         if len(ncit_codes) == 0:
             logging.info('No ncit conditions to search for')
@@ -101,7 +101,7 @@ class Patient(metaclass=ABCMeta):
         for ncit_code in ncit_codes:
             self.trial_ids_by_ncit[ncit_code] = []
         for trial_json in self.nci.get_trials(self.age, self.gender, ncit_codes):
-            logging.info(f"Processing trial {trial_json['nci_id']}, status: {trial_json.get('current_trial_status', '')}")
+            # logging.info(f"Processing trial {trial_json['nci_id']}, status: {trial_json.get('current_trial_status', '')}")
             diseases = trial_json['ncit_codes']
             trial = Trial(trial_json, list(diseases)[0] if len(diseases) > 0 else '')
             self.trials_by_id[trial.id] = trial
@@ -126,10 +126,43 @@ class Patient(metaclass=ABCMeta):
         for ncit_code in self.codes_ncit:
             logging.debug(ncit_code)
             new_trails_json = pt.find_new_trails(ncit_code)
+            nt_max_age=self.age+1
+            nt_min_age=self.age-1
+            nt_gender="Unknown"
             for trial_set in new_trails_json.get('FullStudiesResponse', {}).get('FullStudies', []):
-                logging.debug(trial_set['Study']['ProtocolSection'])
-                trial = TrialV2(trial_set['Study']['ProtocolSection'], ncit_code['ncit'])
-                self.trials.append(trial)
+                logging.info("*******************************")
+                logging.info("EligibilityModule Keys " + str(trial_set['Study']['ProtocolSection']['EligibilityModule'].keys()))
+                # Modify this
+                if 'Completed' not in trial_set['Study']['ProtocolSection']['StatusModule']['OverallStatus']:
+                    if 'Gender' in trial_set['Study']['ProtocolSection']['EligibilityModule'].keys():
+                        nt_gender = trial_set['Study']['ProtocolSection']['EligibilityModule']['Gender']
+                        logging.info("Gender " + nt_gender)
+                    if 'MinimumAge' in str(trial_set['Study']['ProtocolSection']['EligibilityModule'].keys()):
+                        nt_min_age = trial_set['Study']['ProtocolSection']['EligibilityModule']['MinimumAge']
+                        logging.info("MinimumAge " + str(nt_min_age))
+                        if 'Years' in nt_min_age.split(' ')[1]:
+                            nt_min_age = int(nt_min_age.split(' ')[0])
+                        elif 'Month' in nt_min_age.split(' ')[1]:
+                            nt_min_age = (int(nt_min_age.split(' ')[0]))/12
+                        elif 'Week' in nt_min_age.split(' ')[1]:
+                            nt_min_age = (int(nt_min_age.split(' ')[0]))/52.143
+                        else:
+                            nt_min_age = self.age - 1
+                    if 'MaximumAge' in str(trial_set['Study']['ProtocolSection']['EligibilityModule'].keys()):
+                        nt_max_age = trial_set['Study']['ProtocolSection']['EligibilityModule']['MaximumAge']
+                        logging.info("MaximumAge " + str(nt_max_age))
+                        if 'Years' in nt_max_age.split(' ')[1]:
+                            nt_max_age = int(nt_max_age.split(' ')[0])
+                        else:
+                            nt_max_age = self.age + 1
+                    logging.info("Ps Age " + str(self.age) + " ,Ps Gender " + self.gender)
+                    if ((nt_gender in ['All', self.gender]) and (nt_min_age<=self.age and nt_max_age>=self.age)):
+                        logging.info('Condition Passed')
+                        logging.debug(trial_set['Study']['ProtocolSection'])
+                        trial = TrialV2(trial_set['Study']['ProtocolSection'], ncit_code['ncit'])
+                        self.trials.append(trial)
+                    else:
+                        logging.info("Failed")
         logging.debug(self.conditions)
         logging.debug(self.matches)
         logging.debug(self.codes_ncit)

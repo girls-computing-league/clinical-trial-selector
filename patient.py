@@ -8,7 +8,7 @@ from typing import Dict, List, Any, Tuple, Optional
 from flask import current_app as app
 import time
 
-client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40))
+client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40),region_name='us-east-2')
 
 trial_filter_cnt = 0
 
@@ -33,6 +33,7 @@ def get_api(token, url, params=None):
     return res.json()
 
 def find_trials(ncit_codes, gender="unknown", age=0):
+    logging.info("Searching for trials in patient.py...********************************************************************************************************************************************************************************************************************************************************************************************************************************************************")
     size = 50
     trials = []
     all_ncit = [ncit_dict['ncit'] for ncit_dict in ncit_codes]
@@ -72,6 +73,8 @@ def find_new_trails(ncit_code):
     print('Calling new api for ncit_code-' + ncit_code['ncit'] + ' and ncit desc -' + ncit_code['ncit_desc'] )
     params = {'expr': search_text, 'min_rnk': 1, 'max_rnk': 100, 'fmt': 'json'} #get trials based on condition
     response = req.get(app.config['ADDITIONAL_TRIALS_URL'], params=params)
+    filter = []
+    #filter based on age/gender/demographic`s/make sure the trial is still valid
     return response.json()
 
 # def find_all_codes(disease_list):
