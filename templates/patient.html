@@ -71,6 +71,11 @@
                 <a class="site-header__nav-item__link {{ addlab_selection }}" href="/addlab" data-toggle="tab">Add Lab Result</a>
               </li>
             {% endif %}
+            {% if ns.combined.loaded  %}
+              <li class="site-header__nav-item">
+                <a class="site-header__nav-item__link {{ addcondition_selection }}" href="/addcondition" data-toggle="tab">Add Condition</a>
+              </li>
+            {% endif %}
             <li class="site-header__nav-item">
               <a class="site-header__nav-item__link {{ trials_selection }}" href="/trials" data-toggle="tab">Trials</a>
             </li>

@@ -140,6 +140,13 @@ def show_addlab():
     lab_names = [filter.value_dict[lab]['name'] for lab in filter.value_dict.keys()]
     return render_template('welcome.html', form=FilterForm(), addlab_selection="current", lab_names=lab_names)
 
+@app.route('/addcondition')
+def show_addcondition():
+    if not session.get("combined_patient", None):
+        return welcome()
+    return render_template('welcome.html', form=FilterForm(), addcondition_selection="current")
+
+
 @app.route('/matches')
 def show_matches():
     if not session.get("combined_patient", None):
@@ -193,6 +200,13 @@ def add_lab_result():
     logging.info("NEW PATIENT LAB VALUES")
     logging.info(combined_patient.latest_results)
     return redirect('/')
+
+@app.route('/add_condition', methods=['POST'])
+def add_condition():
+    body = dict(request.form)
+    combined_patient = session['combined_patient']
+    combined_patient.add_extra_code(body['newCode'])
+    return getInfo()
 
 
 @app.route('/filter_by_lab_results', methods=['POST'])

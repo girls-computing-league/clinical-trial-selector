@@ -344,6 +344,17 @@
         <button type="submit">Submit Form</button>
      </form>
     </div>
+  {% elif addcondition_selection %}
+    <div class="tab-pane">
+      <form method=post class="cts-launch-progress-bar" action="/add_condition">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          <label for="newCode" class="control-label">NCIT Condition ID:</label>
+          <input class="text" name="newCode" id="newCode">
+        </div>
+        <button type="submit">Submit Form</button>
+     </form>
+    </div>
   {% endif %}
   </div>
 {% endblock %}
