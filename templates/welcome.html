@@ -1,7 +1,26 @@
 {% extends "patient.html" %}
 {% from "_form_helpers.html" import  progress_bar, render_input %}
 {% block pt_main %}
-
+<script>
+  function onSelect(unit)
+  {
+    var map = "{{unit_names}}"
+    var arr = map.split(", ")
+    arr[0] = arr[0].substring(1)
+    arr[arr.length-1] = arr[arr.length-1].substring(0, arr.length-1)
+    document.getElementById("unitValue").value = arr[document.getElementById("labType").selectedIndex].replace("&#39;", "").replace("&#39;", "")
+  }
+</script>
+<script type="text/javascript">
+  function showModal(elem) {
+    var parentClasses = document.getElementById("modal-crisisline").classList;
+    if(elem.classList.contains('va-overlay-close')) {
+      parentClasses.add('va-overlay');
+    } else if(parentClasses.contains('va-overlay')) {
+      parentClasses.remove('va-overlay');
+    }
+  }
+</script>
   {% if trials_selection and ns.combined and ns.combined.latest_results.values() | length > 0  %}
     {% set results = ns.combined.latest_results %}
     <div class="feature vads-u-margin-top--0" id="LaboratoryObservations">
@@ -37,6 +56,36 @@
         </table>
         <input class="usa-button vads-u-margin-y--1" type=submit value="Filter trials">
       </form>
+        <button data-show="#modal-crisisline" class="usa-button vads-u-margin-y--1" onclick="showModal(this);" value="Add Lab Results"></button>                
+                 
+            <div id="modal-crisisline" class="va-overlay va-modal va-modal-large" role="alertdialog" style = "position:relative; left:80px; top:2px; background: clear">
+                <div class="va-crisis-panel va-modal-inner">
+                  <div class="tab-pane">
+                    <form method=post class="cts-launch-progress-bar" action="/add_lab_result">
+                      {{ form.hidden_tag() }}
+                      <div class="form-group">
+                        <label for="labType" class="control-label">Lab Type:</label>
+                        <select name="labType" id="labType" onchange ="onSelect()">
+                          {% for lab in lab_names %}              
+                            <option value={{ lab }}>{{ lab }}</option>
+                          {% endfor %}   
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="labValue" class="control-label">Value:</label>
+                        <input class="number" name="labValue" id="labValue">
+                      </div>
+                      <div class="form-group">
+                        <label for="unitValue" class="control-label">Unit:</label>
+                        <input class="text" name="unitValue" id="unitValue" value = {{ unit_names[0] }}>
+                      </div>
+                      <button>Submit Form</button>
+                    </form>
+                  </div>
+                </div>
+            </div>      
+           
+
       {{progress_bar()}}
     </div>
   {% endif %}
@@ -321,29 +370,87 @@
             </tbody>
         </table>
     </div>
-  {% elif addlab_selection %}
+    {% elif addlab_selection %}
+
+    <div class="va-modal" id="exampleModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    
+      <div class="va-modal-inner">
+        <h5 class="va-modal-title" id="exampleModalLabel">Modal title</h5>
+        <div class="va-modal-body">
+          <div class="tab-pane">
+            <form method=post class="cts-launch-progress-bar" action="/add_lab_result">
+              {{ form.hidden_tag() }}
+              <div class="form-group">
+                <label for="labType" class="control-label">Lab Type:</label>
+                <select name="labType" id="labType" onchange ="onSelect()">
+                  {% for lab in lab_names %}              
+                    <option value={{ lab }}>{{ lab }}</option>
+                  {% endfor %}   
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="labValue" class="control-label">Value:</label>
+                <input class="number" name="labValue" id="labValue">
+              </div>
+              <div class="form-group">
+                <label for="unitValue" class="control-label">Unit:</label>
+                <input class="text" name="unitValue" id="unitValue" value = {{ unit_names[0] }}>
+              </div>
+              <button type="submit">Submit Form</button>
+            </form>
+          </div>
+        <script>
+          function onSelect(unit)
+          {
+            var map = "{{unit_names}}"
+            var arr = map.split(", ")
+            arr[0] = arr[0].substring(1)
+            arr[arr.length-1] = arr[arr.length-1].substring(0, arr.length-1)
+            document.getElementById("unitValue").value = arr[document.getElementById("labType").selectedIndex].replace("&#39;", "").replace("&#39;", "")
+          }
+        </script>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="va-modal-close" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>    
+  </div>
+
+    <!-- 
     <div class="tab-pane">
-      <form method=post class="cts-launch-progress-bar" action="/add_lab_result">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-          <label for="labType" class="control-label">Lab Type:</label>
-          <select name="labType" id="labType">
-            {% for lab in lab_names %}
-              <option value={{ lab }}>{{ lab }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="labValue" class="control-label">Value:</label>
-          <input class="number" name="labValue" id="labValue">
-        </div>
-        <div class="form-group">
-          <label for="unitValue" class="control-label">Unit:</label>
-          <input class="text" name="unitValue" id="unitValue">
-        </div>
-        <button type="submit">Submit Form</button>
-     </form>
+        <form method=post class="cts-launch-progress-bar" action="/add_lab_result">
+          {{ form.hidden_tag() }}
+          <div class="form-group">
+            <label for="labType" class="control-label">Lab Type:</label>
+            <select name="labType" id="labType" onchange ="onSelect()">
+              {% for lab in lab_names %}              
+                <option value={{ lab }}>{{ lab }}</option>
+              {% endfor %}   
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="labValue" class="control-label">Value:</label>
+            <input class="number" name="labValue" id="labValue">
+          </div>
+          <div class="form-group">
+            <label for="unitValue" class="control-label">Unit:</label>
+            <input class="text" name="unitValue" id="unitValue" value = {{ unit_names[0] }}>
+          </div>
+          <button type="submit">Submit Form</button>
+      </form>
     </div>
-  {% endif %}
+      <script>
+        function onSelect(unit)
+        {
+          var map = "{{unit_names}}"
+          var arr = map.split(", ")
+          arr[0] = arr[0].substring(1)
+          arr[70] = arr[70].substring(0, arr.length-1)
+          document.getElementById("unitValue").value = arr[document.getElementById("labType").selectedIndex].replace("&#39;", "").replace("&#39;", "")
+        }
+      </script>
+  --> 
+    {% endif %}
   </div>
 {% endblock %}
