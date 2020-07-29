@@ -198,9 +198,9 @@ def add_lab_result():
                                                                        datetime=datetime.now(), value=body['labValue'],
                                                                        unit=body['unitValue'])
 
-    logging.info("NEW PATIENT LAB VALUES")
-    logging.info(combined_patient.latest_results)
-    return redirect('/')
+    #logging.info("NEW PATIENT LAB VALUES")
+    #logging.info(combined_patient.latest_results)
+    return redirect('/trials')
 
 
 @app.route('/filter_by_lab_results', methods=['POST'])
