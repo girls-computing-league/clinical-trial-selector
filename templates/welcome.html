@@ -29,6 +29,7 @@
       <div> 
       <div style="display: table-cell;float: left;"><strong>Latest Laboratory Results:</strong></div>     
       <div style="display: table-cell;float: right;"><b><a data-show="#modal-addlab" onclick="showModal(this);">Add Lab Results</a></b></div>
+        <!--<div style="display: table-cell;float:right;"><button class="usa-button vads-u-margin-y--1px" data-show="#modal-addlab" onclick="showModal(this);">Add Lab Results</button></div-->
       </div>
       <form method=post class="cts-launch-progress-bar" action="/filter_by_lab_results">
         {{ form.hidden_tag() }}
@@ -375,87 +376,6 @@
             </tbody>
         </table>
     </div>
-    {% elif addlab_selection %}
-
-    <div class="va-modal" id="addLabResultsModal" role="dialog" aria-labelledby="addLabResultsModalLabel" aria-hidden="true">
-    
-      <div class="va-modal-inner">
-        <h5 class="va-modal-title" id="addLabResultsModalLabel">Modal title</h5>
-        <div class="va-modal-body">
-          <div class="tab-pane">
-            <form method=post class="cts-launch-progress-bar" action="/add_lab_result">
-              {{ form.hidden_tag() }}
-              <div class="form-group">
-                <label for="labType" class="control-label">Lab Type:</label>
-                <select name="labType" id="labType" onchange ="onSelect()">
-                  {% for lab in lab_names %}              
-                    <option value={{ lab }}>{{ lab }}</option>
-                  {% endfor %}   
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="labValue" class="control-label">Value:</label>
-                <input class="number" name="labValue" id="labValue">
-              </div>
-              <div class="form-group">
-                <label for="unitValue" class="control-label">Unit:</label>
-                <input class="text" name="unitValue" id="unitValue" value = {{ unit_names[0] }}>
-              </div>
-              <button type="submit">Submit Form</button>
-            </form>
-          </div>
-        <script>
-          function onSelect(unit)
-          {
-            var map = "{{unit_names}}"
-            var arr = map.split(", ")
-            arr[0] = arr[0].substring(1)
-            arr[arr.length-1] = arr[arr.length-1].substring(0, arr.length-1)
-            document.getElementById("unitValue").value = arr[document.getElementById("labType").selectedIndex].replace("&#39;", "").replace("&#39;", "")
-          }
-        </script>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="va-modal-close" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
-        </div>
-      </div>    
-  </div>
-
-    <!-- 
-    <div class="tab-pane">
-        <form method=post class="cts-launch-progress-bar" action="/add_lab_result">
-          {{ form.hidden_tag() }}
-          <div class="form-group">
-            <label for="labType" class="control-label">Lab Type:</label>
-            <select name="labType" id="labType" onchange ="onSelect()">
-              {% for lab in lab_names %}              
-                <option value={{ lab }}>{{ lab }}</option>
-              {% endfor %}   
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="labValue" class="control-label">Value:</label>
-            <input class="number" name="labValue" id="labValue">
-          </div>
-          <div class="form-group">
-            <label for="unitValue" class="control-label">Unit:</label>
-            <input class="text" name="unitValue" id="unitValue" value = {{ unit_names[0] }}>
-          </div>
-          <button type="submit">Submit Form</button>
-      </form>
-    </div>
-      <script>
-        function onSelect(unit)
-        {
-          var map = "{{unit_names}}"
-          var arr = map.split(", ")
-          arr[0] = arr[0].substring(1)
-          arr[70] = arr[70].substring(0, arr.length-1)
-          document.getElementById("unitValue").value = arr[document.getElementById("labType").selectedIndex].replace("&#39;", "").replace("&#39;", "")
-        }
-      </script>
-  --> 
     {% endif %}
   </div>
 {% endblock %}
