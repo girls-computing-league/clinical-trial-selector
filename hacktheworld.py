@@ -3,7 +3,7 @@ import logging
 import sys
 import umls
 import requests as req
-from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable, Type, cast, Tuple
+from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable, Type, cast, Tuple, Any
 from abc import ABCMeta, abstractmethod
 from mypy_extensions import TypedDict 
 from datetime import date
@@ -11,13 +11,13 @@ from distances import distance
 from zipcode import Zipcode
 from flask import current_app as app
 from apis import VaApi, CmsApi, FhirApi, UmlsApi, NciApi
+from filter import FacebookFilter
 from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
+import os
+import subprocess
 import json
-import re
-import time
-import tracemalloc
 
 class Patient(metaclass=ABCMeta):
 
@@ -124,6 +124,14 @@ class Patient(metaclass=ABCMeta):
         #         self.trials.append(trial)
         # logging.info("Trials found")
 
+        for ncit_code in self.codes_ncit:
+            logging.debug(ncit_code)
+            new_trails_json = pt.find_new_trails(ncit_code)
+            for trial_set in new_trails_json.get('FullStudiesResponse', {}).get('FullStudies', []):
+                logging.debug(trial_set['Study']['ProtocolSection'])
+                trial = TrialV2(trial_set['Study']['ProtocolSection'], ncit_code['ncit'])
+                self.trials.append(trial)
+        
         return
 
     def load_all(self):
@@ -199,14 +207,19 @@ class Trial:
         self.summary = trial_json['brief_summary']
         self.description = trial_json['detail_description']
         self.eligibility: List[Criterion] = trial_json['eligibility']['unstructured']
-        self.inclusions: List[str] = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
-        self.exclusions: List[str] = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
+        self.inclusions: Union[List[str], None] = [criterion['description'] for criterion in self.eligibility if criterion['inclusion_indicator']]
+        self.exclusions: Union[List[str], None] = [criterion['description'] for criterion in self.eligibility if not criterion['inclusion_indicator']]
+        self.eligibility_combined = '"\n\t\tInclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(
+            self.inclusions).replace('"', "'") \
+                                    + '\n\n\t\tExclusion Criteria:\n\n\t\t - ' + "\n\n\t\t - ".join(
+            self.exclusions).replace('"', "'") + '"'
         self.measures = trial_json['outcome_measures']
         self.pi = trial_json['principal_investigator']
         self.sites = trial_json['sites']
         self.population = trial_json['study_population_description']
         self.diseases = trial_json['diseases']
         self.filter_condition: list = []
+
 
     def determine_filters(self) -> None:
         s: Set[str] = set()
@@ -220,6 +233,42 @@ class Trial:
                             s.add(group[4])
         for unit in s:
             app.logger.debug(f"leukocytes unit: {unit}")
+
+
+class TrialV2(Trial):
+
+    def __init__(self, trial_json, code_ncit): #write the code based on the condition it will attatch to that dropdown
+        self.trial_json = trial_json
+        self.code_ncit = code_ncit
+        self.id = trial_json['IdentificationModule']['NCTId']
+        self.title = trial_json['IdentificationModule']['BriefTitle']
+        self.official = trial_json['IdentificationModule'].get('OfficialTitle')
+        self.summary = trial_json['DescriptionModule'].get('BriefSummary')
+        self.description = trial_json['DescriptionModule'].get('DetailedDescription')
+        self.eligibility: List[Dict] = [{'description': trial_json['EligibilityModule'].get('EligibilityCriteria'), 'inclusion_indicator': True}]
+        self.inclusions: Union[List[str], None] = None
+        self.exclusions: Union[List[str], None] = None
+        self.eligibility_combined = '"' + self.trial_json['EligibilityModule'].get('EligibilityCriteria').replace('"',"") + '"' \
+            if self.trial_json['EligibilityModule'].get('EligibilityCriteria') is not None else ""
+        self.measures = [measure for types in ['Primary', 'Secondary', 'Other'] for measure in self.get_measures(types)]
+        self.pi = trial_json.get('SponsorCollaboratorsModule', {}).get('ResponsibleParty', {}).get('ResponsiblePartyInvestigatorFullName', 'N/A')
+        self.sites = []
+        self.population = trial_json['EligibilityModule'].get('StudyPopulation')
+        self.diseases = []
+        self.filter_condition = []
+
+    def get_measures(self, key):
+        return [
+            {
+                'name': measure.get(f'{key}OutcomeMeasure'),
+                'description': measure.get(f'{key}OutcomeDescription'),
+                'timeframe': measure.get(f'{key}OutcomeTimeFrame')
+            }
+                for measure in self.trial_json
+                    .get('OutcomesModule', {})
+                    .get(f'{key}OutcomeList', {})
+                    .get(f'{key}Outcome', [])
+            ]
                     
 class CombinedPatient:
 
@@ -320,6 +369,38 @@ class CombinedPatient:
         # Deprecate the following collections
         self.matches += patient.matches
         self.codes_without_matches += patient.codes_without_matches
+
+    def filter_by_criteria(self, form) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        trials_by_ncit = self.trials_by_ncit
+        if form.validate_on_submit():
+            lab_results = {key: value for (key, value) in form.data.items() if key != 'csrf_token'}
+            for lab in self.latest_results:
+                if lab not in lab_results:
+                    lab_results[lab] = self.latest_results[lab]
+        else:
+            lab_results = self.latest_results
+
+        filtered_trials_by_ncit = []
+        excluded_trials_by_ncit = []
+        cfg = FacebookFilter('cfg')
+
+        for condition in trials_by_ncit:
+            ncit = condition['ncit']
+            trials = condition['trials']
+            inc = []
+            exc = []
+            for trial in trials:
+                if cfg.filter_trial(trial, lab_results):
+                    inc.append(trial)
+                else:
+                    exc.append(trial)
+            if len(inc) != 0:
+                filtered_trials_by_ncit.append({"ncit": ncit, "trials": inc})
+            if len(exc) != 0:
+                excluded_trials_by_ncit.append({"ncit": ncit, "trials": exc})
+
+        return filtered_trials_by_ncit, excluded_trials_by_ncit
+
 
 class TestResult:
 

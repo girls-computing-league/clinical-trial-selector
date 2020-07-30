@@ -8,22 +8,22 @@ monkey.patch_all()
 
 import csv
 import io
-import json
 import argparse
 import logging, sys
 import ssl
+import filter
+import json
+from datetime import datetime
 from flask_socketio import SocketIO, join_room
 from flask import Flask, session, redirect, render_template, request, flash, make_response
-from flask.logging import default_handler
-from flask_session import Session 
+from flask_session import Session
 from flask_talisman import Talisman
 from authlib.integrations.flask_client import OAuth
 import hacktheworld as hack
 from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
                                EXPORT_URL, submit_get_patients_job, get_infected_patients_info)
 from flask_wtf import FlaskForm, CSRFProtect
-from flask_wtf.csrf import CSRFError
-from wtforms import Form, StringField, validators
+from wtforms import StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from labtests import labs
 from typing import Dict
@@ -47,8 +47,6 @@ read_config(env)
 read_config('default')
 
 log_level = args.get("log", app.config["CTS_LOGLEVEL"]).upper()
-
-from patient import get_lab_observations_by_patient, filter_by_inclusion_criteria
 
 formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(name)-23s %(message)s')
 handler = logging.StreamHandler(sys.stdout)
@@ -80,11 +78,10 @@ def combined_from_session() -> hack.CombinedPatient:
 def showtrials():
     if not session.get("combined_patient", None):
         return welcome()
-    return render_template('welcome.html', form=FilterForm(), trials_selection="current", labs = labs)
+    return render_template('welcome.html', form=FilterForm(), welcome_selection="current", labs = labs)
 
 @app.route('/welcome')
 def welcome():
-    combined = combined_from_session()
     return render_template('welcome.html', welcome_selection="current")
 
 @app.route("/authenticate/<source>", methods=["POST"])
@@ -123,7 +120,9 @@ def getInfo():
 def show_all_trials():
     if not session.get("combined_patient", None):
         return welcome()
-    return render_template('welcome.html', form=FilterForm(), trials_selection="current", labs=labs)
+    lab_names = [filter.value_dict[lab]['display_name'] for lab in filter.value_dict.keys()]
+    unit_names  = [filter.value_dict[lab]['default_unit_name'] for lab in filter.value_dict.keys()]
+    return render_template('welcome.html', form=FilterForm(), trials_selection="current", labs=labs, lab_names=lab_names, unit_names=unit_names)
 
 @app.route('/excluded')
 def show_excluded():
@@ -137,6 +136,14 @@ def show_conditions():
         return welcome()
     return render_template('welcome.html', form=FilterForm(), conditions_selection="current")
 
+@app.route('/addlab')
+def show_addlab():
+    if not session.get("combined_patient", None):
+        return welcome()
+    lab_names = [filter.value_dict[lab]['display_name'] for lab in filter.value_dict.keys()]
+    unit_names  = [filter.value_dict[lab]['default_unit_name'] for lab in filter.value_dict.keys()]
+    return render_template('welcome.html', form=FilterForm(), addlab_selection="current", lab_names=lab_names, unit_names=unit_names)
+
 @app.route('/matches')
 def show_matches():
     if not session.get("combined_patient", None):
@@ -148,6 +155,10 @@ def show_nomatches():
     if not session.get("combined_patient", None):
         return welcome()
     return render_template('welcome.html', form=FilterForm(), nomatches_selection="current")
+
+@app.route('/test')
+def test():
+    return render_template('modal_test.html', form=FilterForm())
 
 @app.route('/download_trials')
 def download_trails():
@@ -179,6 +190,19 @@ class FilterForm(FlaskForm):
     platelets = StringField('platelets ', [validators.Length(max=25)])
 
 
+@app.route('/add_lab_result', methods=['POST'])
+def add_lab_result():
+    body = dict(request.form)
+    combined_patient = session['combined_patient']
+    combined_patient.latest_results[body['labType']] = hack.TestResult(test_name=filter.reverse_value_dict[body['labType']],
+                                                                       datetime=datetime.now(), value=body['labValue'],
+                                                                       unit=body['unitValue'])
+
+    #logging.info("NEW PATIENT LAB VALUES")
+    #logging.info(combined_patient.latest_results)
+    return redirect('/trials')
+
+
 @app.route('/filter_by_lab_results', methods=['POST'])
 def filter_by_lab_results():
     """
@@ -190,17 +214,9 @@ def filter_by_lab_results():
     form = FilterForm()
 
     combined_patient = session['combined_patient']
-
-    if form.validate_on_submit():
-        lab_results = {key:value for (key,value) in form.data.items() if key != 'csrf_token'}
-    else:
-        lab_results = combined_patient.latest_results
-
-    trials_by_ncit = combined_patient.trials_by_ncit
     socketio.emit(event_name, {"data": 20}, room=session.sid)
+    filter_trails_by_inclusion_criteria, excluded_trails_by_inclusion_criteria = combined_patient.filter_by_criteria(form)
 
-    filter_trails_by_inclusion_criteria, excluded_trails_by_inclusion_criteria = \
-        filter_by_inclusion_criteria(trials_by_ncit, lab_results)
     socketio.emit(event_name, {"data": 65}, room=session.sid)
 
     session['combined_patient'].trials_by_ncit = filter_trails_by_inclusion_criteria

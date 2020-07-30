@@ -1,19 +1,14 @@
-from pathlib import Path
 import json
 import requests as req
 import logging
 import re
 import boto3, botocore
-from jsonpath_rw_ext import parse
-from typing import Dict, List, Any, Tuple, Union, Optional
-import concurrent.futures as futures
-from gevent import Greenlet, spawn, iwait
-from pprint import pformat
-from apis import VaApi
+import subprocess
+from typing import Dict, List, Any, Tuple, Optional
 from flask import current_app as app
 import time
 
-client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40) )
+client = boto3.client(service_name="comprehendmedical", config=botocore.client.Config(max_pool_connections=40))
 
 trial_filter_cnt = 0
 
@@ -61,7 +56,32 @@ def find_trials(ncit_codes, gender="unknown", age=0):
             next_trial += size
 
             trials.append(trialset)
+            if (gender != "unknown"):
+                params["eligibility.structured.gender"] = gender
+                res = req.get(app.config['TRIALS_URL'], params=params)
+                res_dict = res.json()
+                trialset = {"code_ncit": ncit, "trialset": res_dict}
+                total = res_dict["total"]
+                next_trial += size
+
+                trials.append(trialset)
     return trials
+
+def find_new_trails(ncit_code):
+    search_text = ncit_code['ncit_desc']
+    print('Calling new api for ncit_code-' + ncit_code['ncit'] + ' and ncit desc -' + ncit_code['ncit_desc'] )
+    params = {'expr': search_text, 'min_rnk': 1, 'max_rnk': 100, 'fmt': 'json'} #get trials based on condition
+    response = req.get(app.config['ADDITIONAL_TRIALS_URL'], params=params)
+    return response.json()
+
+# def find_all_codes(disease_list):
+#     codes: list = []
+#     names: list = []
+#     for disease in disease_list:
+#         codelist, nameslist = find_codes(disease)
+#         codes += codelist
+#         names += nameslist
+#     return codes, names
 
 def get_lab_observations_by_patient(patient_id, token):
     # loinc_codes = ','.join(list(LOINC_CODES.keys()))
@@ -96,81 +116,6 @@ def get_lab_observations_by_patient(patient_id, token):
 
     values_by_cell_type = {LOINC_CODES[key]: val['value'] for key, val in lab_results.items()}
     return values_by_cell_type
-
-
-def filter_by_inclusion_criteria(trials_by_ncit: List[Dict[str, Any]],
-                                 lab_results: Dict[str, Any])\
-        -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """
-    :param trials_by_ncit: List[dict]
-    :param lab_results: dict
-    :return: (List[dict], List[dict])
-    """
-    max_trials_in_future = 10
-    filtered_trials_by_ncit: list = []
-    excluded_trials_by_ncit: list = []
-    trial_filter_cnt = 0
-    # with futures.ThreadPoolExecutor(max_workers=75) as executor:
-    tasks = {}
-    for trialset in trials_by_ncit:
-        total = len(trialset['trials'])
-        if total<=max_trials_in_future:
-            # tasks[executor.submit(filter_trials_from_description, trialset['trials'], lab_results)] = trialset['ncit']
-            tasks[spawn(filter_trials_from_description, trialset['trials'], lab_results)] = trialset['ncit']
-        else:
-            next_future = 0
-            while next_future < total:
-                trials = []
-                cnt = 1
-                while next_future < total and cnt <= max_trials_in_future:
-                    trials.append(trialset['trials'][next_future])
-                    next_future += 1
-                    cnt += 1
-                # tasks[executor.submit(filter_trials_from_description, trials, lab_results)] = trialset['ncit']
-                tasks[spawn(filter_trials_from_description, trials, lab_results)] = trialset['ncit']
-
-        # tasks = {
-        #     executor.submit(filter_trials_from_description, trial['trials'], lab_results): trial['ncit']
-        #     for trial in trials_by_ncit
-        # }
-        filtered: dict = {}
-        excluded: dict = {}
-        ncit_codes: dict = {}
-        filtered_trials_by_ncit = []
-        excluded_trials_by_ncit = []
-        # for future in futures.as_completed(tasks):
-        for future in iwait(tasks):
-            ncit_code = tasks[future]['ncit']
-            if ncit_code not in ncit_codes:
-                ncit_codes[ncit_code] = tasks[future]
-            if ncit_code not in filtered:
-                filtered[ncit_code] = []
-            filtered_list = filtered[ncit_code]
-            if ncit_code not in excluded:
-                excluded[ncit_code] = []
-            excluded_list = excluded[ncit_code]
-            # try:
-            # filtered_trials, excluded_trials = future.result()
-            filtered_trials, excluded_trials = future.value
-            logging.debug(f"FILTER bundle NCIT: {ncit_code}")
-            filtered_list.extend(filtered_trials)
-            excluded_list.extend(excluded_trials)
-
-        for ncit_code in filtered:
-            filtered_trials_by_ncit.append({"ncit": ncit_codes[ncit_code], "trials": filtered[ncit_code]})
-
-        for ncit_code in excluded:
-            excluded_trials_by_ncit.append({"ncit": ncit_codes[ncit_code], "trials": excluded[ncit_code]})
-
-            # filtered_trials_by_ncit.append({"ncit": ncit_code, "trials": filtered_trials})
-            # excluded_trials_by_ncit.append({"ncit": ncit_code, "trials": excluded_trails})
-            # except Exception as exc:
-            #     print('Failed task: ', exc)
-            #     raise Exception
-            #     continue
-
-    return filtered_trials_by_ncit, excluded_trials_by_ncit
-
 
 def filter_trials_from_description(trials: List, lab_results: Dict) -> Tuple[list, list]:
     """
@@ -222,7 +167,7 @@ def find_conditions(trial: Any) -> Dict:
             conditions = {match[1]: str(match[0]) for match in matches}
             simple_matches = len(lab_simple.findall(joined_description))
             if len(conditions) == simple_matches:
-                return conditions 
+                return conditions
             else:
                 mapping = get_mapping_with_aws_comprehend(filtered_inclusions)
                 if len(mapping) > len(conditions):

@@ -18,7 +18,9 @@
             "program": "${workspaceFolder}/application.py",
             "env": {
                 "FLASK_ENV": "development",
-                "FLASK_DEBUG": "0"
+                "FLASK_DEBUG": "0",
+                "GOPATH": "/Users/wendell/go",
+                "RESOURCE_PATH": "${workspaceFolder}/parser_io/"
             },
             "gevent": true,
             "jinja": true
