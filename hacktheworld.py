@@ -339,6 +339,8 @@ class TrialV2(Trial):
                     .get(f'{key}Outcome', [])
             ]
 
+class CombinedPatient:
+
     patient_type: Dict[str, Type[Patient]] = {'va': VAPatient, 'cms': CMSPatient, 'fb': FBPatient}
     
     def __init__(self):
