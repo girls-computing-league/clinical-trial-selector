@@ -11,6 +11,7 @@ from distances import distance
 from zipcode import Zipcode
 from flask import current_app as app
 from apis import VaApi, CmsApi, FhirApi, UmlsApi, NciApi
+from filter import FacebookFilter
 from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
@@ -166,7 +167,7 @@ class Patient(metaclass=ABCMeta):
         logging.debug(self.conditions)
         logging.debug(self.matches)
         logging.debug(self.codes_ncit)
-        
+
         return
 
     def load_all(self):
@@ -405,115 +406,29 @@ class CombinedPatient:
         self.matches += patient.matches
         self.codes_without_matches += patient.codes_without_matches
 
-    def generateResults(self, trial):
-        logging.info(f"Parsing trial {trial.id}")
-        input_line = "parser_io/inputs/" + trial.id + ".csv"
-        output_line = "parser_io/outputs/" + trial.id + ".csv"
-
-        header = "#nct_id,title,has_us_facility,conditions,eligibility_criteria"
-        trial_info = trial.id + "," + trial.title + ",false,disease," + trial.eligibility_combined
-        print(header + "\n" + trial_info, file=open(input_line, "w"))
-
-        command_line = ['parser_io/cfg', '-conf', 'parser_io/cfg.conf', '-o', output_line,
-                        '-i', input_line]
-                        #, '>', '/dev/null', '2>&1']
-
-        subprocess.run(command_line)
-
     def filter_by_criteria(self, form) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         trials_by_ncit = self.trials_by_ncit
         if form.validate_on_submit():
             lab_results = {key: value for (key, value) in form.data.items() if key != 'csrf_token'}
+            for lab in self.latest_results:
+                if lab not in lab_results:
+                    lab_results[lab] = self.latest_results[lab]
         else:
             lab_results = self.latest_results
 
         filtered_trials_by_ncit = []
         excluded_trials_by_ncit = []
+        cfg = FacebookFilter('cfg')
+
         for condition in trials_by_ncit:
             ncit = condition['ncit']
             trials = condition['trials']
             inc = []
             exc = []
             for trial in trials:
-                output_line = "parser_io/outputs/" + trial.id + ".csv"
-                if trial.eligibility_combined == "" or trial.eligibility_combined == None:
-                    continue
-                if not os.path.exists(output_line):
-                    self.generateResults(trial)
-                else:
-                    logging.info(f"Cached parsed trial {trial.id}")
-
-                obj = {}
-                elg = True
-                if os.path.exists(output_line):
-                    with open(output_line, "r") as output_csv:
-                        output_csv_lines = output_csv.readlines()
-                        output_split = [line.split("\t") for line in output_csv_lines]
-
-                        for i in range(len(output_split[0])):
-                            obj[output_split[0][i].strip()] = [split[i] for split in output_split[1:]]
-
-                        for i in range(len(output_split) - 1):
-                            var_type = obj['variable_type'][i]
-                            json_obj = json.loads(obj['relation'][i])
-                            consists = True
-                            found = False
-                            filter_condition = ""
-
-                            value_dict = {
-                                'hb_count': {
-                                    'results_key': 'hemoglobin',
-                                    'name': 'Hemoglobin'
-                                },
-                                'platelet_count': {
-                                    'results_key': 'platelets',
-                                    'name': 'Platelets'
-                                },
-                                'wbc': {
-                                    'results_key': 'leukocytes',
-                                    'name': 'White Blood Cells'
-                                },
-                            }
-
-                            for value_type in value_dict:
-                                if json_obj['name'] == value_type:
-                                    found = True
-                                    filter_condition += value_dict[value_type]['name'] + ": "
-                                    lab_val = lab_results[value_dict[value_type]['results_key']]
-                                    if var_type == 'numerical':
-                                        if 'lower' in json_obj:
-                                            val = float(json_obj['lower']['value'].replace(' ', ''))
-                                            filter_condition += "Must be greater than " + str(val) + ". "
-                                            if json_obj['lower']['incl'] and float(lab_val) < val:
-                                                consists = False
-                                            if not json_obj['lower']['incl'] and float(lab_val) <= val:
-                                                consists = False
-                                        if 'upper' in json_obj:
-                                            val = float(json_obj['upper']['value'].replace(' ', ''))
-                                            filter_condition += "Must be less than " + str(val) + ". "
-                                            if json_obj['upper']['incl'] and float(lab_val) > val:
-                                                consists = False
-                                            if not json_obj['upper']['incl'] and float(lab_val) >= val:
-                                                consists = False
-                                    elif var_type == 'ordinal':
-                                        allowed_values = [float(val.replace(' ', '')) for val in json_obj.value]
-                                        filter_condition += "Must be one of: " + ", ".join(
-                                            [str(value) for value in allowed_values])
-                                        if float(lab_val) not in allowed_values:
-                                            consists = False
-
-                            if not found:
-                                continue
-
-                            if not consists:
-                                elg = False
-
-                            trial.filter_condition.append((filter_condition, consists))
-                if elg:
-                    logging.info('passed')
+                if cfg.filter_trial(trial, lab_results):
                     inc.append(trial)
                 else:
-                    logging.info('not passed')
                     exc.append(trial)
             if len(inc) != 0:
                 filtered_trials_by_ncit.append({"ncit": ncit, "trials": inc})

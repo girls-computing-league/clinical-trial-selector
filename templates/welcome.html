@@ -1,11 +1,36 @@
 {% extends "patient.html" %}
 {% from "_form_helpers.html" import  progress_bar, render_input %}
 {% block pt_main %}
-
+    <script>
+      function onSelect(unit)
+      {
+        var map = "{{unit_names}}"
+        var arr = map.split(", ")
+        arr[0] = arr[0].substring(1)
+        arr[arr.length-1] = arr[arr.length-1].substring(0, arr.length-1)
+        document.getElementById("unitValue").value = arr[document.getElementById("labType").selectedIndex].replace("&#39;", "").replace("&#39;", "")
+      }
+    </script>
+    <script type="text/javascript">
+      function showModal(elem) {
+        var parentClasses = document.getElementById("modal-addlab").classList;
+        if(elem.classList.contains('va-overlay-close')) {
+          parentClasses.add('va-overlay');
+          document.getElementById("modal-addlab").style.display = "none";
+        } else if(parentClasses.contains('va-overlay')) {
+          parentClasses.remove('va-overlay');
+          document.getElementById("modal-addlab").style.display = "block";
+        }
+      }
+    </script>
   {% if trials_selection and ns.combined and ns.combined.latest_results.values() | length > 0  %}
     {% set results = ns.combined.latest_results %}
     <div class="feature vads-u-margin-top--0" id="LaboratoryObservations">
-      <div><strong>Latest Laboratory Results:</strong></div>
+      <div> 
+      <div style="display: table-cell;float: left;"><strong>Latest Laboratory Results:</strong></div>     
+      <div style="display: table-cell;float: right;"><b><a data-show="#modal-addlab" onclick="showModal(this);">Add Lab Results</a></b></div>
+        <!--<div style="display: table-cell;float:right;"><button class="usa-button vads-u-margin-y--1px" data-show="#modal-addlab" onclick="showModal(this);">Add Lab Results</button></div-->
+      </div>
       <form method=post class="cts-launch-progress-bar" action="/filter_by_lab_results">
         {{ form.hidden_tag() }}
         <table class="vads-u-margin--0">
@@ -34,9 +59,41 @@
           </tbody>
         </table>
         <input class="usa-button vads-u-margin-y--1" type=submit value="Filter trials">
-      </form>
-      {{progress_bar()}}
+      </form>                 
+    <div id="modal-addlab" class="va-overlay va-modal va-modal-large" style="position:relative; left:80px; top:2px; display:none;">
+      <div class="va-modal-inner">
+        <h2 class="va-modal-title"> Add Lab Result</h2>
+        <button class="va-modal-close va-overlay-close" type="button" aria-label="Close this modal" onClick="showModal(this);">
+          <i class="fas fa-times-circle va-overlay-close" aria-hidden="true"> </i>
+        </button>    
+        <div class="va-overlay-body">
+          <form method=post class="cts-launch-progress-bar" action="/add_lab_result" text-align= "center">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+              <label for="labType" class="control-label">Lab Type:</label>
+              <select name="labType" id="labType" onchange ="onSelect()">
+                {% for lab in lab_names %}              
+                  <option value={{ lab }}>{{ lab }}</option>
+                {% endfor %}   
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="labValue" class="control-label">Value:</label>
+              <input class="number" name="labValue" id="labValue">
+            </div>
+            <div class="form-group">
+              <label for="unitValue" class="control-label">Unit:</label>
+              <input class="text" name="unitValue" id="unitValue" value = {{ unit_names[0] }}>
+            </div>
+            <button>Submit Form</button>
+          </form>
+        </div>
+      </div>
     </div>
+  </div> 
+
+{{progress_bar()}}
+
   {% endif %}
 
   <div class="tab-content">
@@ -319,6 +376,6 @@
             </tbody>
         </table>
     </div>
-  {% endif %}
+    {% endif %}
   </div>
 {% endblock %}
