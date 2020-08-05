@@ -64,6 +64,7 @@ Session(app)
 oauth = OAuth(app)
 oauth.register("va")
 oauth.register("cms")
+oauth.register("fb")
 csrf = CSRFProtect(app)
 socketio = SocketIO(app, manage_session=False)
 
@@ -95,7 +96,7 @@ def oauth_redirect(source):
     resp: Dict[str, str] = getattr(oauth,source).authorize_access_token()
     app.logger.debug(f"Response: {resp}")
     combined = combined_from_session()
-    mrn = resp['patient']
+    mrn = resp.get('patient', 123456)
     token = resp['access_token']
     combined.login_patient(source, mrn, token)
     return redirect('/')

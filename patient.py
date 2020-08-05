@@ -73,7 +73,7 @@ def find_new_trails(ncit_code):
     print('Calling new api for ncit_code-' + ncit_code['ncit'] + ' and ncit desc -' + ncit_code['ncit_desc'] )
     params = {'expr': search_text, 'min_rnk': 1, 'max_rnk': 100, 'fmt': 'json'} #get trials based on condition
     response = req.get(app.config['ADDITIONAL_TRIALS_URL'], params=params)
-    filter = []
+    filter: list = []
     #filter based on age/gender/demographic`s/make sure the trial is still valid
     return response.json()
 

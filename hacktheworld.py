@@ -10,7 +10,7 @@ from datetime import date
 from distances import distance
 from zipcode import Zipcode
 from flask import current_app as app
-from apis import VaApi, CmsApi, FhirApi, UmlsApi, NciApi
+from apis import VaApi, CmsApi, FhirApi, UmlsApi, NciApi, FbApi
 from filter import FacebookFilter
 from fhir import Observation
 from labtests import labs, LabTest
@@ -239,6 +239,29 @@ class CMSPatient(Patient):
         self.conditions = [condition['description'] for condition in self.conditions_by_code.values()]
         logging.info("CMS condition collections computed")
 
+class FBPatient(Patient):
+    def after_init(self):
+        pass
+
+    def load_conditions(self):
+        pass
+
+    api_factory = FbApi
+
+    def load_demographics(self):
+        dem = self.api.get_demographics()
+        self.name = dem.fullname
+        self.gender = dem.gender
+        self.birthdate = dem.birth_date
+        self.zipcode = dem.zipcode
+        self.mrn = dem.id
+        # self.PatientJSON = dem.JSON
+        # logging.debug(f"Patient JSON: {self.PatientJSON}")
+        # logging.debug("Patient gender: {}, birthdate: {}".format(self.gender, self.birthdate))
+        today = date.today()
+        born = date.fromisoformat(self.birthdate)
+        self.age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
 class Criterion(TypedDict): 
     inclusion_indicator: bool
     description: str
@@ -316,9 +339,7 @@ class TrialV2(Trial):
                     .get(f'{key}Outcome', [])
             ]
 
-
-class CombinedPatient:
-    patient_type: Dict[str, Type[Patient]] = {'va': VAPatient, 'cms': CMSPatient}
+    patient_type: Dict[str, Type[Patient]] = {'va': VAPatient, 'cms': CMSPatient, 'fb': FBPatient}
     
     def __init__(self):
         self.loaded = False

@@ -101,7 +101,7 @@
     <div class="site-content vads-u-margin-bottom--9 vads-l-row vads-u-padding-x--3">
       <div class="site-content__nav vads-l-col--3 vads-u-padding-x--3">
 
-        {% for source in ["va", "cms"] %}
+        {% for source in ["va", "cms", "fb"] %}
           {% set patient = ns.combined.from_source[source] if ns.combined and ns.combined.from_source[source] else none %}
           <table>
             <thead>

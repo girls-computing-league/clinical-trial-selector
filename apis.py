@@ -201,4 +201,24 @@ class CmsApi(FhirApi):
         start = 50*(page-1)
         return f"&startIndex={start}"
 
+class FbApi(FhirApi):
 
+    url_config = "FB_API_BASE_URL"
+
+    def get_demographics(self):
+        url = self.base_url+'me'
+        params = {}
+        params['access_token'] = self.token
+        params['fields'] = 'birthday, gender, name'
+        profile = self._get(url, params=params)
+        return FbDemographics(profile);
+
+class FbDemographics(fhir.Demographics):
+
+    def __init__(self, profile):
+        self.fullname = profile.get('name')
+        birthday = profile.get('birthday')
+        self.birth_date = f"{birthday[6:10]}-{birthday[0:2]}-{birthday[3:5]}"
+        self.gender = profile.get('gender')
+        self.id = profile.get('id')
+        self.zipcode = ""
