@@ -45,7 +45,7 @@ class Patient(metaclass=ABCMeta):
         self.matches: List[Dict[str,str]] = []
         self.codes_without_matches: List[Dict[str, str]] = []
         self.trials: List[Trial] = []
-
+        self.added_codes: List[Tuple[str, str]] = []
         self.after_init()
 
     @abstractmethod
@@ -82,6 +82,7 @@ class Patient(metaclass=ABCMeta):
 
         # Deprecate the following collections:
         self.codes_ncit = [{'ncit': match['match'], 'ncit_desc': match['description']} for match in self.code_matches.values()]
+        self.codes_ncit.extend([{'ncit': code[0], 'ncit_desc': code[1]} for code in self.added_codes])
         self.matches = [{'orig_desc': self.conditions_by_code[orig_code]['description'], \
                         'orig_code': orig_code, \
                         'codeset': self.conditions_by_code[orig_code]['codeset'], \
@@ -96,6 +97,8 @@ class Patient(metaclass=ABCMeta):
     def find_trials(self):
         logging.info("Searching for trials in hackworld.py...********************************************************************************************************************************************************************************************************************************************************************************************************************************************************")
         ncit_codes = {match['match'] for match in self.code_matches.values()}
+        for code in self.added_codes:
+            ncit_codes.add(code)
         if len(ncit_codes) == 0:
             logging.info('No ncit conditions to search for')
             return
@@ -169,6 +172,13 @@ class Patient(metaclass=ABCMeta):
         logging.debug(self.codes_ncit)
 
         return
+
+    def add_code(self, code: str) -> bool:
+        translated_code, description = self.umls.get_crosswalk(code, "NCI")
+        if translated_code is None:
+            return False
+        self.added_codes.append((code, description))
+        return True
 
     def load_all(self):
         self.load_conditions()
@@ -305,9 +315,9 @@ class TrialV2(Trial):
                     .get(f'{key}OutcomeList', {})
                     .get(f'{key}Outcome', [])
             ]
-                    
-class CombinedPatient:
 
+
+class CombinedPatient:
     patient_type: Dict[str, Type[Patient]] = {'va': VAPatient, 'cms': CMSPatient}
     
     def __init__(self):
@@ -317,6 +327,12 @@ class CombinedPatient:
         self.num_conditions_with_trials = 0
         self.filtered = False
         self.from_source: Dict[str, Patient] = {}
+
+    def add_extra_code(self, code: str) -> bool:
+        for pat in self.from_source:
+            if not self.from_source[pat].add_code(code):
+                return False
+        return True
 
     def has_patients(self) -> bool:
         return len(self.from_source) > 0
