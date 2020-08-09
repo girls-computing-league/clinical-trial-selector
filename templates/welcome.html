@@ -321,38 +321,37 @@
             </tbody>
         </table>
     </div>
-  {% elif addlab_selection %}
+  {% elif searchcondition_selection %}
     <div class="tab-pane">
-      <form method=post class="cts-launch-progress-bar" action="/add_lab_result">
+      <form method=post class="cts-launch-progress-bar" action="/search_condition">
         {{ form.hidden_tag() }}
         <div class="form-group">
-          <label for="labType" class="control-label">Lab Type:</label>
-          <select name="labType" id="labType">
-            {% for lab in lab_names %}
-              <option value={{ lab }}>{{ lab }}</option>
-            {% endfor %}
-          </select>
+          <label for="description" class="control-label">Condition:</label>
+          <input class="text" name="description" id="description">
         </div>
+        <button type="submit">Add Condition by Name</button>
+      </form>
+      <form method=post class="cts-launch-progress-bar" action="/add_condition_code">
+        {{ form.hidden_tag() }}
         <div class="form-group">
-          <label for="labValue" class="control-label">Value:</label>
-          <input class="number" name="labValue" id="labValue">
+          <label for="newCode" class="control-label">NCI Condition Code:</label>
+          <input class="text" name="newCode" id="newCode">
         </div>
-        <div class="form-group">
-          <label for="unitValue" class="control-label">Unit:</label>
-          <input class="text" name="unitValue" id="unitValue">
-        </div>
-        <button type="submit">Submit Form</button>
-     </form>
+        <button type="submit">Add Condition by Code</button>
+      </form>
     </div>
   {% elif addcondition_selection %}
     <div class="tab-pane">
-      <form method=post class="cts-launch-progress-bar" action="/add_condition">
+      <form method=post class="cts-launch-progress-bar" action="/add_condition_form">
         {{ form.hidden_tag() }}
         <div class="form-group">
-          <label for="newCode" class="control-label">NCIT Condition ID:</label>
-          <input class="text" name="newCode" id="newCode">
+          <h1>Which Conditions do you want to add?</h1>
+          {% for obj in objs %}
+            <input type="checkbox" name="{{ obj['code'] }}" id="{{ obj['code'] }}">
+            <label for="{{ obj['code'] }}" class="control-label">{{ obj['desc'] }}</label>
+          {% endfor %}
         </div>
-        <button type="submit">Submit Form</button>
+        <button type="submit">Add Conditions</button>
      </form>
     </div>
   {% endif %}
