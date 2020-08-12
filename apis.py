@@ -156,11 +156,14 @@ class FhirApi(PatientApi):
                 url_page = f"{url}{page_param}"
                 logging.info(f"Getting resource at {url_page}")
                 pages[spawn(self.get, url_page, params)] = url_page
-            for page in iwait(pages):
-                logging.info(f"Received resource at {pages[page]}")
-                for resource in self.extraction_functions['resources'].search(page.value):
-                    logging.info(f"Returning {endpoint} resources {resource['id']}")
-                    yield resource
+            if len(pages) == 0:
+                logging.warm("Unexpected issue, pages empty")
+            else:
+                for page in iwait(pages):
+                    logging.info(f"Received resource at {pages[page]}")
+                    for resource in self.extraction_functions['resources'].search(page.value):
+                        logging.info(f"Returning {endpoint} resources {resource['id']}")
+                        yield resource
 
         # while url is not None:
         #     logging.info(f"Getting resource at {url}")

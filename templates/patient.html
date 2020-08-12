@@ -90,94 +90,80 @@
       </ul>
     </div>
   
-    {% if trialID != '0' %} 
+    {% if trialID == '0' %} 
+    <p class="usa-accordion usa-accordion-heading site-mobile-nav__accordion-heading">
+      <button class="usa-accordion-button site-mobile-nav__accordion-button" aria-expanded="false" aria-controls="nav-a2">
+        Options
+      </button>
+    </p>  
+
+    <div id="nav-a2" class="usa-accordion-content site-mobile-nav__accordion-content" aria-hidden="true">
+      <ul class="site-mobile-nav-list">
+        <li class="site-mobile-nav-list__item">
+          <a class="site-mobile-nav-list__link " href="/welcome">Welcome</a>
+        </li>
+        {% if ns.combined.loaded  %}
+        <li class="site-mobile-nav-list__item">
+          <a class="site-mobile-nav-list__link " href="/addcondition">Add Condition</a>
+        </li>
+        {% endif %}
+        <li class="site-mobile-nav-list__item">
+          <a class="site-mobile-nav-list__link " href="/trials">Trials</a>
+        </li>
+        {% if session["excluded"] %}
+        <li class="site-mobile-nav-list__item">
+          <a class="site-mobile-nav-list__link " href="/excluded">Excluded</a>
+        </li>
+        {% endif %}
+        <li class="site-mobile-nav-list__item">
+          <a class="site-mobile-nav-list__link " href="/conditions">Conditions without trials</a>
+        </li>
+        <li class="site-mobile-nav-list__item">
+          <a class="site-mobile-nav-list__link " href="/matches">Code matches</a>
+        </li>
+        <li class="site-mobile-nav-list__item">
+          <a class="site-mobile-nav-list__link " href="/nomatches">Codes without matches</a>
+        </li>
+      </ul>
+    </div>
+
     {% else %}
       <p class="usa-accordion usa-accordion-heading site-mobile-nav__accordion-heading">
         <button class="usa-accordion-button site-mobile-nav__accordion-button" aria-expanded="false" aria-controls="nav-a2">
-          Content
+         Trial Results
         </button>
       </p>  
       <div id="nav-a2" class="usa-accordion-content site-mobile-nav__accordion-content" aria-hidden="true">
         <ul class="site-mobile-nav-list">
           <li class="site-mobile-nav-list__item">
-            <a class="site-mobile-nav-list__link " href="/welcome">Welcome</a>
+            <a class="site-mobile-nav-list__link " href="/trial?id={{trialID}}">Info</a>
           </li>
-          {% if ns.combined.loaded  %}
+
           <li class="site-mobile-nav-list__item">
-            <a class="site-mobile-nav-list__link " href="/addcondition">Add Condition</a>
+            <a class="site-mobile-nav-list__link " href="/measures?id={{trialID}}">Outcome Measures</a>
           </li>
-          {% endif %}
+
           <li class="site-mobile-nav-list__item">
-            <a class="site-mobile-nav-list__link " href="/trials">Trials</a>
+            <a class="site-mobile-nav-list__link " href="/diseases?id={{trialID}}">Diseases</a>
           </li>
-          {% if session["excluded"] %}
+ 
           <li class="site-mobile-nav-list__item">
-            <a class="site-mobile-nav-list__link " href="/excluded">Excluded</a>
+            <a class="site-mobile-nav-list__link " href="/locations?id={{trialID}}">Locations</a>
           </li>
-          {% endif %}
-          <li class="site-mobile-nav-list__item">
-            <a class="site-mobile-nav-list__link " href="/conditions">Conditions without trials</a>
-          </li>
-          <li class="site-mobile-nav-list__item">
-            <a class="site-mobile-nav-list__link " href="/matches">Code matches</a>
-          </li>
-          <li class="site-mobile-nav-list__item">
-            <a class="site-mobile-nav-list__link " href="/nomatches">Codes without matches</a>
-          </li>
+
         </ul>
       </div>
     
     {% endif %}
 
+    <p>
+      <form action="{{ url_for('logout') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button class="usa-button vads-u-margin--0" type="submit">Logout</button>
+      </form>
+      </p>
     <!-- Use the accurate heading level to maintain the document outline -->
-    <p class="usa-accordion usa-accordion-heading site-mobile-nav__accordion-heading">
-      <button class="usa-accordion-button site-mobile-nav__accordion-button" aria-expanded="false" aria-controls="nav-a7">
-        Layout
-      </button>
-    </p>
-    <div id="nav-a7" class="usa-accordion-content site-mobile-nav__accordion-content" aria-hidden="true">
-      <ul class="site-mobile-nav-list">
-        <li class="site-mobile-nav-list__item">
-          <a class="site-mobile-nav-list__link " href="/layout">Overview</a>
-        </li>
-        
-            
-            
-              <li class="site-mobile-nav-list__item">
-                <a class="site-mobile-nav-list__link " href="/layout/flexbox-grid">Flexbox grid</a>
-              </li>
-            
-            
-        
-            
-            
-              <li class="site-mobile-nav-list__item">
-                <a class="site-mobile-nav-list__link " href="/layout/float-grid">Float grid</a>
-              </li>
-            
-            
-        
-            
-        
-            
-        
-            
-        
-            
-            
-            
-        
-            
-            
-              <li class="site-mobile-nav-list__item">
-                <a class="site-mobile-nav-list__link " href="/layout/page-templates">Page templates</a>
-              </li>
-            
-            
-        
-      </ul>
-    </div>
-  
+
   </div>
   </div>  
 
