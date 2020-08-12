@@ -79,7 +79,8 @@ def combined_from_session() -> hack.CombinedPatient:
 def showtrials():
     if not session.get("combined_patient", None):
         return welcome()
-    return render_template('welcome.html', form=FilterForm(), welcome_selection="current", labs = labs)
+    else:
+        return show_all_trials()
 
 @app.route('/welcome')
 def welcome():
