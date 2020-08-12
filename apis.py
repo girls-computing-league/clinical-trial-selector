@@ -20,7 +20,12 @@ class Api():
         return req.get(url, headers=headers, params=params)
 
     def _get(self, url: str, headers: Optional[Dict[str, str]] = None, params: Optional[Dict[str, Union[str, List[str]]]] = None) -> Dict[str,Any]:
-        return self._get_response(url, headers=headers, params=params).json()
+        res= self._get_response(url, headers=headers, params=params)
+        if res.status_code != 200:
+            logging.warn(f"Invalid response. url = {url}, status code = {res.status_code}, response text={res.text}")
+            return {"error": str(res.status_code)}
+        else:
+            return res.json()
 
 class UmlsApi(Api):
 
@@ -157,13 +162,17 @@ class FhirApi(PatientApi):
                 logging.info(f"Getting resource at {url_page}")
                 pages[spawn(self.get, url_page, params)] = url_page
             if len(pages) == 0:
-                logging.warm("Unexpected issue, pages empty")
+                logging.warn("Unexpected issue, pages empty")
             else:
                 for page in iwait(pages):
                     logging.info(f"Received resource at {pages[page]}")
-                    for resource in self.extraction_functions['resources'].search(page.value):
-                        logging.info(f"Returning {endpoint} resources {resource['id']}")
-                        yield resource
+                    resources = self.extraction_functions['resources'].search(page.value)
+                    if resources is not None:
+                        for resource in resources:
+                            logging.info(f"Returning {endpoint} resources {resource['id']}")
+                            yield resource
+                    else:
+                        logging.warn(f"Unexpected resource: {str(page.value)}")
 
         # while url is not None:
         #     logging.info(f"Getting resource at {url}")
