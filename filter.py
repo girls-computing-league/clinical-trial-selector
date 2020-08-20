@@ -771,12 +771,12 @@ class FacebookFilter:
                     filter_condition = ""
 
                     for value_type in value_dict:
-                        if value_dict[value_type]['results_key'] not in patient_data:
+                        if value_dict[value_type]['display_name'] not in patient_data:
                             continue
                         if json_obj['display_name'] == value_type:
                             found = True
                             filter_condition += value_dict[value_type]['display_name'] + ": "
-                            lab_val = patient_data[value_dict[value_type]['results_key']]
+                            lab_val = patient_data[value_dict[value_type]['display_name']]
                             if var_type == 'numerical':
                                 if 'lower' in json_obj:
                                     val = float(json_obj['lower']['value'].replace(' ', ''))

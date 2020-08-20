@@ -28,6 +28,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from labtests import labs
 from typing import Dict
 
+from patient import filter_by_inclusion_criteria
+
 args: dict = {}
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -228,8 +230,23 @@ def filter_by_lab_results():
     """
 
     form = FilterForm()
-
     combined_patient = session['combined_patient']
+
+    # TEMPORARILY REVERTED TO PREVIOUS FILTER CODE 
+
+    # if form.validate_on_submit():
+    #     lab_results = {key:value for (key,value) in form.data.items() if key != 'csrf_token'}
+    # else:
+    #     lab_results = combined_patient.latest_results
+
+    # trials_by_ncit = combined_patient.trials_by_ncit
+    # socketio.emit(event_name, {"data": 20}, room=session.sid)
+
+    # filter_trails_by_inclusion_criteria, excluded_trails_by_inclusion_criteria = \
+    #     filter_by_inclusion_criteria(trials_by_ncit, lab_results)
+
+    # NEW FILTER CODE HERE TEMPORARILY DISABLED
+
     socketio.emit(event_name, {"data": 20}, room=session.sid)
     filter_trails_by_inclusion_criteria, excluded_trails_by_inclusion_criteria = combined_patient.filter_by_criteria(form)
 
