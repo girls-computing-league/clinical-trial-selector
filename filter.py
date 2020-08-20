@@ -248,7 +248,7 @@ value_dict = {
   "hb_count": {
     "#variable_id": 403,
     "variable_type": "numerical",
-    "variable_name": "hb_count",
+    "variable_name": "hemoglobin",
     "display_name": "Hb count",
     "aliases": "hemoglobin count|hb count|hemoglobin concentration|hemoglobin level*|hgb|hb|hemoglobin",
     "bounds": "",
@@ -258,7 +258,7 @@ value_dict = {
   "wbc": {
     "#variable_id": 404,
     "variable_type": "numerical",
-    "variable_name": "wbc",
+    "variable_name": "leukocytes",
     "display_name": "WBC",
     "aliases": "wbc|white blood cell count|white blood cell|leukocytes|leucocytes|leukopenia",
     "bounds": "",
@@ -268,7 +268,7 @@ value_dict = {
   "platelet_count": {
     "#variable_id": 405,
     "variable_type": "numerical",
-    "variable_name": "platelet_count",
+    "variable_name": "platelets",
     "display_name": "Platelet count",
     "aliases": "platelet count|platelet|platelets",
     "bounds": "",
@@ -745,6 +745,7 @@ class FacebookFilter:
         subprocess.run(command_line)
 
     def filter_trial(self, trial, patient_data) -> bool:
+        logging.info(patient_data)
         output_line = "parser_io/outputs/" + trial.id + ".csv"
         if trial.eligibility_combined == "" or trial.eligibility_combined is None:
             return True
@@ -771,12 +772,12 @@ class FacebookFilter:
                     filter_condition = ""
 
                     for value_type in value_dict:
-                        if value_dict[value_type]['results_key'] not in patient_data:
+                        if value_dict[value_type]['variable_name'] not in patient_data:
                             continue
-                        if json_obj['display_name'] == value_type:
+                        if json_obj['name'] == value_type:
                             found = True
                             filter_condition += value_dict[value_type]['display_name'] + ": "
-                            lab_val = patient_data[value_dict[value_type]['results_key']]
+                            lab_val = patient_data[value_dict[value_type]['variable_name']]
                             if var_type == 'numerical':
                                 if 'lower' in json_obj:
                                     val = float(json_obj['lower']['value'].replace(' ', ''))

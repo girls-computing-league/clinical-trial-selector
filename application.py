@@ -27,6 +27,7 @@ from wtforms import StringField, validators
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from labtests import labs
 from typing import Dict
+from apis import UmlsApi
 
 args: dict = {}
 if __name__ == "__main__":
@@ -116,6 +117,8 @@ def getInfo():
     combined.load_test_results()
     socketio.emit(event_name, {"data": 95}, room=session.sid)
     socketio.emit('disconnect', {"data": 100}, room=session.sid)
+    logging.info(combined.va_patient().added_codes)
+    logging.info(combined.va_patient().codes_ncit)
     return redirect("/")
 
 @app.route('/trials')
@@ -146,11 +149,19 @@ def show_addlab():
     unit_names  = [filter.value_dict[lab]['default_unit_name'] for lab in filter.value_dict.keys()]
     return render_template('welcome.html', form=FilterForm(), addlab_selection="current", lab_names=lab_names, unit_names=unit_names)
 
-@app.route('/addcondition')
-def show_addcondition():
+def show_addcondition(codes):
     if not session.get("combined_patient", None):
         return welcome()
-    return render_template('welcome.html', form=FilterForm(), addcondition_selection="current")
+    objs = []
+    for code in codes:
+        objs.append({'code': code[0], 'desc': code[1]})
+    return render_template('welcome.html', form=FilterForm(), addcondition_selection="current", objs=objs)
+
+@app.route('/searchcondition')
+def show_searchcondition():
+    if not session.get("combined_patient", None):
+        return welcome()
+    return render_template('welcome.html', form=FilterForm(), searchcondition_selection="current")
 
 
 @app.route('/matches')
@@ -203,20 +214,48 @@ class FilterForm(FlaskForm):
 def add_lab_result():
     body = dict(request.form)
     combined_patient = session['combined_patient']
-    combined_patient.latest_results[body['labType']] = hack.TestResult(test_name=filter.reverse_value_dict[body['labType']],
-                                                                       datetime=datetime.now(), value=body['labValue'],
-                                                                       unit=body['unitValue'])
-
-    #logging.info("NEW PATIENT LAB VALUES")
-    #logging.info(combined_patient.latest_results)
+    # TODO: ACCOUNT FOR UNITS
+    test_name = filter.reverse_value_dict[body['labType']]
+    combined_patient.latest_results[test_name] = body['labValue']
     return redirect('/trials')
 
-@app.route('/add_condition', methods=['POST'])
-def add_condition():
+@app.route('/search_condition', methods=['POST'])
+def search_condition():
     body = dict(request.form)
+    codes = UmlsApi().get_code(body['description'])
+    return show_addcondition(codes)
+
+@app.route('/add_condition_form', methods=['POST'])
+def add_condition_form():
+    body = dict(request.form)
+    logging.info(body)
+    combined_patient = session['combined_patient']
+    for code in body:
+        if body[code] == "on":
+            logging.info(code)
+            combined_patient.add_extra_code(code)
+    return getInfo()
+
+@app.route('/add_condition_code', methods=['POST'])
+def add_condition_code():
+    body = dict(request.form)
+    logging.info(body)
     combined_patient = session['combined_patient']
     combined_patient.add_extra_code(body['newCode'])
     return getInfo()
+
+@app.route('/umls_query')
+def umls_query():
+    args = request.args
+    logging.info(args)
+    route = args['route']
+    body = {}
+    for arg in args:
+        if arg == 'crsf_token' or arg == 'route':
+            continue
+        else:
+            body[arg] = args[arg]
+    return UmlsApi().perform_query(route, body)
 
 
 @app.route('/filter_by_lab_results', methods=['POST'])
