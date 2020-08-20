@@ -82,7 +82,14 @@ class Patient(metaclass=ABCMeta):
 
         # Deprecate the following collections:
         self.codes_ncit = [{'ncit': match['match'], 'ncit_desc': match['description']} for match in self.code_matches.values()]
-        self.codes_ncit.extend([{'ncit': code[0], 'ncit_desc': code[1]} for code in self.added_codes])
+        for code in self.added_codes:
+            found = False
+            for r_code in self.codes_ncit:
+                if code[0] == r_code['ncit']:
+                    found = True
+                    break
+            if not found:
+                self.codes_ncit.append({'ncit': code[0], 'ncit_desc': code[1]})
         self.matches = [{'orig_desc': self.conditions_by_code[orig_code]['description'], \
                         'orig_code': orig_code, \
                         'codeset': self.conditions_by_code[orig_code]['codeset'], \
@@ -352,8 +359,8 @@ class CombinedPatient:
         self.from_source: Dict[str, Patient] = {}
 
     def add_extra_code(self, code: str) -> bool:
-        for pat in self.from_source:
-            if not self.from_source[pat].add_code(code):
+        for source, patient in self.from_source.items():
+            if not patient.add_code(code):
                 return False
         return True
 

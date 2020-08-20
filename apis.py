@@ -43,13 +43,44 @@ class UmlsApi(Api):
     def get_crosswalk(self, orig_code: str, codeset: str) -> Tuple[Optional[str], Optional[str]]:
         tik = self.auth.getst(self.tgt)
         params = {"targetSource": "NCI", "ticket": tik}
-        url = f"{self.base_url}{codeset}/{orig_code}"
+        route = "/crosswalk/current/source/"
+        url = f"{self.base_url}{route}{codeset}/{orig_code}"
         response = self._get_response(url, params=params)
+        print((orig_code, codeset, response.status_code))
         if response.status_code != 200:
             return None, None
         result = response.json()
         crosswalk = self.extraction_functions['crosswalk'].search(result)
         return (crosswalk['code'], crosswalk['description'])
+
+    def get_code(self, description: str) -> List[Tuple[str, str]]:
+        tik = self.auth.getst(self.tgt)
+        params = {"string": description, "ticket": tik, "searchType": "words", "returnIdType": "sourceUi", "sabs": "NCI", "page_size": "1000"}
+        route = "/search/current"
+        url = f"{self.base_url}{route}"
+        response = self._get_response(url, params=params)
+        if response.status_code != 200:
+            return []
+        res = response.json()
+        results = []
+        for result in res["result"]["results"]:
+            if "rootSource" in result and result["rootSource"] == "NCI":
+                results.append((result["ui"], result["name"]))
+        return results
+
+    def get_code_exact(self, description: str) -> Union[Tuple[str, str], None]:
+        tik = self.auth.getst(self.tgt)
+        params = {"string": description, "ticket": tik, "searchType": "exact", "returnIdType": "sourceUi", "sabs": "NCI", "page_size": "1000"}
+        route = "/search/current"
+        url = f"{self.base_url}{route}"
+        response = self._get_response(url, params=params)
+        if response.status_code != 200:
+            return None, None
+        res = response.json()
+        for result in res["result"]["results"]:
+            if "rootSource" in result and result["rootSource"] == "NCI":
+                return result["ui"], result["name"]
+        return None, None
 
     def get_matches(self, conditions_by_code: Dict[str, Dict[str, str]]) -> Iterable[Tuple[str, Optional[Dict[str, str]]]]:
         matches: Dict[Greenlet, str] = {}
@@ -65,6 +96,15 @@ class UmlsApi(Api):
             else:
                 logging.info(f"No match for {orig_code}")
                 yield orig_code, None
+
+    def perform_query(self, route, body):
+        tik = self.auth.getst(self.tgt)
+        body['ticket'] = tik
+        url = f"{self.base_url}{route}"
+        response = self._get_response(url, params=body)
+        if response.status_code != 200:
+            return None
+        return response.json()
 
 class NciApi(Api):
     

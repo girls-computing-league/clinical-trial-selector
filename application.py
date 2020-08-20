@@ -18,6 +18,7 @@ from flask_socketio import SocketIO, join_room
 from flask import Flask, session, redirect, render_template, request, flash, make_response
 from flask_session import Session
 from flask_talisman import Talisman
+from apis import UmlsApi
 from authlib.integrations.flask_client import OAuth
 import hacktheworld as hack
 from infected_patients import (get_infected_patients, get_authenticate_bcda_api_token, get_diseases_icd_codes,
@@ -146,12 +147,19 @@ def show_addlab():
     unit_names  = [filter.value_dict[lab]['default_unit_name'] for lab in filter.value_dict.keys()]
     return render_template('welcome.html', form=FilterForm(), addlab_selection="current", lab_names=lab_names, unit_names=unit_names)
 
-@app.route('/addcondition')
-def show_addcondition():
+def show_addcondition(codes):
     if not session.get("combined_patient", None):
         return welcome()
-    return render_template('welcome.html', form=FilterForm(), addcondition_selection="current")
+    objs = []
+    for code in codes:
+        objs.append({'code': code[0], 'desc': code[1]})
+    return render_template('welcome.html', form=FilterForm(), addcondition_selection="current", objs=objs)
 
+@app.route('/searchcondition')
+def show_searchcondition():
+    if not session.get("combined_patient", None):
+        return welcome()
+    return render_template('welcome.html', form=FilterForm(), searchcondition_selection="current")
 
 @app.route('/matches')
 def show_matches():
@@ -211,13 +219,41 @@ def add_lab_result():
     #logging.info(combined_patient.latest_results)
     return redirect('/trials')
 
-@app.route('/add_condition', methods=['POST'])
-def add_condition():
+@app.route('/search_condition', methods=['POST'])
+def search_condition():
     body = dict(request.form)
+    codes = UmlsApi().get_code(body['description'])
+    return show_addcondition(codes)
+
+@app.route('/add_condition_form', methods=['POST'])
+def add_condition_form():
+    body = dict(request.form)
+    combined_patient = session['combined_patient']
+    for code in body:
+        if body[code] == "on":
+            combined_patient.add_extra_code(code)
+    return getInfo()
+
+@app.route('/add_condition_code', methods=['POST'])
+def add_condition_code():
+    body = dict(request.form)
+    logging.info(body)
     combined_patient = session['combined_patient']
     combined_patient.add_extra_code(body['newCode'])
     return getInfo()
 
+@app.route('/umls_query')
+def umls_query():
+    args = request.args
+    logging.info(args)
+    route = args['route']
+    body = {}
+    for arg in args:
+        if arg == 'crsf_token' or arg == 'route':
+            continue
+        else:
+            body[arg] = args[arg]
+    return UmlsApi().perform_query(route, body)
 
 @app.route('/filter_by_lab_results', methods=['POST'])
 def filter_by_lab_results():
