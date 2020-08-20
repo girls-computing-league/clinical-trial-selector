@@ -1,6 +1,6 @@
 """
 Clinical Trial Selector
-""" 
+"""
 # Monkey patch needed for proper websocket behavior
 # Must be first line before any other imports
 from gevent import monkey
@@ -163,7 +163,6 @@ def show_searchcondition():
         return welcome()
     return render_template('welcome.html', form=FilterForm(), searchcondition_selection="current")
 
-
 @app.route('/matches')
 def show_matches():
     if not session.get("combined_patient", None):
@@ -228,11 +227,9 @@ def search_condition():
 @app.route('/add_condition_form', methods=['POST'])
 def add_condition_form():
     body = dict(request.form)
-    logging.info(body)
     combined_patient = session['combined_patient']
     for code in body:
         if body[code] == "on":
-            logging.info(code)
             combined_patient.add_extra_code(code)
     return getInfo()
 
@@ -256,7 +253,6 @@ def umls_query():
         else:
             body[arg] = args[arg]
     return UmlsApi().perform_query(route, body)
-
 
 @app.route('/filter_by_lab_results', methods=['POST'])
 def filter_by_lab_results():

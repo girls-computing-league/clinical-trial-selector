@@ -5,7 +5,7 @@ import umls
 import requests as req
 from typing import Dict, List, Optional, Union, Iterable, Match, Set, Callable, Type, cast, Tuple, Any
 from abc import ABCMeta, abstractmethod
-from mypy_extensions import TypedDict 
+from mypy_extensions import TypedDict
 from datetime import date
 from distances import distance
 from zipcode import Zipcode
@@ -25,7 +25,7 @@ class Patient(metaclass=ABCMeta):
 
     def __init__(self, mrn: str, token: str):
         #logging.geaLogger().setLevel(logging.DEBUG)
-        self.mrn = mrn 
+        self.mrn = mrn
         self.token = token
         self.auth = umls.Authentication(app.config["UMLS_API_KEY"])
         self.tgt = self.auth.gettgt()
@@ -90,7 +90,6 @@ class Patient(metaclass=ABCMeta):
                     break
             if not found:
                 self.codes_ncit.append({'ncit': code[0], 'ncit_desc': code[1]})
-        logging.info(self.codes_ncit)
         self.matches = [{'orig_desc': self.conditions_by_code[orig_code]['description'], \
                         'orig_code': orig_code, \
                         'codeset': self.conditions_by_code[orig_code]['codeset'], \
@@ -197,8 +196,8 @@ class VAPatient(Patient):
 
     def load_conditions(self):
         logging.info("Loading conditions")
-        self.conditions_by_code = {condition.code: 
-                                    {'codeset': condition.codeset, 'description': condition.description} 
+        self.conditions_by_code = {condition.code:
+                                    {'codeset': condition.codeset, 'description': condition.description}
                                         for condition in self.va_api.get_conditions()}
 
         # Deprecate the following collections:
@@ -262,7 +261,7 @@ class FBPatient(Patient):
         born = date.fromisoformat(self.birthdate)
         self.age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
-class Criterion(TypedDict): 
+class Criterion(TypedDict):
     inclusion_indicator: bool
     description: str
 
@@ -342,7 +341,7 @@ class TrialV2(Trial):
 class CombinedPatient:
 
     patient_type: Dict[str, Type[Patient]] = {'va': VAPatient, 'cms': CMSPatient, 'fb': FBPatient}
-    
+
     def __init__(self):
         self.loaded = False
         self.clear_collections()
@@ -401,7 +400,7 @@ class CombinedPatient:
                 site["distance"] = distance(pat_latlong, site_latlong)
 
     def load_data(self):
-        self.clear_collections() 
+        self.clear_collections()
         for source, patient in self.from_source.items():
             self.append_patient_data(patient)
             if source=='va':
@@ -493,4 +492,3 @@ class TestResult:
             return cls(test.name, obs.datetime, obs.value, obs.unit)
         else:
             return None
-

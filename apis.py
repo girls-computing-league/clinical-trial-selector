@@ -10,7 +10,7 @@ from gevent import spawn, iwait, Greenlet
 import logging
 
 class Api():
-    
+
     url_config: str
 
     def __init__(self):
@@ -45,8 +45,6 @@ class UmlsApi(Api):
         params = {"targetSource": "NCI", "ticket": tik}
         route = "/crosswalk/current/source/"
         url = f"{self.base_url}{route}{codeset}/{orig_code}"
-        logging.info(url)
-        logging.info(params)
         response = self._get_response(url, params=params)
         if response.status_code != 200:
             return None, None
@@ -56,8 +54,7 @@ class UmlsApi(Api):
 
     def get_code(self, description: str) -> List[Tuple[str, str]]:
         tik = self.auth.getst(self.tgt)
-        params = {"string": description, "ticket": tik, "searchType": "words", "returnIdType": "sourceUi",
-                  "sabs": "NCI", "page_size": "1000"}
+        params = {"string": description, "ticket": tik, "searchType": "words", "returnIdType": "sourceUi", "sabs": "NCI", "page_size": "1000"}
         route = "/search/current"
         url = f"{self.base_url}{route}"
         response = self._get_response(url, params=params)
@@ -70,10 +67,9 @@ class UmlsApi(Api):
                 results.append((result["ui"], result["name"]))
         return results
 
-    def get_code_exact(self, description: str) -> Union[Tuple[str, str], Tuple[None, None]]:
+    def get_code_exact(self, description: str) -> Union[Tuple[str, str], None]:
         tik = self.auth.getst(self.tgt)
-        params = {"string": description, "ticket": tik, "searchType": "exact", "returnIdType": "sourceUi",
-                  "sabs": "NCI", "page_size": "1000"}
+        params = {"string": description, "ticket": tik, "searchType": "exact", "returnIdType": "sourceUi", "sabs": "NCI", "page_size": "1000"}
         route = "/search/current"
         url = f"{self.base_url}{route}"
         response = self._get_response(url, params=params)
@@ -110,7 +106,7 @@ class UmlsApi(Api):
         return response.json()
 
 class NciApi(Api):
-    
+
     url_config = 'TRIALS_URL'
     size = 50
 
@@ -123,7 +119,7 @@ class NciApi(Api):
         self.gender: str
         self.ncit_codes: Set[str]
         super().__init__()
-        
+
     def _get_trials_page(self, start_from: int) -> Dict[str,Any]:
         url = self.base_url
         params: Dict[str, Union[str, List[str]]] = {'size': f"{self.size}"}
@@ -247,7 +243,7 @@ class VaApi(FhirApi):
 class CmsApi(FhirApi):
 
     url_config = "CMS_API_BASE_URL"
-    
+
     def get_explanations_of_benefit(self) -> Iterable[fhir.ExplanationOfBenefit]:
         for resource in self.get_fhir_bundle('ExplanationOfBenefit', count=50):
             yield fhir.ExplanationOfBenefit(resource)

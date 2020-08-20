@@ -1,417 +1,415 @@
 {% extends "patient.html" %}
 {% from "_form_helpers.html" import  progress_bar, render_input %}
 {% block pt_main %}
-    <script>
-      function onSelect(unit)
-      {
-        var map = "{{unit_names}}"
-        var arr = map.split(", ")
-        arr[0] = arr[0].substring(1)
-        arr[arr.length-1] = arr[arr.length-1].substring(0, arr.length-1)
-        document.getElementById("unitValue").value = arr[document.getElementById("labType").selectedIndex].replace("&#39;", "").replace("&#39;", "")
-      }
-    </script>
-    <script type="text/javascript">
-      function showModal(elem) {
-        var parentClasses = document.getElementById("modal-addlab").classList;
-        if(elem.classList.contains('va-overlay-close')) {
-          parentClasses.add('va-overlay');
-          document.getElementById("modal-addlab").style.display = "none";
-        } else if(parentClasses.contains('va-overlay')) {
-          parentClasses.remove('va-overlay');
-          document.getElementById("modal-addlab").style.display = "block";
-        }
-      }
-    </script>
-  {% if trials_selection and ns.combined and ns.combined.latest_results.values() | length > 0  %}
-    {% set results = ns.combined.latest_results %}
-    <div class="feature vads-u-margin-top--0" id="LaboratoryObservations">
-      <div> 
-      <div style="display: table-cell;float: left;"><strong>Latest Laboratory Results:</strong></div>     
-      <div style="display: table-cell;float: right;"><b><a data-show="#modal-addlab" onclick="showModal(this);">Add Lab Results</a></b></div>
-        <!--<div style="display: table-cell;float:right;"><button class="usa-button vads-u-margin-y--1px" data-show="#modal-addlab" onclick="showModal(this);">Add Lab Results</button></div-->
-      </div>
-      <form method=post class="cts-launch-progress-bar" action="/filter_by_lab_results">
-        {{ form.hidden_tag() }}
-        <table class="vads-u-margin--0">
-          <thead>
-            <tr>
-              {% for test in labs.tests %}
-                <th>{{ test.name | title }}</th>
-                <th>Units</th>
-              {% endfor %}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              {% for test in labs.tests %}
-                {% if results[test.name] %}
-                    {% set result = results[test.name] %}
-                    <td class="page-header">
-                      {{ render_input(test.name,result.value|float|round(2)|string) }}
-                    </td>
-                    <td>{{ result.unit }}</td>
-                {% else %}
-                    <td class="page-header"> NA </td>
-                {% endif %}
-              {% endfor %}
-            </tr>
-          </tbody>
-        </table>
-        <input class="usa-button vads-u-margin-y--1" type=submit value="Filter trials">
-      </form>                 
-    <div id="modal-addlab" class="va-overlay va-modal va-modal-large" style="position:relative; left:80px; top:2px; display:none;">
-      <div class="va-modal-inner">
-        <h2 class="va-modal-title"> Add Lab Result</h2>
-        <button class="va-modal-close va-overlay-close" type="button" aria-label="Close this modal" onClick="showModal(this);">
-          <i class="fas fa-times-circle va-overlay-close" aria-hidden="true"> </i>
-        </button>    
-        <div class="va-overlay-body">
-          <form method=post class="cts-launch-progress-bar" action="/add_lab_result" text-align= "center">
-            {{ form.hidden_tag() }}
-            <div class="form-group">
-              <label for="labType" class="control-label">Lab Type:</label>
-              <select name="labType" id="labType" onchange ="onSelect()">
-                {% for lab in lab_names %}              
-                  <option value="{{ lab }}">{{ lab }}</option>
-                {% endfor %}   
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="labValue" class="control-label">Value:</label>
-              <input class="number" name="labValue" id="labValue">
-            </div>
-            <div class="form-group">
-              <label for="unitValue" class="control-label">Unit:</label>
-              <input class="text" name="unitValue" id="unitValue" value = {{ unit_names[0] }}>
-            </div>
-            <button>Submit Form</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div> 
+<script>
+	function onSelect(unit) {
+		var map = "{{unit_names}}"
+		var arr = map.split(", ")
+		arr[0] = arr[0].substring(1)
+		arr[arr.length - 1] = arr[arr.length - 1].substring(0, arr.length - 1)
+		document.getElementById("unitValue").value = arr[document.getElementById("labType").selectedIndex].replace("&#39;", "").replace("&#39;", "")
+	}
+</script>
+<script type="text/javascript">
+	function showModal(elem) {
+		var parentClasses = document.getElementById("modal-addlab").classList;
+		if (elem.classList.contains('va-overlay-close')) {
+			parentClasses.add('va-overlay');
+			document.getElementById("modal-addlab").style.display = "none";
+		} else if (parentClasses.contains('va-overlay')) {
+			parentClasses.remove('va-overlay');
+			document.getElementById("modal-addlab").style.display = "block";
+		}
+	}
+</script>
+{% if trials_selection and ns.combined and ns.combined.latest_results.values() | length > 0  %}
+{% set results = ns.combined.latest_results %}
+<div class="feature vads-u-margin-top--0" id="LaboratoryObservations">
+	<div>
+		<div style="display: table-cell;float: left;"><strong>Latest Laboratory Results:</strong></div>
+		<div style="display: table-cell;float: right;"><b><a data-show="#modal-addlab" onclick="showModal(this);">Add Lab Results</a></b></div>
+		<!--<div style="display: table-cell;float:right;"><button class="usa-button vads-u-margin-y--1px" data-show="#modal-addlab" onclick="showModal(this);">Add Lab Results</button></div-->
+	</div>
+	<form method=post class="cts-launch-progress-bar" action="/filter_by_lab_results">
+		{{ form.hidden_tag() }}
+		<table class="vads-u-margin--0">
+			<thead>
+				<tr>
+					{% for test in labs.tests %}
+					<th>{{ test.name | title }}</th>
+					<th>Units</th>
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					{% for test in labs.tests %}
+					{% if results[test.name] %}
+					{% set result = results[test.name] %}
+					<td class="page-header">
+						{{ render_input(test.name,result.value|float|round(2)|string) }}
+					</td>
+					<td>{{ result.unit }}</td>
+					{% else %}
+					<td class="page-header"> NA </td>
+					{% endif %}
+					{% endfor %}
+				</tr>
+			</tbody>
+		</table>
+		<input class="usa-button vads-u-margin-y--1" type=submit value="Filter trials">
+	</form>
+	<div id="modal-addlab" class="va-overlay va-modal va-modal-large" style="position:relative; left:80px; top:2px; display:none;">
+		<div class="va-modal-inner">
+			<h2 class="va-modal-title"> Add Lab Result</h2>
+			<button class="va-modal-close va-overlay-close" type="button" aria-label="Close this modal" onClick="showModal(this);">
+				<i class="fas fa-times-circle va-overlay-close" aria-hidden="true"> </i>
+			</button>
+			<div class="va-overlay-body">
+				<form method=post class="cts-launch-progress-bar" action="/add_lab_result" text-align="center">
+					{{ form.hidden_tag() }}
+					<div class="form-group">
+						<label for="labType" class="control-label">Lab Type:</label>
+						<select name="labType" id="labType" onchange="onSelect()">
+							{% for lab in lab_names %}
+							<option value="{{ lab }}">{{ lab }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="labValue" class="control-label">Value:</label>
+						<input class="number" name="labValue" id="labValue">
+					</div>
+					<div class="form-group">
+						<label for="unitValue" class="control-label">Unit:</label>
+						<input class="text" name="unitValue" id="unitValue" value={{ unit_names[0] }}>
+					</div>
+					<button>Submit Form</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
 
 {{progress_bar()}}
 
-  {% endif %}
+{% endif %}
 
-  <div class="tab-content">
-  {% if welcome_selection %}
-    <div class="tab-pane active" id="welcome">
-      <h1>Welcome to the Clinical Trial Selector</h1>
-      <p class="va-introtext">This Clinical Trial Selector tool can help you find trials you may be eligible for based on your medical conditions.
-      </p>
-      <p class="va-introtext">
-        After logging in to either the VA or CMS portals, the tool will securely use information in your records
-        to search for eligible trials. 
-      </p>
-      <div class="usa-alert usa-alert-warning">
-        <div class="usa-alert-body">
-          <h3 class="usa-alert-heading">Our <a target="_blank" href="{{ url_for('privacy_policy')}}">privacy policy</a> has changed!</h3>
-          <p>
-            Changes include:
-            <ul>
-              <li>How we announce changes to our policy</li>
-            </ul>
-          </p>
-          <p>For further details please read the full document <a target="_blank" href="{{ url_for('privacy_policy')}}">here</a>.</p>
-        </div>
-      </div>      
-      <h2>Who can use this tool?</h2>
-      <p>
-        The Clinical Trial Selector is available to:
-        <ul>
-          <li>Veterans who have obtained care at VA medical facilities</li>
-          <li>Medicare beneficiaries </li>
-        </ul>
-      </p>
-      <h2>What do I need to sign on and use the tool?</h2>
-      <p>
-        Veterans need one of <strong>these free accounts</strong>:
-        <ul>
-          <li>An Advanced or Premium <strong>My HealtheVet</strong> account, <strong>or</strong>:</li>
-          <li>A Premium <strong>DS Logon account</strong> (used for eBenefits and milConnect), <strong>or</strong>:</li>
-          <li>A verified <strong>ID.me</strong> account that you can create here </li>
-        </ul>
-        Medicare beneficiaries need:
-        <ul><li>A <strong>Medicare.gov</strong> free account</li></ul>
-      </p>
-      <h2>Do I have to enter all of my information in order to find eligible trials?</h2>
-      <p>
-        No. After you log into your account and provide permission,
-        the tool will automatically retrieve the necessary information in your records in order to generate a list of
-        eligible trials for which you may be eligible.
-      </p>
-      <h2>What information from my records is used to search for trials?</h2>
-      <p>
-        We retrieve the following information from your records:
-        <ul>
-          <li>A list of medical conditions (diagnoses)</li>
-          <li>Results of specific laboratory tests</li>
-          <li>Your age and gender</li>
-          <li>Your Zip Code (to provide distance to trials)</li>
-        </ul>
-      </p>
-      <h2>Can I enroll in trials through this tool?</h2>
-      <p>
-        The Clinical Trial Selector provides a list of <strong>possible</strong> trials
-        that you <strong>may</strong> be eligible for.
-        Due to a variety of factors, you may not actually be eligible to be enrolled in some of the trials returned by
-        the tool. It is meant to provide an initial list
-        for consideration between you and your doctor.
-      </p>
-      <p>
-        <strong>
-          Please consult with your doctor directly regarding any trials or information
-          you may be provided in this tool.  This tool is not meant to provide medical advice.
-        </strong>
-      </p>
-      <h2>Do you store or share my medical information?</h2>
-      <p>
-        No. We do <strong>not</strong> store any of your information.
-        The data we obtain from your records with your permission is used only once, without any 
-        identifying characteristics such as name or id numbers.  The tool connects to a database of
-        clinical trials maintainted by the U.S. National Cancer Institute, and we only provide
-        a list of medical conditions, age, and gender, without identifying the patient, to obtain a list of
-        possible trials. 
-      </p>
-      <p>
-        After you log out or finish using the tool, <strong>nothing</strong> is kept on our servers.
-        Whenever you wish to return and perform another search you must log in again using your
-        VA and/or Medicare account.
-      </p>
-      <h2>I do not wish to share my information. Can I use this tool?</h2>
-      <p>
-        When you log in with your VA and/or CMS account, you will be asked for permission to share your
-        data with the Clinical Trial Selector . If you choose not to allow for your data to be shared,
-        or only share your medical information (but not your age and gender)
-        we will not have the information necessary to perform a trial search and thus you will not be
-        able to use the tool. 
-      </p>
-      <p>
-        For more information on how we use your information, please read our
-        <a target="_blank" href="{{ url_for('privacy_policy') }}">privacy policy</a>.
-      </p>
-    </div>
-  {% elif trials_selection %}
-    <div class="tab-pane active" id="trials">
-      {% if ns.combined and ns.combined.loaded %}
-        <strong>
-          There are {{ ns.combined.numTrials }} trials for {{ ns.combined.num_conditions_with_trials }} condition{{'s' if ns.combined.num_conditions_with_trials > 1 else ''}}:
-        </strong>
-            <table class="vads-u-margin--0">
-                <thead>
-                    <tr>
-                        <th>Trial Id</th>
-                        <th>Title</th>
-                        {% if ns.combined.filtered %}
-                            <th>Eligibility Criteria</th>
-                        {% endif %}
-                    </tr>
-                </thead>
+<div class="tab-content">
+	{% if welcome_selection %}
+	<div class="tab-pane active" id="welcome">
+		<h1>Welcome to the Clinical Trial Selector</h1>
+		<p class="va-introtext">This Clinical Trial Selector tool can help you find trials you may be eligible for based on your medical conditions.
+		</p>
+		<p class="va-introtext">
+			After logging in to either the VA or CMS portals, the tool will securely use information in your records
+			to search for eligible trials.
+		</p>
+		<div class="usa-alert usa-alert-warning">
+			<div class="usa-alert-body">
+				<h3 class="usa-alert-heading">Our <a target="_blank" href="{{ url_for('privacy_policy')}}">privacy policy</a> has changed!</h3>
+				<p>
+					Changes include:
+					<ul>
+						<li>How we announce changes to our policy</li>
+					</ul>
+				</p>
+				<p>For further details please read the full document <a target="_blank" href="{{ url_for('privacy_policy')}}">here</a>.</p>
+			</div>
+		</div>
+		<h2>Who can use this tool?</h2>
+		<p>
+			The Clinical Trial Selector is available to:
+			<ul>
+				<li>Veterans who have obtained care at VA medical facilities</li>
+				<li>Medicare beneficiaries </li>
+			</ul>
+		</p>
+		<h2>What do I need to sign on and use the tool?</h2>
+		<p>
+			Veterans need one of <strong>these free accounts</strong>:
+			<ul>
+				<li>An Advanced or Premium <strong>My HealtheVet</strong> account, <strong>or</strong>:</li>
+				<li>A Premium <strong>DS Logon account</strong> (used for eBenefits and milConnect), <strong>or</strong>:</li>
+				<li>A verified <strong>ID.me</strong> account that you can create here </li>
+			</ul>
+			Medicare beneficiaries need:
+			<ul>
+				<li>A <strong>Medicare.gov</strong> free account</li>
+			</ul>
+		</p>
+		<h2>Do I have to enter all of my information in order to find eligible trials?</h2>
+		<p>
+			No. After you log into your account and provide permission,
+			the tool will automatically retrieve the necessary information in your records in order to generate a list of
+			eligible trials for which you may be eligible.
+		</p>
+		<h2>What information from my records is used to search for trials?</h2>
+		<p>
+			We retrieve the following information from your records:
+			<ul>
+				<li>A list of medical conditions (diagnoses)</li>
+				<li>Results of specific laboratory tests</li>
+				<li>Your age and gender</li>
+				<li>Your Zip Code (to provide distance to trials)</li>
+			</ul>
+		</p>
+		<h2>Can I enroll in trials through this tool?</h2>
+		<p>
+			The Clinical Trial Selector provides a list of <strong>possible</strong> trials
+			that you <strong>may</strong> be eligible for.
+			Due to a variety of factors, you may not actually be eligible to be enrolled in some of the trials returned by
+			the tool. It is meant to provide an initial list
+			for consideration between you and your doctor.
+		</p>
+		<p>
+			<strong>
+				Please consult with your doctor directly regarding any trials or information
+				you may be provided in this tool. This tool is not meant to provide medical advice.
+			</strong>
+		</p>
+		<h2>Do you store or share my medical information?</h2>
+		<p>
+			No. We do <strong>not</strong> store any of your information.
+			The data we obtain from your records with your permission is used only once, without any
+			identifying characteristics such as name or id numbers. The tool connects to a database of
+			clinical trials maintainted by the U.S. National Cancer Institute, and we only provide
+			a list of medical conditions, age, and gender, without identifying the patient, to obtain a list of
+			possible trials.
+		</p>
+		<p>
+			After you log out or finish using the tool, <strong>nothing</strong> is kept on our servers.
+			Whenever you wish to return and perform another search you must log in again using your
+			VA and/or Medicare account.
+		</p>
+		<h2>I do not wish to share my information. Can I use this tool?</h2>
+		<p>
+			When you log in with your VA and/or CMS account, you will be asked for permission to share your
+			data with the Clinical Trial Selector . If you choose not to allow for your data to be shared,
+			or only share your medical information (but not your age and gender)
+			we will not have the information necessary to perform a trial search and thus you will not be
+			able to use the tool.
+		</p>
+		<p>
+			For more information on how we use your information, please read our
+			<a target="_blank" href="{{ url_for('privacy_policy') }}">privacy policy</a>.
+		</p>
+	</div>
+	{% elif trials_selection %}
+	<div class="tab-pane active" id="trials">
+		{% if ns.combined and ns.combined.loaded %}
+		<strong>
+			There are {{ ns.combined.numTrials }} trials for {{ ns.combined.num_conditions_with_trials }} condition{{'s' if ns.combined.num_conditions_with_trials > 1 else ''}}:
+		</strong>
+		<table class="vads-u-margin--0">
+			<thead>
+				<tr>
+					<th>Trial Id</th>
+					<th>Title</th>
+					{% if ns.combined.filtered %}
+					<th>Eligibility Criteria</th>
+					{% endif %}
+				</tr>
+			</thead>
 
-                {% for code in ns.combined.trials_by_ncit %}
-                    <tbody class="usa-accordion">
-                        <tr>
-                            <td colspan="4" class="page-header">
-                                <button class="usa-accordion-button" aria-expanded="false" aria-controls="{{ code['ncit']['ncit'] }}"> Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button>
-                          </td>
-                            <!-- <td colspan="4" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button> </td>-->
-                        </tr>
-                    </tbody>
-                    <tbody id = "{{ code['ncit']['ncit'] }}" class="usa-accordion-content">
-                        {% for trial in code["trials"] %}
-                        <tr>
-                                <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
-                                <td>{{ trial.title }}</td>
-                                <td>
-                                  {% if trial.filter_condition %}
-                                    {% for condition, include in trial.filter_condition %}
-                                        {{condition}}
-                                    {% endfor %}
-                                  {% endif %}
-                                </td>
-                        </tr>
-                        {% endfor %}
-                        </tbody>
-                {% endfor %}
-            </table>
-      {% else %}
-        <form action="{{ url_for('getInfo') }}" method="POST" class="cts-launch-progress-bar">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          <button class="usa-button" type="submit">Find Clinical Trials</button>
-        </form>
+			{% for code in ns.combined.trials_by_ncit %}
+			<tbody class="usa-accordion">
+				<tr>
+					<td colspan="4" class="page-header">
+						<button class="usa-accordion-button" aria-expanded="false" aria-controls="{{ code['ncit']['ncit'] }}"> Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button>
+					</td>
+					<!-- <td colspan="4" class="page-header"><button type="button" class="tbtn"><i class="fa fa-plus-circle"></i>   Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button> </td>-->
+				</tr>
+			</tbody>
+			<tbody id="{{ code['ncit']['ncit'] }}" class="usa-accordion-content">
+				{% for trial in code["trials"] %}
+				<tr>
+					<td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
+					<td>{{ trial.title }}</td>
+					<td>
+						{% if trial.filter_condition %}
+						{% for condition, include in trial.filter_condition %}
+						{{condition}}
+						{% endfor %}
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+			{% endfor %}
+		</table>
+		{% else %}
+		<form action="{{ url_for('getInfo') }}" method="POST" class="cts-launch-progress-bar">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+			<button class="usa-button" type="submit">Find Clinical Trials</button>
+		</form>
 
-        <!-- <a class="usa-button cts-launch-progress-bar" href="/getInfo">Find Clinical Trials</a> -->
-            {{progress_bar()}}
-      {% endif %}
-    </div>
-  {% elif excluded_selection %}
-    <div class="tab-pane" id="Excluded">
-      {% if session["excluded"] %}
-        <strong>
-          There are {{ session['excluded_num_trials'] }} excluded trials for {{ session['excluded_num_conditions_with_trials'] }} condition{{ 's' if session['excluded_num_conditions_with_trials'] > 1 else ''}}:
-        </strong>
-        <table class="vads-u-margin--0">
-          <thead>
-              <tr>
-                  <th>Trial Id</th>
-                  <th>Title</th>
-                  {% if ns.combined.filtered %}
-                      <th>Eligibility Criteria</th>
-                  {% endif %}
-              </tr>
-          </thead>
-            {% for code in session["excluded"] %}
-              <tbody class="usa-accordion">
-                <tr>
-                  <td colspan="4" class="page-header">
-                    <button class="usa-accordion-button" aria-expanded="false" aria-controls="{{ [loop.index0] }}"> Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button>
-                  </td>
-                </tr>
-              </tbody>
-                <tbody id = "{{ [loop.index0] }}" class="usa-accordion-content">
-                  {% for trial in code["trials"] %}
-                    <tr>
-                      <td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
-                      <td>{{ trial.title }}</td>
-                        {% if trial.filter_condition %}
-                          <td>
-                            {% for condition, include in trial.filter_condition %}
-                              {% if include %}
-                                {{ condition }}
-                              {% else %}
-                                <strong>{{condition}}</strong>
-                              {% endif %}
-                            {% endfor %}
-                        </td>
-                        {% endif %}
-                    </tr>
-                  {% endfor %}
-              </tbody>
-            {% endfor %}
-        </table>
-      {% endif %}
-    </div>
-  {% elif conditions_selection %}
-    <div class="tab-pane" id="conditions">
-      <strong>
-        The following conditions did not match to any eligible trials:
-      </strong>
-      <table class="vads-u-margin--0">
-          <thead>
-              <tr>
-                  <th>Condition</th>
-                  <th>Code</th>
-              </tr>
-          </thead>
-          <tbody>
-              {% if ns.combined %}
-                  {% for code in ns.combined.ncit_without_trials %}
-                      <tr>
-                          <td class="page-header">{{ code["ncit_desc"] }}</td>
-                          <td class="page-header">{{ code["ncit"] }}</td>
-                      </tr>
-                  {% endfor %}
-              {% endif %}
-          </tbody>
-      </table>
-    </div>
-  {% elif matches_selection %}
-    <div class="tab-pane" id="matches">
-      <strong>
-        The following codes were converted to NCIT codes: 
-      </strong>
-        <table class="vads-u-margin--0">
-            <thead>
-                <tr>
-                    <th>Original Description</th>
-                    <th>Original Code</th>
-                    <th>Codeset</th>
-                    <th>New Description</th>
-                    <th>NCIT Code</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if ns.combined %}
-                  {% for orig_code,match in ns.combined.code_matches.items() %}
-                    {% set condition = ns.combined.conditions_by_code[orig_code] %}
-                    <tr>
-                      <td class="page-header">{{ condition['description'] }}</td>
-                      <td class="page-header">{{ orig_code }}</td>
-                      <td class="page-header">{{ condition["codeset"] }}</td>
-                      <td class="page-header">{{ match["description"] }}</td>
-                      <td class="page-header">{{ match["match"] }}</td>
-                    </tr>
-                  {% endfor %}
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-  {% elif nomatches_selection %}
-    <div class="tab-pane" id="nomatches">
-      <strong>
-        The following codes had no corresponding NCIT code in UMLS: 
-      </strong>
-        <table class="vads-u-margin--0">
-            <thead>
-                <tr>
-                    <th>Original Code</th>
-                    <th>Codeset</th>
-                    <th>Original Condition</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if ns.combined %}
-                    {% for orig_code in ns.combined.no_matches %}
-                      {% set condition = ns.combined.conditions_by_code[orig_code] %}
-                      <tr>
-                          <td class="page-header">{{ orig_code }}</td>
-                          <td class="page-header">{{ condition['codeset'] }}</td>
-                          <td class="page-header">{{ condition['description'] }}</td>
-                      </tr>
-                    {% endfor %}
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-  {% elif searchcondition_selection %}
-    <div class="tab-pane">
-      <form method=post class="cts-launch-progress-bar" action="/search_condition">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-          <label for="description" class="control-label">Condition:</label>
-          <input class="text" name="description" id="description">
-        </div>
-        <button type="submit">Add Condition by Name</button>
-      </form>
-      <form method=post class="cts-launch-progress-bar" action="/add_condition_code">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-          <label for="newCode" class="control-label">NCI Condition Code:</label>
-          <input class="text" name="newCode" id="newCode">
-        </div>
-        <button type="submit">Add Condition by Code</button>
-      </form>
-    </div>
-  {% elif addcondition_selection %}
-    <div class="tab-pane">
-      <form method=post class="cts-launch-progress-bar" action="/add_condition_form">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-          <h1>Which Conditions do you want to add?</h1>
-          {% for obj in objs %}
-            <input type="checkbox" name="{{ obj['code'] }}" id="{{ obj['code'] }}">
-            <label for="{{ obj['code'] }}" class="control-label">{{ obj['desc'] }}</label>
-          {% endfor %}
-        </div>
-        <button type="submit">Add Conditions</button>
-      </form>
-    </div>
-  {% endif %}
-  </div>
+		<!-- <a class="usa-button cts-launch-progress-bar" href="/getInfo">Find Clinical Trials</a> -->
+		{{progress_bar()}}
+		{% endif %}
+	</div>
+	{% elif excluded_selection %}
+	<div class="tab-pane" id="Excluded">
+		{% if session["excluded"] %}
+		<strong>
+			There are {{ session['excluded_num_trials'] }} excluded trials for {{ session['excluded_num_conditions_with_trials'] }} condition{{ 's' if session['excluded_num_conditions_with_trials'] > 1 else ''}}:
+		</strong>
+		<table class="vads-u-margin--0">
+			<thead>
+				<tr>
+					<th>Trial Id</th>
+					<th>Title</th>
+					{% if ns.combined.filtered %}
+					<th>Eligibility Criteria</th>
+					{% endif %}
+				</tr>
+			</thead>
+			{% for code in session["excluded"] %}
+			<tbody class="usa-accordion">
+				<tr>
+					<td colspan="4" class="page-header">
+						<button class="usa-accordion-button" aria-expanded="false" aria-controls="{{ [loop.index0] }}"> Trials for condition: {{ code["ncit"]["ncit_desc"] }} ({{ code["ncit"]["ncit"] }})</button>
+					</td>
+				</tr>
+			</tbody>
+			<tbody id="{{ [loop.index0] }}" class="usa-accordion-content">
+				{% for trial in code["trials"] %}
+				<tr>
+					<td><a href="/trial?id={{ trial.id }}">{{ trial.id }}</a></td>
+					<td>{{ trial.title }}</td>
+					{% if trial.filter_condition %}
+					<td>
+						{% for condition, include in trial.filter_condition %}
+						{% if include %}
+						{{ condition }}
+						{% else %}
+						<strong>{{condition}}</strong>
+						{% endif %}
+						{% endfor %}
+					</td>
+					{% endif %}
+				</tr>
+				{% endfor %}
+			</tbody>
+			{% endfor %}
+		</table>
+		{% endif %}
+	</div>
+	{% elif conditions_selection %}
+	<div class="tab-pane" id="conditions">
+		<strong>
+			The following conditions did not match to any eligible trials:
+		</strong>
+		<table class="vads-u-margin--0">
+			<thead>
+				<tr>
+					<th>Condition</th>
+					<th>Code</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% if ns.combined %}
+				{% for code in ns.combined.ncit_without_trials %}
+				<tr>
+					<td class="page-header">{{ code["ncit_desc"] }}</td>
+					<td class="page-header">{{ code["ncit"] }}</td>
+				</tr>
+				{% endfor %}
+				{% endif %}
+			</tbody>
+		</table>
+	</div>
+	{% elif matches_selection %}
+	<div class="tab-pane" id="matches">
+		<strong>
+			The following codes were converted to NCIT codes:
+		</strong>
+		<table class="vads-u-margin--0">
+			<thead>
+				<tr>
+					<th>Original Description</th>
+					<th>Original Code</th>
+					<th>Codeset</th>
+					<th>New Description</th>
+					<th>NCIT Code</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% if ns.combined %}
+				{% for orig_code,match in ns.combined.code_matches.items() %}
+				{% set condition = ns.combined.conditions_by_code[orig_code] %}
+				<tr>
+					<td class="page-header">{{ condition['description'] }}</td>
+					<td class="page-header">{{ orig_code }}</td>
+					<td class="page-header">{{ condition["codeset"] }}</td>
+					<td class="page-header">{{ match["description"] }}</td>
+					<td class="page-header">{{ match["match"] }}</td>
+				</tr>
+				{% endfor %}
+				{% endif %}
+			</tbody>
+		</table>
+	</div>
+	{% elif nomatches_selection %}
+	<div class="tab-pane" id="nomatches">
+		<strong>
+			The following codes had no corresponding NCIT code in UMLS:
+		</strong>
+		<table class="vads-u-margin--0">
+			<thead>
+				<tr>
+					<th>Original Code</th>
+					<th>Codeset</th>
+					<th>Original Condition</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% if ns.combined %}
+				{% for orig_code in ns.combined.no_matches %}
+				{% set condition = ns.combined.conditions_by_code[orig_code] %}
+				<tr>
+					<td class="page-header">{{ orig_code }}</td>
+					<td class="page-header">{{ condition['codeset'] }}</td>
+					<td class="page-header">{{ condition['description'] }}</td>
+				</tr>
+				{% endfor %}
+				{% endif %}
+			</tbody>
+		</table>
+	</div>
+	{% elif searchcondition_selection %}
+	<div class="tab-pane">
+		<form method=post class="cts-launch-progress-bar" action="/search_condition">
+			{{ form.hidden_tag() }}
+			<div class="form-group">
+				<label for="description" class="control-label">Condition:</label>
+				<input class="text" name="description" id="description">
+			</div>
+			<button type="submit">Add Condition by Name</button>
+		</form>
+		<form method=post class="cts-launch-progress-bar" action="/add_condition_code">
+			{{ form.hidden_tag() }}
+			<div class="form-group">
+				<label for="newCode" class="control-label">NCI Condition Code:</label>
+				<input class="text" name="newCode" id="newCode">
+			</div>
+			<button type="submit">Add Condition by Code</button>
+		</form>
+	</div>
+	{% elif addcondition_selection %}
+	<div class="tab-pane">
+		<form method=post class="cts-launch-progress-bar" action="/add_condition_form">
+			{{ form.hidden_tag() }}
+			<div class="form-group">
+				<h1>Which Conditions do you want to add?</h1>
+				{% for obj in objs %}
+				<input type="checkbox" name="{{ obj['code'] }}" id="{{ obj['code'] }}">
+				<label for="{{ obj['code'] }}" class="control-label">{{ obj['desc'] }}</label>
+				{% endfor %}
+			</div>
+			<button type="submit">Add Conditions</button>
+		</form>
+	</div>
+	{% endif %}
+</div>
 {% endblock %}
-
-
-
