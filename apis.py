@@ -44,6 +44,10 @@ class UmlsApi(Api):
         tik = self.auth.getst(self.tgt)
         params = {"targetSource": "NCI", "ticket": tik}
         route = "/crosswalk/current/source/"
+        if orig_code[-1] == '.':
+            logging.warn(f"Original Code = {orig_code}")
+            orig_code = orig_code[:-1]
+            logging.warn(f"New code = {orig_code}")
         url = f"{self.base_url}{route}{codeset}/{orig_code}"
         response = self._get_response(url, params=params)
         if response.status_code != 200:

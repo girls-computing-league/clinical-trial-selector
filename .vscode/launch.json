@@ -41,6 +41,23 @@
             ],
             "gevent": true,
             "jinja": true
+        },
+        {
+            "name": "Python: CTS WARN",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/application.py",
+            "env": {
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "0",
+                "RESOURCE_PATH": "${workspaceFolder}/parser_io/"
+            },
+            "args": [
+                "--log",
+                "WARN"
+            ],
+            "gevent": true,
+            "jinja": true
         }
     ]
 }
