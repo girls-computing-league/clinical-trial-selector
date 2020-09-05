@@ -7,5 +7,6 @@ class Zipcode:
         self.db = self.conn.cursor()
 
     def zip2geo(self, code):
-        self.db.execute("SELECT lat,long FROM zips WHERE zip=?", (code,))
+        zip = code if len(code)<=5 else code[:5]
+        self.db.execute("SELECT lat,long FROM zips WHERE zip=?", (zip,))
         return self.db.fetchone()
