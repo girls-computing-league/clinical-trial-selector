@@ -117,8 +117,9 @@ def getInfo():
     combined.load_test_results()
     socketio.emit(event_name, {"data": 95}, room=session.sid)
     socketio.emit('disconnect', {"data": 100}, room=session.sid)
-    logging.info(combined.va_patient().added_codes)
-    logging.info(combined.va_patient().codes_ncit)
+    if combined.va_patient():
+        logging.debug(combined.va_patient().added_codes)
+        logging.debug(combined.va_patient().codes_ncit)
     return redirect("/")
 
 @app.route('/trials')
