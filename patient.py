@@ -69,14 +69,23 @@ def find_trials(ncit_codes, gender="unknown", age=0):
     return trials
 
 def find_new_trails(ncit_code, url):
+    tries_left = 3
     search_text = ncit_code['ncit_desc']
-    logging.info('Calling clinicaltrials.gov api for ncit_code-' + ncit_code['ncit'] + ' and ncit desc -' + ncit_code['ncit_desc'] )
-    params = {'expr': search_text, 'min_rnk': 1, 'max_rnk': 100, 'fmt': 'json'} #get trials based on condition
-    response = req.get(url, params=params)
-    filter: list = []
-    #filter based on age/gender/demographic`s/make sure the trial is still valid
-    logging.info(f"Response code = {response.status_code}")
-    return response.json()
+    while tries_left>0:
+        logging.info('Calling clinicaltrials.gov api for ncit_code-' + ncit_code['ncit'] + ' and ncit desc -' + ncit_code['ncit_desc'] )
+        params = {'expr': search_text, 'min_rnk': 1, 'max_rnk': 100, 'fmt': 'json'} #get trials based on condition
+        response = req.get(url, params=params)
+        filter: list = []
+        #filter based on age/gender/demographic`s/make sure the trial is still valid
+        if response.status_code == 200:
+            return response.json()
+
+        logging.warn(f"Response code = {response.status_code}")
+        logging.warn(f"Response text = {response.text}")
+        tries_left -= 1
+        logging.warn(f"Tries left = {tries_left}")
+        time.sleep(5)
+    return {}
 
 # def find_all_codes(disease_list):
 #     codes: list = []
