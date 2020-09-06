@@ -15,6 +15,7 @@ from filter import FacebookFilter
 from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
+from gevent import spawn, iwait
 import os
 import subprocess
 import json
@@ -134,9 +135,15 @@ class Patient(metaclass=ABCMeta):
         #         self.trials.append(trial)
         # logging.info("Trials found")
 
+        code_results = {}
         for ncit_code in self.codes_ncit:
+            code_results[spawn(pt.find_new_trails, ncit_code, app.config['ADDITIONAL_TRIALS_URL'])] = ncit_code
+
+        for code_result in iwait(code_results):
+            ncit_code = code_results[code_result]
+            logging.info(f"Received trials for code {code_results[code_result]}")
             logging.debug(ncit_code)
-            new_trails_json = pt.find_new_trails(ncit_code)
+            new_trails_json = code_result.value
             nt_max_age=self.age+1
             nt_min_age=self.age-1
             nt_gender="Unknown"
@@ -401,7 +408,7 @@ class CombinedPatient:
             logging.warn(f"Trial {trial.id} has {len(trial.sites)} sites")
             for site in trial.sites:
                 coordinates = site.get("org_coordinates", 0)
-                logging.warn(f"Coordinates: {coordinates}")
+                logging.debug(f"Coordinates: {coordinates}")
                 if coordinates == 0:
                     site_latlong = db.zip2geo(site["org_postal_code"][:5])
                     logging.debug(f"site lat-long (from zip): {site_latlong}")
@@ -409,10 +416,10 @@ class CombinedPatient:
                     site_latlong = (coordinates["lat"], coordinates["lon"])
                     logging.debug(f"site lat-long (from coords): {site_latlong}")
                 if (site_latlong is None) or (pat_latlong is None):
-                    logging.warn(f"no distance for site at trial={trial.id}")
-                    return
-                site["distance"] = distance(pat_latlong, site_latlong)
-                logging.debug(f"Distance={site['distance']} for Trial={trial.id}")
+                    logging.warn(f"no distance for site {site['org_name']} at trial={trial.id}")
+                else:
+                    site["distance"] = distance(pat_latlong, site_latlong)
+                    logging.debug(f"Distance={site['distance']} for Trial={trial.id}")
 
     def load_data(self):
         self.clear_collections()
