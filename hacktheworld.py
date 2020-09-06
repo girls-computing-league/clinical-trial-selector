@@ -15,7 +15,7 @@ from filter import FacebookFilter
 from fhir import Observation
 from labtests import labs, LabTest
 from datetime import datetime
-from gevent import spawn, iwait
+from gevent import spawn, iwait, pool
 import os
 import subprocess
 import json
@@ -136,8 +136,10 @@ class Patient(metaclass=ABCMeta):
         # logging.info("Trials found")
 
         code_results = {}
+        gpool = pool.Pool(5)
         for ncit_code in self.codes_ncit:
-            code_results[spawn(pt.find_new_trails, ncit_code, app.config['ADDITIONAL_TRIALS_URL'])] = ncit_code
+            gpool.wait_available()
+            code_results[gpool.spawn(pt.find_new_trails, ncit_code, app.config['ADDITIONAL_TRIALS_URL'])] = ncit_code
 
         for code_result in iwait(code_results):
             ncit_code = code_results[code_result]
@@ -432,7 +434,7 @@ class CombinedPatient:
                     site_latlong = db.zip2geo(site.get("LocationZip", "00000")[:5])
                     logging.debug(f"site lat-long (from zip): {site_latlong}")
                     if (site_latlong is None) or (pat_latlong is None):
-                        logging.warn(f"no distance for site {site['org_name']} at trial={trial.id}")
+                        logging.warn(f"no distance for site {site.get('LocationFacility', 'unknown')} at trial={trial.id}")
                     else:
                         site["distance"] = distance(pat_latlong, site_latlong)
                         logging.debug(f"Distance={site['distance']} for Trial={trial.id}")
