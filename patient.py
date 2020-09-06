@@ -75,6 +75,7 @@ def find_new_trails(ncit_code, url):
     response = req.get(url, params=params)
     filter: list = []
     #filter based on age/gender/demographic`s/make sure the trial is still valid
+    logging.info(f"Response code = {response.status_code}")
     return response.json()
 
 # def find_all_codes(disease_list):
