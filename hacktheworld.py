@@ -136,7 +136,7 @@ class Patient(metaclass=ABCMeta):
         # logging.info("Trials found")
 
         code_results = {}
-        gpool = pool.Pool(5)
+        gpool = pool.Pool(10)
         for ncit_code in self.codes_ncit:
             gpool.wait_available()
             code_results[gpool.spawn(pt.find_new_trails, ncit_code, app.config['ADDITIONAL_TRIALS_URL'])] = ncit_code
@@ -403,14 +403,14 @@ class CombinedPatient:
         else:
             return
         pat_latlong = db.zip2geo(patzip)
-        logging.warn(f"Zipcode {patzip}, pat_latlong: {pat_latlong}")
+        logging.debug(f"Zipcode {patzip}, pat_latlong: {pat_latlong}")
 
-        logging.warn(f"Checking distances for {len(self.trials)} trials")
+        logging.debug(f"Checking distances for {len(self.trials)} trials")
         for trial in self.trials:
             if trial.sites is None:
-                logging.warn(f"Site list empty for trial {trial.id}")
+                logging.debug(f"Site list empty for trial {trial.id}")
             else:
-                logging.warn(f"Trial {trial.id} has {len(trial.sites)} sites")
+                logging.debug(f"Trial {trial.id} has {len(trial.sites)} sites")
                 for site in trial.sites:
                     coordinates = site.get("org_coordinates", 0)
                     logging.debug(f"Coordinates: {coordinates}")
@@ -427,14 +427,14 @@ class CombinedPatient:
                         logging.debug(f"Distance={site['distance']} for Trial={trial.id}")
 
             if trial.locations is None:
-                logging.warn(f"Location list empty for trial {trial.id}")
+                logging.debug(f"Location list empty for trial {trial.id}")
             else:
-                logging.warn(f"Trial {trial.id} has {len(trial.locations)} locations")
+                logging.debug(f"Trial {trial.id} has {len(trial.locations)} locations")
                 for site in trial.locations:
                     site_latlong = db.zip2geo(site.get("LocationZip", "00000")[:5])
                     logging.debug(f"site lat-long (from zip): {site_latlong}")
                     if (site_latlong is None) or (pat_latlong is None):
-                        logging.warn(f"no distance for site {site.get('LocationFacility', 'unknown')} at trial={trial.id}")
+                        logging.debug(f"no distance for site {site.get('LocationFacility', 'unknown')} at trial={trial.id}")
                     else:
                         site["distance"] = distance(pat_latlong, site_latlong)
                         logging.debug(f"Distance={site['distance']} for Trial={trial.id}")
