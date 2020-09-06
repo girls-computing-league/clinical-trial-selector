@@ -328,7 +328,7 @@ class TrialV2(Trial):
             if self.trial_json['EligibilityModule'].get('EligibilityCriteria') is not None else ""
         self.measures = [measure for types in ['Primary', 'Secondary', 'Other'] for measure in self.get_measures(types)]
         self.pi = trial_json.get('SponsorCollaboratorsModule', {}).get('ResponsibleParty', {}).get('ResponsiblePartyInvestigatorFullName', 'N/A')
-        self.sites = []
+        self.sites: list = []
         self.locations = trial_json.get('ContactsLocationsModule', {}).get('LocationList',{}).get('Location', [])
         self.population = trial_json['EligibilityModule'].get('StudyPopulation')
         self.diseases = []
@@ -407,23 +407,35 @@ class CombinedPatient:
         for trial in self.trials:
             if not trial.sites:
                 logging.warn(f"Site list empty for trial {trial.id}")
-                continue
+            else:
+                logging.warn(f"Trial {trial.id} has {len(trial.sites)} sites")
+                for site in trial.sites:
+                    coordinates = site.get("org_coordinates", 0)
+                    logging.debug(f"Coordinates: {coordinates}")
+                    if coordinates == 0:
+                        site_latlong = db.zip2geo(site["org_postal_code"][:5])
+                        logging.debug(f"site lat-long (from zip): {site_latlong}")
+                    else:
+                        site_latlong = (coordinates["lat"], coordinates["lon"])
+                        logging.debug(f"site lat-long (from coords): {site_latlong}")
+                    if (site_latlong is None) or (pat_latlong is None):
+                        logging.warn(f"no distance for site {site['org_name']} at trial={trial.id}")
+                    else:
+                        site["distance"] = distance(pat_latlong, site_latlong)
+                        logging.debug(f"Distance={site['distance']} for Trial={trial.id}")
 
-            logging.warn(f"Trial {trial.id} has {len(trial.sites)} sites")
-            for site in trial.sites:
-                coordinates = site.get("org_coordinates", 0)
-                logging.debug(f"Coordinates: {coordinates}")
-                if coordinates == 0:
-                    site_latlong = db.zip2geo(site["org_postal_code"][:5])
+            if not trial.locations:
+                logging.warn(f"Location list empty for trial {trial.id}")
+            else:
+                logging.warn(f"Trial {trial.id} has {len(trial.locations)} locations")
+                for site in trial.locations:
+                    site_latlong = db.zip2geo(site["LocationZip"][:5])
                     logging.debug(f"site lat-long (from zip): {site_latlong}")
-                else:
-                    site_latlong = (coordinates["lat"], coordinates["lon"])
-                    logging.debug(f"site lat-long (from coords): {site_latlong}")
-                if (site_latlong is None) or (pat_latlong is None):
-                    logging.warn(f"no distance for site {site['org_name']} at trial={trial.id}")
-                else:
-                    site["distance"] = distance(pat_latlong, site_latlong)
-                    logging.debug(f"Distance={site['distance']} for Trial={trial.id}")
+                    if (site_latlong is None) or (pat_latlong is None):
+                        logging.warn(f"no distance for site {site['org_name']} at trial={trial.id}")
+                    else:
+                        site["distance"] = distance(pat_latlong, site_latlong)
+                        logging.debug(f"Distance={site['distance']} for Trial={trial.id}")
 
     def load_data(self):
         self.clear_collections()

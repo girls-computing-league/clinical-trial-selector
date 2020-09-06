@@ -69,7 +69,7 @@ def find_trials(ncit_codes, gender="unknown", age=0):
     return trials
 
 def find_new_trails(ncit_code, url):
-    tries_left = 3
+    tries_left = 5
     search_text = ncit_code['ncit_desc']
     while tries_left>0:
         logging.info('Calling clinicaltrials.gov api for ncit_code-' + ncit_code['ncit'] + ' and ncit desc -' + ncit_code['ncit_desc'] )
