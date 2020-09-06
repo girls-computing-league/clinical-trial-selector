@@ -149,6 +149,22 @@
                                         </tr>
                             </tbody>
                         {% endfor %}
+                        {% for location in ns2.trial.locations %}
+                            <tbody class="usa-accordion">
+                                <tr>
+                                    <td colspan="4" class="page-header">
+                                        <button class="usa-accordion-button" aria-expanded="false" aria-controls="{{location['LocationZip']}}{{ loop.index0 }}"> {{location["LocationFacility"]}} </button>
+                                   </td>
+                                </tr>
+                                        <tr id="{{location['LocationZip']}}{{ loop.index0 }}" class="usa-accordion-content">
+                                            <td> 
+                                                {{location["LocationCity"]}}, {{location["LocationState"]}} {{location["LocationZip"]}} </td>
+                                            <td></td>
+                                            <td>{{location['LocationStatus']}}</td>
+                                            <td>{% if location["distance"] is defined %}{{ location["distance"]|round|int }}{% endif %}</td>
+                                        </tr>
+                            </tbody>
+                        {% endfor %}
                     </table>
         
         </div><!--/tab-pane-->

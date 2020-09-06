@@ -284,6 +284,7 @@ class Trial:
         self.measures = trial_json['outcome_measures']
         self.pi = trial_json['principal_investigator']
         self.sites = trial_json['sites']
+        self.locations: list = []
         self.population = trial_json['study_population_description']
         self.diseases = trial_json['diseases']
         self.filter_condition: list = []
@@ -321,6 +322,7 @@ class TrialV2(Trial):
         self.measures = [measure for types in ['Primary', 'Secondary', 'Other'] for measure in self.get_measures(types)]
         self.pi = trial_json.get('SponsorCollaboratorsModule', {}).get('ResponsibleParty', {}).get('ResponsiblePartyInvestigatorFullName', 'N/A')
         self.sites = []
+        self.locations = trial_json.get('ContactsLocationsModule', {}).get('LocationList',{}).get('Location', [])
         self.population = trial_json['EligibilityModule'].get('StudyPopulation')
         self.diseases = []
         self.filter_condition = []
@@ -385,7 +387,12 @@ class CombinedPatient:
 
     def calculate_distances(self):
         db = Zipcode()
-        patzip = self.from_source['va'].zipcode
+        if self.from_source.get('va'):
+            patzip = self.from_source['va'].zipcode[:5]
+        elif self.from_source.get('cms'):
+            patzip = self.from_source['cms'].zipcode[:5]
+        else:
+            return
         pat_latlong = db.zip2geo(patzip)
 
         for trial in self.trials:
@@ -404,8 +411,8 @@ class CombinedPatient:
         for source, patient in self.from_source.items():
             self.append_patient_data(patient)
             if source=='va':
-                self.calculate_distances()
                 self.results = patient.results
+        self.calculate_distances()
         for code in self.ncit_codes:
             trials = []
             for trial in self.trials:
