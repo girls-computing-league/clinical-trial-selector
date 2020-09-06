@@ -405,6 +405,10 @@ class CombinedPatient:
 
         logging.warn(f"Checking distances for {len(self.trials)} trials")
         for trial in self.trials:
+            if not trial.sites:
+                logging.warn(f"Site list empty for trial {trial.id}")
+                break
+
             logging.warn(f"Trial {trial.id} has {len(trial.sites)} sites")
             for site in trial.sites:
                 coordinates = site.get("org_coordinates", 0)
