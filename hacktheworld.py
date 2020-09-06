@@ -399,13 +399,18 @@ class CombinedPatient:
         for trial in self.trials:
             for site in trial.sites:
                 coordinates = site.get("org_coordinates", 0)
+                logging.warn(f"Coordinates: {coordinates}")
                 if coordinates == 0:
                     site_latlong = db.zip2geo(site["org_postal_code"][:5])
+                    logging.warn(f"site lat-long (from zip): {site_latlong}")
                 else:
                     site_latlong = (coordinates["lat"], coordinates["lon"])
+                    logging.warn(f"site lat-long (from coords): {site_latlong}")
                 if (site_latlong is None) or (pat_latlong is None):
+                    logging.warn(f"no distance for trial={trial.id}")
                     return
                 site["distance"] = distance(pat_latlong, site_latlong)
+                logging.warn(f"Distance={site['distance']} for Trial={trial.id}")
 
     def load_data(self):
         self.clear_collections()
