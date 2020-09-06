@@ -158,7 +158,7 @@
                                 </tr>
                                         <tr id="{{location['LocationZip']}}{{ loop.index0 }}" class="usa-accordion-content">
                                             <td> 
-                                                {{location["LocationCity"]}}, {{location["LocationState"]}} {{location["LocationZip"]}} </td>
+                                                {{location["LocationCity"]}}, {{location["LocationState"]}} {{location["LocationZip"]}} {{location['LocationCountry']}}</td>
                                             <td></td>
                                             <td>{{location['LocationStatus']}}</td>
                                             <td>{% if location["distance"] is defined %}{{ location["distance"]|round|int }}{% endif %}</td>
