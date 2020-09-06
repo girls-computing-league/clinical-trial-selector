@@ -405,7 +405,7 @@ class CombinedPatient:
 
         logging.warn(f"Checking distances for {len(self.trials)} trials")
         for trial in self.trials:
-            if not trial.sites:
+            if trial.sites is None:
                 logging.warn(f"Site list empty for trial {trial.id}")
             else:
                 logging.warn(f"Trial {trial.id} has {len(trial.sites)} sites")
@@ -424,12 +424,12 @@ class CombinedPatient:
                         site["distance"] = distance(pat_latlong, site_latlong)
                         logging.debug(f"Distance={site['distance']} for Trial={trial.id}")
 
-            if not trial.locations:
+            if trial.locations is None:
                 logging.warn(f"Location list empty for trial {trial.id}")
             else:
                 logging.warn(f"Trial {trial.id} has {len(trial.locations)} locations")
                 for site in trial.locations:
-                    site_latlong = db.zip2geo(site["LocationZip"][:5])
+                    site_latlong = db.zip2geo(site.get("LocationZip", "00000")[:5])
                     logging.debug(f"site lat-long (from zip): {site_latlong}")
                     if (site_latlong is None) or (pat_latlong is None):
                         logging.warn(f"no distance for site {site['org_name']} at trial={trial.id}")
