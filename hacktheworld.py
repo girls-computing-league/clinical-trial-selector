@@ -407,7 +407,7 @@ class CombinedPatient:
         for trial in self.trials:
             if not trial.sites:
                 logging.warn(f"Site list empty for trial {trial.id}")
-                break
+                continue
 
             logging.warn(f"Trial {trial.id} has {len(trial.sites)} sites")
             for site in trial.sites:
