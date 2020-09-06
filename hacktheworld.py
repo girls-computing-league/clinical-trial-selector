@@ -394,7 +394,7 @@ class CombinedPatient:
         else:
             return
         pat_latlong = db.zip2geo(patzip)
-        logging.warn(f"Zipode {patzip}, pat_latlong: {pat_latlong}")
+        logging.warn(f"Zipcode {patzip}, pat_latlong: {pat_latlong}")
 
         for trial in self.trials:
             for site in trial.sites:
