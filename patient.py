@@ -70,7 +70,7 @@ def find_trials(ncit_codes, gender="unknown", age=0):
 
 def find_new_trails(ncit_code, url):
     tries_left = 5
-    search_text = ncit_code['ncit_desc']
+    search_text = f"{ncit_code['ncit_desc']} AND SEARCH[Location](AREA[LocationCountry]United States AND AREA[LocationStatus]Recruiting)"
     while tries_left>0:
         logging.info('Calling clinicaltrials.gov api for ncit_code-' + ncit_code['ncit'] + ' and ncit desc -' + ncit_code['ncit_desc'] )
         params = {'expr': search_text, 'min_rnk': 1, 'max_rnk': 100, 'fmt': 'json'} #get trials based on condition
