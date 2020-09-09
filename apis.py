@@ -6,7 +6,7 @@ import fhir
 import jmespath as path
 import json
 import umls
-from gevent import spawn, iwait, Greenlet
+from gevent import spawn, iwait, Greenlet, pool
 import logging
 
 class Api():
@@ -195,6 +195,7 @@ class FhirApi(PatientApi):
         for resource in self.extraction_functions['resources'].search(bundle):
             yield resource
         if total>count:
+            gpool = pool.Pool(40)
             next_url = self.extraction_functions['next'].search(bundle)
             logging.info(f"Next url would be {next_url}")
             final_page = ((total-1) // count) + 1
@@ -203,7 +204,8 @@ class FhirApi(PatientApi):
                 page_param = self.page_parameter(page_num)
                 url_page = f"{url}{page_param}"
                 logging.info(f"Getting resource at {url_page}")
-                pages[spawn(self.get, url_page, params)] = url_page
+                gpool.wait_available()
+                pages[gpool.spawn(self.get, url_page, params)] = url_page
             if len(pages) == 0:
                 logging.warn("Unexpected issue, pages empty")
             else:

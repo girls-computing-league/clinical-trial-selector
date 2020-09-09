@@ -415,13 +415,15 @@ class CombinedPatient:
                     coordinates = site.get("org_coordinates", 0)
                     logging.debug(f"Coordinates: {coordinates}")
                     if coordinates == 0:
-                        site_latlong = db.zip2geo(site["org_postal_code"][:5])
+                        zipcode = site.get('org_postal_code', '')
+                        zipcode = '' if zipcode is None else zipcode
+                        site_latlong = db.zip2geo(zipcode[:5])
                         logging.debug(f"site lat-long (from zip): {site_latlong}")
                     else:
                         site_latlong = (coordinates["lat"], coordinates["lon"])
                         logging.debug(f"site lat-long (from coords): {site_latlong}")
                     if (site_latlong is None) or (pat_latlong is None):
-                        logging.warn(f"no distance for site {site['org_name']} at trial={trial.id}")
+                        logging.debug(f"no distance for site {site['org_name']} at trial={trial.id}")
                     else:
                         site["distance"] = distance(pat_latlong, site_latlong)
                         logging.debug(f"Distance={site['distance']} for Trial={trial.id}")
