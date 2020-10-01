@@ -799,6 +799,15 @@ class FacebookFilter:
                                     [str(value) for value in allowed_values])
                                 if float(lab_val) not in allowed_values:
                                     consists = False
+                             elif var_type == "nominal":
+                                bool = False
+                                for p in procedures:
+                                  if json_obj['term'] == p:
+                                    bool = True
+                                if json_obj['eligibility_type'] == 'exclusion' and bool:
+                                  consists = False
+                                elif json_obj['eligibility_type'] == 'inclusion' and not bool:
+                                  consists = True
 
                     if not found:
                         continue

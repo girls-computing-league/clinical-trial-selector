@@ -192,6 +192,7 @@ class Patient(metaclass=ABCMeta):
         self.load_conditions()
         self.load_codes()
         self.find_trials()
+        self.load_procedures()
         return
 
 class VAPatient(Patient):
@@ -213,6 +214,9 @@ class VAPatient(Patient):
         self.conditions = [cond['description'] for cond in self.conditions_by_code.values()]
         self.codes_snomed = list(self.conditions_by_code.keys())
         logging.info("Conditions loaded")
+    
+    def load_procedures(self) -> None:
+        self.procedures = self.va_api.get_procedures()
 
     def load_test_results(self) -> None:
         self.results = []

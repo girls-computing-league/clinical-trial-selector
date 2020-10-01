@@ -243,6 +243,10 @@ class VaApi(FhirApi):
         for resource in self.get_fhir_bundle("Condition"):
             yield fhir.Condition(resource)
 
+    def get_procedures(self) -> Iterable[fhir.Procedure]:
+        for resource in self.get_fhir_bundle("Procedure"):
+            yield fhir.Procedure(resource)
+
     def page_parameter(self, page:int) -> str:
         return f"&page={page}"
 
