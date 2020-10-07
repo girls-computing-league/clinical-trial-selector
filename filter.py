@@ -799,7 +799,7 @@ class FacebookFilter:
                                     [str(value) for value in allowed_values])
                                 if float(lab_val) not in allowed_values:
                                     consists = False
-                             elif var_type == "nominal":
+                            elif var_type == "nominal":
                                 bool = False
                                 for p in procedures:
                                   if json_obj['term'] == p:
