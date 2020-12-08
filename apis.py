@@ -242,6 +242,12 @@ class VaApi(FhirApi):
     def get_conditions(self) -> Iterable[fhir.Condition]:
         for resource in self.get_fhir_bundle("Condition"):
             yield fhir.Condition(resource)
+    
+    def get_medication_orders(self) -> Iterable[fhir.MedicationRequest]:
+        self.base_url = app.config["VA_API_HEALTH_BASE_R4_URL"]
+        for resource in self.get_fhir_bundle("MedicationRequest"):
+            yield fhir.MedicationRequest(resource)
+        self.base_url = app.config[self.url_config]
 
     def page_parameter(self, page:int) -> str:
         return f"&page={page}"

@@ -31,6 +31,7 @@ class Patient(metaclass=ABCMeta):
         self.auth = umls.Authentication(app.config["UMLS_API_KEY"])
         self.tgt = self.auth.gettgt()
         self.results: List[TestResult] = []
+        self.medication_orders: List
         self.latest_results: Dict[str, TestResult] = {}
         self.api = self.api_factory(self.mrn, self.token)
         self.umls = UmlsApi()
@@ -226,6 +227,10 @@ class VAPatient(Patient):
                 existing_result = self.latest_results.get(result.test_name)
                 if existing_result is None or existing_result.datetime < result.datetime:
                     self.latest_results[result.test_name] = result
+        self.medication_orders = []
+        for order in self.va_api.get_medication_orders():
+            pass
+
 
 class CMSPatient(Patient):
 

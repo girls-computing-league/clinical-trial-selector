@@ -74,7 +74,8 @@ class Condition(FHIRResource):
     expressions = {
         'description': 'code.text',
         'code': 'code.coding[0].code',
-        'system': 'code.coding[0].system'
+        'system': 'code.coding[0].system',
+        'category': 'category.coding[0].code'
     }
 
     compiled_expressions = FHIRResource.compile_expressions(expressions)
@@ -84,6 +85,22 @@ class Condition(FHIRResource):
         self.code: str = self._extract('code')
         self.system: str = self._extract('system')
         self.codeset: str = self.codeset_from_system[self.system]
+        self.category: str = self._extract('category')
+        logging.info(f"Condition {self.description}, category {self.category}")
+
+class MedicationRequest(FHIRResource):
+
+    expressions = {
+        'description': 'medicationReference.display',
+        'category': 'category.coding[0].code'
+    }
+
+    compiled_expressions = FHIRResource.compile_expressions(expressions)
+    
+    def after_init(self):
+        self.description: str = self._extract('description')
+        self.category: str = self._extract('category')
+        logging.info(f"Medication Order {self.description}, category {self.category}")
 
 class ExplanationOfBenefit(FHIRResource):
 
