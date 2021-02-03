@@ -71,7 +71,7 @@ class UmlsApi(Api):
                 results.append((result["ui"], result["name"]))
         return results
 
-    def get_code_exact(self, description: str) -> Union[Tuple[str, str], None]:
+    def get_code_exact(self, description: str) -> Union[Tuple[str, str], Tuple[None, None]]:
         tik = self.auth.getst(self.tgt)
         params = {"string": description, "ticket": tik, "searchType": "exact", "returnIdType": "sourceUi", "sabs": "NCI", "page_size": "1000"}
         route = "/search/current"
