@@ -2,9 +2,10 @@ import logging
 import subprocess
 import os
 import json
+from typing import Any, Dict, Union
 
 
-value_dict = {
+value_dict: Dict[str,Dict[str, Any]] = {
     "ecog": {
     "#variable_id": 100,
     "variable_type": "ordinal",

@@ -186,7 +186,7 @@ class Patient(metaclass=ABCMeta):
         logging.info(translated_code)
         if translated_code is None:
             return False
-        self.added_codes.append((code, description))
+        self.added_codes.append((code, str(description)))
         return True
 
     def load_all(self):
@@ -306,14 +306,15 @@ class Trial:
 
     def determine_filters(self) -> None:
         s: Set[str] = set()
-        for text in self.inclusions:
-            alias_match = labs.alias_regex.findall(text)
-            if alias_match:
-                criteria_match = labs.criteria_regex.findall(text)
-                if criteria_match:
-                    for group in criteria_match:
-                        if labs.by_alias[group[1].lower()].name == "platelets":
-                            s.add(group[4])
+        if self.inclusions:
+            for text in self.inclusions:
+                alias_match = labs.alias_regex.findall(text)
+                if alias_match:
+                    criteria_match = labs.criteria_regex.findall(text)
+                    if criteria_match:
+                        for group in criteria_match:
+                            if labs.by_alias[group[1].lower()].name == "platelets":
+                                s.add(group[4])
         for unit in s:
             app.logger.debug(f"leukocytes unit: {unit}")
 
