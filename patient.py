@@ -4,7 +4,7 @@ import logging
 import re
 import boto3, botocore
 import subprocess
-from typing import Dict, List, Any, Tuple, Optional
+from typing import Dict, List, Any, Tuple, Optional, Union
 from flask import current_app as app
 import time
 
@@ -73,7 +73,7 @@ def find_new_trails(ncit_code, url):
     search_text = f"{ncit_code['ncit_desc']} AND SEARCH[Location](AREA[LocationCountry]United States AND AREA[LocationStatus]Recruiting)"
     while tries_left>0:
         logging.info('Calling clinicaltrials.gov api for ncit_code-' + ncit_code['ncit'] + ' and ncit desc -' + ncit_code['ncit_desc'] )
-        params = {'expr': search_text, 'min_rnk': 1, 'max_rnk': 100, 'fmt': 'json'} #get trials based on condition
+        params: Dict[str, Union[str,int]] = {'expr': search_text, 'min_rnk': 1, 'max_rnk': 100, 'fmt': 'json'} #get trials based on condition
         response = req.get(url, params=params)
         filter: list = []
         #filter based on age/gender/demographic`s/make sure the trial is still valid
