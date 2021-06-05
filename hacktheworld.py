@@ -228,8 +228,9 @@ class VAPatient(Patient):
                 if existing_result is None or existing_result.datetime < result.datetime:
                     self.latest_results[result.test_name] = result
         self.medication_orders = []
-        for order in self.va_api.get_medication_orders():
-            pass
+        # TODO: go through medication orders and 
+        #for order in self.va_api.get_medication_orders():
+        #    pass
 
 
 class CMSPatient(Patient):
